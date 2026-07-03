@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://dd80avoqr4dl4"]
+
+[ext_resource type="Script" path="res://scripts/components/AnchorSlotsUI.gd" id="1_2t3ha"]
+
+[node name="AnchorSlotsUI" type="Node2D"]
+position = Vector2(-1220, -430)
+script = ExtResource("1_2t3ha")
+anchorControllerPath = NodePath("../../Cabins/TestPlayer/AnchorController")

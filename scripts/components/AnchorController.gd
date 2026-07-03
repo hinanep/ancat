@@ -1,5 +1,7 @@
 extends Node2D
 
+signal slot_state_changed(totalSlots: int, consumedSlots: int)
+
 ## 锚控制参数：发射、回收、勾取与放锚冻结。
 ## 锚最大长度（像素）。
 @export var maxAnchorLength: float = 520.0
@@ -45,6 +47,8 @@ var _lines: Array[Line2D] = []
 var _leftPressedPrev: bool = false
 var _rightPressedPrev: bool = false
 var _lastAvailableAnchorCapacity: int = 1
+var _lastSlotTotal: int = -1
+var _lastSlotConsumed: int = -1
 
 const INTERACT_NO_TARGET: int = 0
 const INTERACT_SUCCESS: int = 1
@@ -57,6 +61,7 @@ func _ready() -> void:
 	_player = get_parent()
 	_lastAvailableAnchorCapacity = _available_anchor_capacity()
 	_ensure_lines()
+	_emit_slot_state_if_changed()
 	_debug_log('ready: player=%s capacity=%d' % [_player.name if _player != null else 'null', _lastAvailableAnchorCapacity])
 
 
@@ -92,6 +97,7 @@ func _process(delta: float) -> void:
 
 	_leftPressedPrev = leftPressed
 	_rightPressedPrev = rightPressed
+	_emit_slot_state_if_changed()
 
 
 ## 创建锚链可视节点（按锚槽位创建）。
@@ -556,6 +562,32 @@ func _current_anchor_capacity() -> int:
 func _available_anchor_capacity() -> int:
 	var available: int = _current_anchor_capacity() - _deployedCabinPaths.size()
 	return max(available, 0)
+
+
+## 获取当前总槽位数量（供 UI 读取）。
+## @return int
+func current_slot_total() -> int:
+	return _current_anchor_capacity()
+
+
+## 获取当前已消耗槽位数量（供 UI 读取）。
+## @return int
+func current_slot_consumed() -> int:
+	var total: int = _current_anchor_capacity()
+	var consumed: int = _hooks.size() + _deployedCabinPaths.size()
+	return clampi(consumed, 0, total)
+
+
+## 当槽位状态变化时发出信号，驱动 UI 刷新。
+## @return void
+func _emit_slot_state_if_changed() -> void:
+	var total: int = current_slot_total()
+	var consumed: int = current_slot_consumed()
+	if total == _lastSlotTotal and consumed == _lastSlotConsumed:
+		return
+	_lastSlotTotal = total
+	_lastSlotConsumed = consumed
+	slot_state_changed.emit(total, consumed)
 
 
 ## 查找回收线段上的第一个合法命中（Hitable组CharacterBody2D或地板）。

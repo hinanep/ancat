@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://biqskj7ncenho" path="res://scenes/ui/components/storm_warning_ui.tscn" id="2_dhmek"]
 [ext_resource type="Script" uid="uid://bmtjege46adf1" path="res://scripts/components/TestPlayerController.gd" id="3_0x6r3"]
 [ext_resource type="Texture2D" uid="uid://d048tv117giwp" path="res://assets/textures/猫/Siamese/IdleCattt.png" id="3_8ghft"]
+[ext_resource type="PackedScene" uid="uid://dd80avoqr4dl4" path="res://scenes/ui/components/anchor_slots_ui.tscn" id="3_fy6ti"]
 [ext_resource type="PackedScene" uid="uid://do27wnokmof2x" path="res://scenes/props/WaterSurface.tscn" id="4_a73yp"]
 [ext_resource type="Script" uid="uid://dmx576ws301qi" path="res://scripts/components/BoatFloatController.gd" id="5_3ar6b"]
 [ext_resource type="PackedScene" uid="uid://cqlyepngiwjuq" path="res://scenes/props/MovableCargo.tscn" id="7_fdut3"]
@@ -143,6 +144,10 @@ offset_left = -1209.0
 offset_top = -568.0
 offset_right = -893.0
 offset_bottom = -472.0
+
+[node name="AnchorSlotsUI" parent="CanvasLayer" unique_id=1069361037 instance=ExtResource("3_fy6ti")]
+position = Vector2(-460, -556)
+scale = Vector2(3, 3)
 
 [node name="Cabins" type="Node2D" parent="." unique_id=1560321885]
 z_index = -10
