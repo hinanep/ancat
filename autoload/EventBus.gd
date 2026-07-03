@@ -18,6 +18,11 @@ enum EventType {
 	LEVEL_COMPLETED,
 	GAME_PAUSED,
 	GAME_RESUMED,
+	STORM_WARNING_STARTED,
+	STORM_STARTED,
+	STORM_DIRECTION_CHANGED,
+	STORM_RECOVER_STARTED,
+	STORM_ENDED,
 }
 
 signal event_triggered(event_type: EventType, data: Dictionary)

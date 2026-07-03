@@ -2,10 +2,12 @@
 
 [ext_resource type="Script" uid="uid://b2v05ltnww8ik" path="res://scenes/levels/GameWorld.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://crm4qutfr0otu" path="res://scenes/props/Cabin.tscn" id="2_3sasu"]
+[ext_resource type="PackedScene" uid="uid://biqskj7ncenho" path="res://scenes/ui/components/storm_warning_ui.tscn" id="2_dhmek"]
 [ext_resource type="Script" uid="uid://bmtjege46adf1" path="res://scripts/components/TestPlayerController.gd" id="3_0x6r3"]
 [ext_resource type="Texture2D" uid="uid://d048tv117giwp" path="res://assets/textures/猫/Siamese/IdleCattt.png" id="3_8ghft"]
 [ext_resource type="PackedScene" uid="uid://do27wnokmof2x" path="res://scenes/props/WaterSurface.tscn" id="4_a73yp"]
 [ext_resource type="Script" uid="uid://dmx576ws301qi" path="res://scripts/components/BoatFloatController.gd" id="5_3ar6b"]
+[ext_resource type="Script" uid="uid://bbcbgceyjg16o" path="res://scripts/components/StormController.gd" id="7_hy2pk"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_8ghft"]
 radius = 10.333334
@@ -111,6 +113,7 @@ script = ExtResource("1")
 [node name="WorldCamera" type="Camera2D" parent="." unique_id=945099590]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=538021173]
+follow_viewport_enabled = true
 
 [node name="MarginContainer" type="MarginContainer" parent="CanvasLayer" unique_id=1780763661]
 anchors_preset = 15
@@ -132,14 +135,18 @@ visible = false
 layout_mode = 2
 text = "Game World"
 
+[node name="StormWarningUI" parent="CanvasLayer" unique_id=868499573 instance=ExtResource("2_dhmek")]
+
 [node name="Cabins" type="Node2D" parent="." unique_id=1560321885]
 z_index = -10
-position = Vector2(132, 166)
+position = Vector2(255, 274)
 script = ExtResource("5_3ar6b")
 floatAmplitudeY = 4.0
 floatFrequencyHz = 0.26
 rollAmplitudeDeg = 1.6
 rollFrequencyHz = 0.2
+stormStartTiltLerpSpeedDeg = 10.0
+stormTiltLerpSpeedDeg = 10.0
 
 [node name="CabinA" parent="Cabins" unique_id=1132968514 instance=ExtResource("2_3sasu")]
 position = Vector2(-499, -320)
@@ -163,7 +170,7 @@ left_door_open = true
 
 [node name="TestPlayer" type="CharacterBody2D" parent="Cabins" unique_id=1521693170]
 z_index = 10
-position = Vector2(-78, -211)
+position = Vector2(-239, -197)
 scale = Vector2(3, 3)
 script = ExtResource("3_0x6r3")
 
@@ -182,7 +189,7 @@ autoplay = &"idle"
 
 [node name="WaterSurface" parent="." unique_id=614244190 instance=ExtResource("4_a73yp")]
 z_index = -20
-position = Vector2(-1017, 84)
+position = Vector2(-1017, 374)
 scale = Vector2(4.2759995, 2.4799998)
 color_surface = Color(0.25, 0.71, 0.96, 1)
 color_depth = Color(0.08, 0.35, 0.7, 1)
@@ -190,6 +197,21 @@ color_foam = Color(1, 1, 1, 1)
 wave_amplitude = 10.0
 wave_frequency = 1.0
 wave_speed = 1.0
+lateral_flow_speed = 0.0
 depth_threshold = 0.1
 foam_thickness = 0.02
 transition_speed = 1.0
+storm_peak_wave_amplitude = 20.0
+storm_peak_wave_speed = 2.0
+storm_peak_wave_frequency = 1.5
+storm_flow_speed = 0.2
+flow_speed_max_change_per_sec = 0.01
+
+[node name="StormController" type="Node" parent="." unique_id=277297670]
+script = ExtResource("7_hy2pk")
+cycleIntervalSec = 5.0
+warningDurationSec = 10.0
+tiltMinDeg = 15.0
+tiltMaxDeg = 25.0
+recoverDurationSec = 10.0
+debugStormLog = true

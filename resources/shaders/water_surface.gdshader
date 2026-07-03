@@ -9,6 +9,7 @@ uniform vec4 color_foam : source_color = vec4(1.0, 1.0, 1.0, 1.0);       // 浪�
 uniform float wave_amplitude = 12.0;
 uniform float wave_frequency = 3.0;
 uniform float wave_speed = 2.5;
+uniform float lateral_flow_speed = 0.0;
 
 // 3. 风格化参数
 uniform float depth_threshold = 0.35; // 深水区开始的 UV 高度
@@ -16,7 +17,8 @@ uniform float foam_thickness = 0.04;  // 顶部白沫的基础厚度
 
 void vertex() {
 	float t = TIME * wave_speed;
-	float x = UV.x * wave_frequency * 6.28318;
+	float flow_offset = TIME * lateral_flow_speed;
+	float x = (UV.x ) * wave_frequency * 6.28318;
 
 	// 抛弃单调的正弦波，使用伪 Gerstner 波形叠加
 	// 特点：波峰更尖锐，波谷更平滑宽阔，水体动态更生动
@@ -29,6 +31,7 @@ void vertex() {
 void fragment() {
 	vec2 uv = UV;
 	float t = TIME;
+	uv.x += TIME * lateral_flow_speed;
 
 	// --- 1. 卡通硬边缘深度 (Cel-shaded Depth) ---
 	// 加入轻微的 X 轴畸变，让深浅交界线具有流动感
