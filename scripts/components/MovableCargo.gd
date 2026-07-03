@@ -13,6 +13,8 @@ extends CharacterBody2D
 @export var max_slide_speed: float = 140.0
 ## 舱室分组名（默认 Cabin）。
 @export var cabin_group_name: StringName = 'Cabin'
+## 可交付类型标签（由交互物决定是否接受）。
+@export var deliveryTag: String = 'food'
 ## 调试输出开关。
 @export var debug_movable_log: bool = false
 
@@ -114,6 +116,26 @@ func drop_to_world() -> void:
 	_carrier = null
 	enable_auto_move = _savedAutoMove
 	_set_collision_ignored(false)
+
+
+## 获取可交付标签。
+## @return String
+func get_delivery_tag() -> String:
+	return deliveryTag
+
+
+## 被可交互物消费（交付成功）后的处理。
+## @param target 交付目标
+## @return void
+func consume_by_interactable(target: Node) -> void:
+	_isHooked = false
+	_isCarried = false
+	_carrier = null
+	enable_auto_move = false
+	_set_collision_ignored(true)
+	visible = false
+	set_physics_process(false)
+	_debug_log('consumed by %s' % (target.name if target != null else 'unknown'))
 
 
 ## 刷新舱室缓存。

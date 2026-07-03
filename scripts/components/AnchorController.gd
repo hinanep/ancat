@@ -34,14 +34,18 @@ var _player: Node
 var _lines: Array[Line2D] = []
 var _leftPressedPrev: bool = false
 var _rightPressedPrev: bool = false
-var _lastAnchorCapacity: int = 1
+var _lastAvailableAnchorCapacity: int = 1
+
+const INTERACT_NO_TARGET: int = 0
+const INTERACT_SUCCESS: int = 1
+const INTERACT_REJECTED: int = 2
 
 
 ## 初始化缓存与可视链条。
 ## @return void
 func _ready() -> void:
 	_player = get_parent()
-	_lastAnchorCapacity = _current_anchor_capacity()
+	_lastAvailableAnchorCapacity = _available_anchor_capacity()
 	_ensure_lines()
 
 
@@ -49,13 +53,13 @@ func _ready() -> void:
 ## @param delta 帧间隔（秒）
 ## @return void
 func _process(delta: float) -> void:
-	var currentCapacity: int = _current_anchor_capacity()
-	if currentCapacity != _lastAnchorCapacity:
-		_lastAnchorCapacity = currentCapacity
+	var availableCapacity: int = _available_anchor_capacity()
+	if availableCapacity != _lastAvailableAnchorCapacity:
+		_lastAvailableAnchorCapacity = availableCapacity
 		_ensure_lines()
-		while _hooks.size() > currentCapacity:
+		while _hooks.size() > availableCapacity:
 			_hooks.pop_back()
-		while _carriedCargo.size() > currentCapacity:
+		while _carriedCargo.size() > availableCapacity:
 			var cargo: Node = _carriedCargo.pop_back()
 			if cargo != null and cargo.has_method('drop_to_world'):
 				cargo.call('drop_to_world')
@@ -86,7 +90,7 @@ func _ensure_lines() -> void:
 		if line != null:
 			line.queue_free()
 	_lines.clear()
-	var count: int = _current_anchor_capacity()
+	var count: int = _available_anchor_capacity()
 	for i in range(count):
 		var line: Line2D = Line2D.new()
 		line.width = 2.0
@@ -116,7 +120,7 @@ func _update_lines() -> void:
 ## @return void
 func _fire_anchor() -> void:
 	_ensure_lines()
-	if _hooks.size() >= _current_anchor_capacity():
+	if _hooks.size() >= _available_anchor_capacity():
 		return
 	if not (_player is Node2D):
 		return
@@ -214,7 +218,7 @@ func _update_single_hook(hookIndex: int, delta: float) -> void:
 		if nextCargoPos.distance_to(origin + carryOffset) <= 8.0:
 			if cargoNode.has_method('set_carried'):
 				cargoNode.call('set_carried', _player, carryOffset)
-			if not _carriedCargo.has(cargoNode) and _carriedCargo.size() < max(anchorCount, 1):
+			if not _carriedCargo.has(cargoNode) and _carriedCargo.size() < _current_anchor_capacity():
 				_carriedCargo.append(cargoNode)
 			_hooks.remove_at(hookIndex)
 
@@ -234,7 +238,8 @@ func _release_all_hooks() -> void:
 ## 右键：优先交互（占位）> 物体 > 锚放置/回收。
 ## @return void
 func _handle_right_click() -> void:
-	if _try_interact():
+	var interactResult: int = _try_interact()
+	if interactResult == INTERACT_SUCCESS or interactResult == INTERACT_REJECTED:
 		return
 	if _try_pickup_nearby_cargo():
 		return
@@ -248,22 +253,40 @@ func _handle_right_click() -> void:
 	_toggle_anchor_deploy()
 
 
-## 占位：交互优先逻辑（后续接真实 Interactable）。
-## @return bool
-func _try_interact() -> bool:
+## 交互优先逻辑：有交互物时仅处理交互分支。
+## @return int 0=无目标 1=成功 2=拒绝
+func _try_interact() -> int:
 	if _player == null or not (_player is Node2D):
-		return false
+		return INTERACT_NO_TARGET
 	var origin: Vector2 = (_player as Node2D).global_position
+	var bestTarget: Node2D
+	var bestDist: float = INF
 	for node in get_tree().get_nodes_in_group('Interactable'):
 		if not (node is Node2D):
 			continue
 		var interactive: Node2D = node as Node2D
-		if interactive.global_position.distance_to(origin) > max(interactRadius, 0.0):
+		var dist: float = interactive.global_position.distance_to(origin)
+		if dist > max(interactRadius, 0.0):
 			continue
-		if interactive.has_method('interact'):
-			interactive.call('interact', _player)
-			return true
-	return false
+		if dist < bestDist:
+			bestDist = dist
+			bestTarget = interactive
+	if bestTarget == null:
+		return INTERACT_NO_TARGET
+
+	var carriedItem: Node = null
+	if not _carriedCargo.is_empty():
+		carriedItem = _carriedCargo[_carriedCargo.size() - 1]
+
+	if bestTarget.has_method('try_interact'):
+		var accepted: bool = bool(bestTarget.call('try_interact', _player, carriedItem))
+		if accepted:
+			if carriedItem != null:
+				_carriedCargo.erase(carriedItem)
+			return INTERACT_SUCCESS
+		_debug_log('interact rejected by %s' % bestTarget.name)
+		return INTERACT_REJECTED
+	return INTERACT_REJECTED
 
 
 ## 右键拾取附近可勾取物体（优先于放锚）。
@@ -271,7 +294,7 @@ func _try_interact() -> bool:
 func _try_pickup_nearby_cargo() -> bool:
 	if _player == null or not (_player is Node2D):
 		return false
-	if _carriedCargo.size() >= _current_anchor_capacity():
+	if _carriedCargo.size() >= _available_anchor_capacity():
 		return false
 	var origin: Vector2 = (_player as Node2D).global_position
 	var bestNode: Node2D
@@ -301,6 +324,11 @@ func _try_pickup_nearby_cargo() -> bool:
 ## @return void
 func _toggle_anchor_deploy() -> void:
 	if not _anchorDeployed:
+		var totalCapacity: int = _current_anchor_capacity()
+		var inUseCount: int = _hooks.size() + _carriedCargo.size()
+		if inUseCount + 1 > totalCapacity:
+			_debug_log('deploy blocked: no free anchor')
+			return
 		var cabinPath: NodePath = NodePath('')
 		if _player != null:
 			var propValue: Variant = _player.get('current_cabin_path')
@@ -312,11 +340,15 @@ func _toggle_anchor_deploy() -> void:
 		_deployedCabinPath = cabinPath
 		EventBus.emit(EventBus.EventType.ANCHOR_DEPLOYED, {'cabin_path': String(cabinPath)})
 		_debug_log('deploy anchor @%s' % String(cabinPath))
+		_lastAvailableAnchorCapacity = _available_anchor_capacity()
+		_ensure_lines()
 		return
 	_anchorDeployed = false
 	_deployedCabinPath = NodePath('')
 	EventBus.emit(EventBus.EventType.ANCHOR_RETRIEVED, {})
 	_debug_log('retrieve anchor')
+	_lastAvailableAnchorCapacity = _available_anchor_capacity()
+	_ensure_lines()
 
 
 ## 开始玩家锚拉拽。
@@ -335,6 +367,13 @@ func _current_anchor_capacity() -> int:
 		if typeof(value) == TYPE_INT:
 			return max(int(value), 1)
 	return max(fallbackAnchorCount, 1)
+
+
+## 获取当前可用锚容量（放下锚会占用1把）。
+## @return int
+func _available_anchor_capacity() -> int:
+	var available: int = _current_anchor_capacity() - (1 if _anchorDeployed else 0)
+	return max(available, 0)
 
 
 ## 查找回收线段上的第一个合法命中（Hitable组CharacterBody2D或地板）。

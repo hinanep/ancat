@@ -233,6 +233,16 @@ autoplay = &"idle"
 
 [node name="AnchorController" type="Node2D" parent="Cabins/TestPlayer" unique_id=496589560]
 script = ExtResource("8_ankcr")
+maxAnchorLength = null
+anchorLaunchSpeed = null
+retractSpeed = null
+playerPullSpeed = null
+cargoPullSpeed = null
+anchorCount = null
+floorHookMaxYOffset = null
+floorPullUpOffset = null
+carryOffset = null
+debug_anchor_log = null
 
 [node name="MovableCargo" parent="Cabins" unique_id=602930434 instance=ExtResource("7_fdut3")]
 z_index = 6
