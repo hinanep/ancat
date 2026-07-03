@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://crm4qutfr0otu"]
+
+[ext_resource type="Script" uid="uid://dw1oxgfak7xep" path="res://scripts/components/Cabin.gd" id="1"]
+
+[node name="Cabin" type="Node2D" unique_id=2118771532]
+script = ExtResource("1")
+
+[node name="Visuals" type="Node2D" parent="." unique_id=1322621571]
+
+[node name="VisualLayer" type="TileMapLayer" parent="Visuals" unique_id=1623867138]
+
+[node name="CollisionLayer" type="TileMapLayer" parent="." unique_id=190332211]
+visible = false

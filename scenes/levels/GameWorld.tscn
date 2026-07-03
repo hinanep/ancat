@@ -2,9 +2,105 @@
 
 [ext_resource type="Script" uid="uid://b2v05ltnww8ik" path="res://scenes/levels/GameWorld.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://crm4qutfr0otu" path="res://scenes/props/Cabin.tscn" id="2_3sasu"]
+[ext_resource type="Script" uid="uid://bmtjege46adf1" path="res://scripts/components/TestPlayerController.gd" id="3_0x6r3"]
+[ext_resource type="Texture2D" uid="uid://d048tv117giwp" path="res://assets/textures/猫/Siamese/IdleCattt.png" id="3_8ghft"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3sasu"]
-size = Vector2(24, 32)
+size = Vector2(24, 22)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ihn80"]
+atlas = ExtResource("3_8ghft")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cgt5v"]
+atlas = ExtResource("3_8ghft")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_o8t00"]
+atlas = ExtResource("3_8ghft")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dhmek"]
+atlas = ExtResource("3_8ghft")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fdut3"]
+atlas = ExtResource("3_8ghft")
+region = Rect2(128, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vxsil"]
+atlas = ExtResource("3_8ghft")
+region = Rect2(160, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fy6ti"]
+atlas = ExtResource("3_8ghft")
+region = Rect2(192, 0, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_vbnlq"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ihn80")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cgt5v")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_o8t00")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dhmek")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fdut3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vxsil")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fy6ti")
+}],
+"loop": 0,
+"name": &"idle",
+"speed": 5.0
+}]
+
+[sub_resource type="Animation" id="Animation_rmu4k"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="Animation" id="Animation_46q1d"]
+resource_name = "idle"
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0, 6]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_q4kc4"]
+_data = {
+&"RESET": SubResource("Animation_rmu4k"),
+&"idle": SubResource("Animation_46q1d")
+}
 
 [node name="GameWorld" type="Node2D" unique_id=2080257078]
 script = ExtResource("1")
@@ -34,30 +130,45 @@ layout_mode = 2
 text = "Game World"
 
 [node name="TestPlayer" type="CharacterBody2D" parent="." unique_id=1521693170]
-position = Vector2(432, 59)
-
-[node name="Visual" type="ColorRect" parent="TestPlayer" unique_id=1768325857]
-offset_left = -12.0
-offset_top = -32.0
-offset_right = 12.0
-color = Color(0.2, 0.6, 1, 1)
+position = Vector2(54, -45)
+script = ExtResource("3_0x6r3")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="TestPlayer" unique_id=654084598]
-position = Vector2(0, -16)
+position = Vector2(0, 3)
 shape = SubResource("RectangleShape2D_3sasu")
 
+[node name="Sprite" type="AnimatedSprite2D" parent="TestPlayer" unique_id=1430410072]
+sprite_frames = SubResource("SpriteFrames_vbnlq")
+animation = &"idle"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="TestPlayer" unique_id=1593141126]
+libraries/ = SubResource("AnimationLibrary_q4kc4")
+autoplay = &"idle"
+
 [node name="CabinA" parent="." unique_id=1132968514 instance=ExtResource("2_3sasu")]
-position = Vector2(-161, 136)
+position = Vector2(-303, -13)
+ceiling_hole_position = 30.0
+ceiling_hole_size = 100.0
+render_ceiling = true
 
 [node name="CabinB" parent="." unique_id=188614053 instance=ExtResource("2_3sasu")]
-position = Vector2(159, 136)
+position = Vector2(-12, -13)
+ceiling_hole_position = null
+ceiling_hole_size = null
+render_ceiling = true
 
 [node name="CabinC" parent="." unique_id=1843543556 instance=ExtResource("2_3sasu")]
-position = Vector2(-161, -104)
+position = Vector2(-303, -223)
 right_door_open = true
 floor_hole_position = 30.0
 floor_hole_size = 100.0
+ceiling_hole_position = null
+ceiling_hole_size = null
+render_ceiling = true
 
 [node name="CabinD" parent="." unique_id=2118771532 instance=ExtResource("2_3sasu")]
-position = Vector2(159, -104)
-right_door_open = true
+position = Vector2(-12, -223)
+left_door_open = true
+ceiling_hole_position = null
+ceiling_hole_size = null
+render_ceiling = true

@@ -2,133 +2,173 @@
 class_name Cabin
 extends Node2D
 
-## 船舱节点：提供墙体、门洞、地板打洞与邻居共享逻辑。
+## Cabin 节点配置：控制尺寸、门洞、地板洞、天花板开关与 TileMap 贴图坐标。
+## @tile_size 单格像素尺寸
+## @cabin_width 船舱宽度（像素）
+## @cabin_height 船舱高度（像素）
+## @door_height 开门时下半段挖空高度（像素）
+## @left_door_open 左门开关
+## @right_door_open 右门开关
+## @floor_hole_position 地板洞相对左内缘偏移（像素）
+## @floor_hole_size 地板洞宽度（像素）
+## @ceiling_hole_position 天花板洞相对左内缘偏移（像素）
+## @ceiling_hole_size 天花板洞宽度（像素）
+## @render_ceiling 是否渲染天花板
+## @render_corner_* 四个角是否渲染
+## @tile* 各连接状态对应的图块 atlas 坐标
+@export var tile_size: int = 16
+@export var cabin_width: float = 320.0:
+	set(value):
+		_set_cabin_size(value, _cabinHeight)
+	get:
+		return _cabinWidth
+
+@export var cabin_height: float = 240.0:
+	set(value):
+		_set_cabin_size(_cabinWidth, value)
+	get:
+		return _cabinHeight
+
+@export var door_height: float = 120.0:
+	set(value):
+		_doorHeight = max(value, 0.0)
+		_rebuild_all()
+	get:
+		return _doorHeight
+
+@export var left_door_open: bool = false:
+	set(value):
+		_leftDoorOpen = value
+		_rebuild_all()
+	get:
+		return _leftDoorOpen
+
+@export var right_door_open: bool = false:
+	set(value):
+		_rightDoorOpen = value
+		_rebuild_all()
+	get:
+		return _rightDoorOpen
+
+@export var floor_hole_position: float = 0.0:
+	set(value):
+		_floorHolePosition = max(value, 0.0)
+		_rebuild_all()
+	get:
+		return _floorHolePosition
+
+@export var floor_hole_size: float = 0.0:
+	set(value):
+		_floorHoleSize = max(value, 0.0)
+		_rebuild_all()
+	get:
+		return _floorHoleSize
+
+@export var ceiling_hole_position: float = 0.0:
+	set(value):
+		_ceilingHolePosition = max(value, 0.0)
+		_rebuild_all()
+	get:
+		return _ceilingHolePosition
+
+@export var ceiling_hole_size: float = 0.0:
+	set(value):
+		_ceilingHoleSize = max(value, 0.0)
+		_rebuild_all()
+	get:
+		return _ceilingHoleSize
+
+@export var render_ceiling: bool = true:
+	set(value):
+		_renderCeiling = value
+		_rebuild_all()
+	get:
+		return _renderCeiling
+
+@export var render_corner_ne: bool = true:
+	set(value):
+		_renderCornerNe = value
+		_rebuild_all()
+	get:
+		return _renderCornerNe
+
+@export var render_corner_nw: bool = true:
+	set(value):
+		_renderCornerNw = value
+		_rebuild_all()
+	get:
+		return _renderCornerNw
+
+@export var render_corner_se: bool = true:
+	set(value):
+		_renderCornerSe = value
+		_rebuild_all()
+	get:
+		return _renderCornerSe
+
+@export var render_corner_sw: bool = true:
+	set(value):
+		_renderCornerSw = value
+		_rebuild_all()
+	get:
+		return _renderCornerSw
+
+
+@export var tile_corner_ne: Vector2i = Vector2i(13, 0)
+@export var tile_corner_nw: Vector2i = Vector2i(0, 0)
+@export var tile_corner_se: Vector2i = Vector2i(13, 8)
+@export var tile_corner_sw: Vector2i = Vector2i(0, 8)
+@export var tile_end_n: Vector2i = Vector2i(1, 0)
+@export var tile_end_s: Vector2i = Vector2i(12, 8)
+@export var tile_end_e: Vector2i = Vector2i(13, 7)
+@export var tile_end_w: Vector2i = Vector2i(0, 1)
+
+
+signal door_state_changed(side: String, isOpen: bool)
 
 const WORLD_LAYER: int = 1
-const EPSILON: float = 1.0
-const SEAM_OVERLAP: float = 1.0
+const SOURCE_ID: int = 0
+const COLLISION_LAYER_ID: int = 0
+const MASK_N: int = 1
+const MASK_E: int = 2
+const MASK_S: int = 4
+const MASK_W: int = 8
 
-var _cabin_width: float = 320.0
-var _cabin_height: float = 240.0
-var _wall_thickness: float = 16.0
-var _door_height: float = 120.0
-var _left_door_open: bool = false
-var _right_door_open: bool = false
-var _floor_hole_position: float = 0.0
-var _floor_hole_size: float = 0.0
-var _recalculate_neighbors: bool = false
+var _cabinWidth: float = 320.0
+var _cabinHeight: float = 240.0
+var _doorHeight: float = 120.0
+var _leftDoorOpen: bool = false
+var _rightDoorOpen: bool = false
+var _floorHolePosition: float = 0.0
+var _floorHoleSize: float = 0.0
+var _ceilingHolePosition: float = 0.0
+var _ceilingHoleSize: float = 0.0
+var _renderCeiling: bool = true
+var _renderCornerNe: bool = true
+var _renderCornerNw: bool = true
+var _renderCornerSe: bool = true
+var _renderCornerSw: bool = true
 
-@export var cabin_width: float:
-	get:
-		return _as_float(_cabin_width, 320.0)
-	set(value):
-		_set_cabin_size(_as_float(value, 320.0), _as_float(_cabin_height, 240.0), _as_float(_wall_thickness, 16.0))
-
-@export var cabin_height: float:
-	get:
-		return _as_float(_cabin_height, 240.0)
-	set(value):
-		_set_cabin_size(_as_float(_cabin_width, 320.0), _as_float(value, 240.0), _as_float(_wall_thickness, 16.0))
-
-@export var wall_thickness: float:
-	get:
-		return _as_float(_wall_thickness, 16.0)
-	set(value):
-		_set_cabin_size(_as_float(_cabin_width, 320.0), _as_float(_cabin_height, 240.0), _as_float(value, 16.0))
-
-@export var door_height: float:
-	get:
-		return _as_float(_door_height, 120.0)
-	set(value):
-		_door_height = max(_as_float(value, 120.0), 0.0)
-		_rebuild_all()
-
-@export var left_door_open: bool:
-	get:
-		return _as_bool(_left_door_open, false)
-	set(value):
-		_left_door_open = _as_bool(value, false)
-		_rebuild_all()
-
-@export var right_door_open: bool:
-	get:
-		return _as_bool(_right_door_open, false)
-	set(value):
-		_right_door_open = _as_bool(value, false)
-		_rebuild_all()
-
-@export var floor_hole_position: float:
-	get:
-		return _as_float(_floor_hole_position, 0.0)
-	set(value):
-		_floor_hole_position = max(_as_float(value, 0.0), 0.0)
-		_rebuild_all()
-
-@export var floor_hole_size: float:
-	get:
-		return _as_float(_floor_hole_size, 0.0)
-	set(value):
-		_floor_hole_size = max(_as_float(value, 0.0), 0.0)
-		_rebuild_all()
-
-@export var recalculate_neighbors: bool:
-	get:
-		return _as_bool(_recalculate_neighbors, false)
-	set(value):
-		_recalculate_neighbors = _as_bool(value, false)
-		if _recalculate_neighbors:
-			_coordinate_neighbors()
-		_recalculate_neighbors = false
-
-signal door_state_changed(side: String, is_open: bool)
+var _visualLayer: TileMapLayer
+var _tileSet: TileSet
+var _atlasSource: TileSetAtlasSource
+var _sourceId: int = SOURCE_ID
 
 
-func _as_float(value, fallback: float) -> float:
-	if typeof(value) == TYPE_FLOAT or typeof(value) == TYPE_INT:
-		return float(value)
-	return fallback
-
-
-func _as_bool(value, fallback: bool) -> bool:
-	if typeof(value) == TYPE_BOOL:
-		return bool(value)
-	return fallback
-
-var _has_neighbor_left: bool = false
-var _has_neighbor_right: bool = false
-var _has_neighbor_top: bool = false
-var _has_neighbor_bottom: bool = false
-
-var _left_wall_visual: ColorRect
-var _right_wall_visual: ColorRect
-var _floor_left_visual: ColorRect
-var _floor_right_visual: ColorRect
-var _ceiling_visual: ColorRect
-
-var _left_wall_body: StaticBody2D
-var _right_wall_body: StaticBody2D
-var _floor_body: StaticBody2D
-
-var _left_wall_shape: CollisionShape2D
-var _right_wall_shape: CollisionShape2D
-var _floor_left_shape: CollisionShape2D
-var _floor_right_shape: CollisionShape2D
-
-
-## 初始化：加入 cabin 分组并在下一帧做邻居协调。
+## 初始化：加入分组并构建 tileset/网格。
 ## @return void
 func _ready() -> void:
-	add_to_group('cabin')
 	_cache_nodes()
-	call_deferred('_coordinate_neighbors')
+	_ensure_tileset()
+	_rebuild_all()
 
 
 ## 对外 API：打开左门。
 ## @return void
 func open_left_door() -> void:
-	if left_door_open:
+	if _leftDoorOpen:
 		return
-	left_door_open = true
+	_leftDoorOpen = true
 	door_state_changed.emit('left', true)
 	_rebuild_all()
 
@@ -136,9 +176,9 @@ func open_left_door() -> void:
 ## 对外 API：关闭左门。
 ## @return void
 func close_left_door() -> void:
-	if not left_door_open:
+	if not _leftDoorOpen:
 		return
-	left_door_open = false
+	_leftDoorOpen = false
 	door_state_changed.emit('left', false)
 	_rebuild_all()
 
@@ -146,9 +186,9 @@ func close_left_door() -> void:
 ## 对外 API：打开右门。
 ## @return void
 func open_right_door() -> void:
-	if right_door_open:
+	if _rightDoorOpen:
 		return
-	right_door_open = true
+	_rightDoorOpen = true
 	door_state_changed.emit('right', true)
 	_rebuild_all()
 
@@ -156,268 +196,372 @@ func open_right_door() -> void:
 ## 对外 API：关闭右门。
 ## @return void
 func close_right_door() -> void:
-	if not right_door_open:
+	if not _rightDoorOpen:
 		return
-	right_door_open = false
+	_rightDoorOpen = false
 	door_state_changed.emit('right', false)
 	_rebuild_all()
 
 
-## 邻居协调：扫描 cabin 分组并更新四向邻居标记。
+## 更新尺寸并触发重建。
+## @param width 宽度（像素）
+## @param height 高度（像素）
 ## @return void
-func _coordinate_neighbors() -> void:
-	_has_neighbor_left = false
-	_has_neighbor_right = false
-	_has_neighbor_top = false
-	_has_neighbor_bottom = false
-	var cabin_width_value: float = _as_float(_cabin_width, 320.0)
-	var cabin_height_value: float = _as_float(_cabin_height, 240.0)
-
-	for node in get_tree().get_nodes_in_group('cabin'):
-		if node == self:
-			continue
-		if not (node is Node2D):
-			continue
-		var other: Node2D = node as Node2D
-		var dx: float = other.global_position.x - global_position.x
-		var dy: float = other.global_position.y - global_position.y
-
-		if abs(dy) <= EPSILON:
-			if abs(dx - cabin_width_value) <= EPSILON:
-				_has_neighbor_right = true
-			elif abs(dx + cabin_width_value) <= EPSILON:
-				_has_neighbor_left = true
-		elif abs(dx) <= EPSILON:
-			if abs(dy + cabin_height_value) <= EPSILON:
-				_has_neighbor_top = true
-			elif abs(dy - cabin_height_value) <= EPSILON:
-				_has_neighbor_bottom = true
-
+func _set_cabin_size(width: float, height: float) -> void:
+	_cabinWidth = max(width, float(tile_size) * 4.0)
+	_cabinHeight = max(height, float(tile_size) * 4.0)
+	_doorHeight = min(max(_doorHeight, 0.0), _cabinHeight)
 	_rebuild_all()
 
 
-## 更新尺寸参数并触发重建。
-## @param width 船舱宽度
-## @param height 船舱高度
-## @param thickness 墙体厚度
-## @return void
-func _set_cabin_size(width: float, height: float, thickness: float) -> void:
-	_cabin_width = max(_as_float(width, 320.0), 64.0)
-	_cabin_height = max(_as_float(height, 240.0), 64.0)
-	_wall_thickness = clamp(_as_float(thickness, 16.0), 4.0, min(_cabin_width, _cabin_height) * 0.5)
-	_door_height = min(max(_as_float(_door_height, 120.0), 0.0), _cabin_height)
-	_rebuild_all()
-
-
-## 重建入口：统一刷新视觉与碰撞。
+## 主重建入口：刷新 TileMap 视觉与 TileMap 碰撞。
 ## @return void
 func _rebuild_all() -> void:
 	if not is_inside_tree():
 		return
 	_cache_nodes()
-	if not _nodes_ready():
+	if _visualLayer == null:
 		return
-	_rebuild_side_walls()
-	_rebuild_floor()
-	_rebuild_ceiling()
+	_ensure_tileset()
+	if _tileSet == null or _atlasSource == null:
+		return
+	_clear_layers()
+
+	var wallCells: Dictionary = {}
+	_fill_boundary_cells(wallCells)
+	_apply_door_openings(wallCells)
+	_apply_floor_hole(wallCells)
+	_apply_ceiling_ownership(wallCells)
+	_apply_ceiling_hole(wallCells)
+	_apply_corner_toggles(wallCells)
+	_draw_visual_cells(wallCells)
 
 
-## 缓存节点引用，避免重复路径查找。
+## 缓存场景节点引用。
 ## @return void
 func _cache_nodes() -> void:
-	_left_wall_visual = get_node_or_null('Visuals/LeftWall')
-	_right_wall_visual = get_node_or_null('Visuals/RightWall')
-	_floor_left_visual = get_node_or_null('Visuals/FloorLeft')
-	_floor_right_visual = get_node_or_null('Visuals/FloorRight')
-	_ceiling_visual = get_node_or_null('Visuals/Ceiling')
+	var visuals: Node = get_node_or_null('Visuals')
+	if visuals == null:
+		var newVisuals: Node2D = Node2D.new()
+		newVisuals.name = 'Visuals'
+		add_child(newVisuals)
+		visuals = newVisuals
 
-	_left_wall_body = get_node_or_null('Colliders/LeftWallBody')
-	_right_wall_body = get_node_or_null('Colliders/RightWallBody')
-	_floor_body = get_node_or_null('Colliders/FloorBody')
+	_visualLayer = get_node_or_null('Visuals/VisualLayer')
+	if _visualLayer == null:
+		_visualLayer = TileMapLayer.new()
+		_visualLayer.name = 'VisualLayer'
+		visuals.add_child(_visualLayer)
 
-	_left_wall_shape = get_node_or_null('Colliders/LeftWallBody/CollisionShape2D')
-	_right_wall_shape = get_node_or_null('Colliders/RightWallBody/CollisionShape2D')
-	_floor_left_shape = get_node_or_null('Colliders/FloorBody/FloorLeftShape')
-	_floor_right_shape = get_node_or_null('Colliders/FloorBody/FloorRightShape')
-
-
-## 检查关键节点是否完整。
-## @return bool 节点是否可用
-func _nodes_ready() -> bool:
-	return _left_wall_visual != null and _right_wall_visual != null and _floor_left_visual != null and _floor_right_visual != null and _ceiling_visual != null and _left_wall_body != null and _right_wall_body != null and _floor_body != null and _left_wall_shape != null and _right_wall_shape != null and _floor_left_shape != null and _floor_right_shape != null
-
-
-## 重建左右墙：共享优先于门，门只打开墙体下半段。
+## 构建 TileSet 与碰撞图块定义。
 ## @return void
-func _rebuild_side_walls() -> void:
-	_rebuild_one_side_wall(true)
-	_rebuild_one_side_wall(false)
-
-
-## 重建单侧墙体视觉与碰撞。
-## @param is_left 是否左侧
-## @return void
-func _rebuild_one_side_wall(is_left: bool) -> void:
-	var cabin_width_value: float = _as_float(_cabin_width, 320.0)
-	var cabin_height_value: float = _as_float(_cabin_height, 240.0)
-	var wall_thickness_value: float = _as_float(_wall_thickness, 16.0)
-	var door_height_value: float = _as_float(_door_height, 120.0)
-	var left_x: float = -cabin_width_value * 0.5
-	var right_x: float = cabin_width_value * 0.5
-	var top_y: float = -cabin_height_value * 0.5
-	var has_neighbor: bool = _has_neighbor_at((-cabin_width_value) if is_left else cabin_width_value, 0.0)
-	var door_open: bool = left_door_open if is_left else right_door_open
-	var is_owned_side: bool = not has_neighbor if is_left else true
-
-	var visual: ColorRect = _left_wall_visual if is_left else _right_wall_visual
-	var body: StaticBody2D = _left_wall_body if is_left else _right_wall_body
-	var shape_node: CollisionShape2D = _left_wall_shape if is_left else _right_wall_shape
-
-	if not is_owned_side:
-		_set_side_wall_disabled(visual, body, shape_node)
+func _ensure_tileset() -> void:
+	if _visualLayer == null:
 		return
 
-	var wall_x: float = left_x if is_left else right_x - wall_thickness_value
-	var wall_top_y: float = top_y
-	var render_height: float = cabin_height_value
-
-	if door_open:
-		render_height = max(cabin_height_value - min(door_height_value, cabin_height_value), 0.0)
-
-	if render_height <= 0.0:
-		_set_side_wall_disabled(visual, body, shape_node)
+	_tileSet = _visualLayer.tile_set
+	if _tileSet == null:
+		push_error('Cabin: VisualLayer.tile_set 未设置，请绑定 resources/tilesets/walls.tres')
+		_atlasSource = null
 		return
 
-	visual.visible = true
-	visual.position = Vector2(wall_x, wall_top_y)
-	visual.size = Vector2(wall_thickness_value, render_height)
+	_sourceId = SOURCE_ID
+	if not _tileSet.has_source(_sourceId):
+		if _tileSet.get_source_count() <= 0:
+			push_error('Cabin: TileSet 没有可用 source')
+			_atlasSource = null
+			return
+		_sourceId = _tileSet.get_source_id(0)
 
-	body.collision_layer = WORLD_LAYER
-	body.collision_mask = 0
-	shape_node.disabled = false
-	if shape_node.shape == null or not (shape_node.shape is RectangleShape2D):
-		shape_node.shape = RectangleShape2D.new()
-	var shape: RectangleShape2D = shape_node.shape as RectangleShape2D
-	shape.size = Vector2(wall_thickness_value, render_height)
-	shape_node.position = Vector2(wall_x + wall_thickness_value * 0.5, wall_top_y + render_height * 0.5)
+	var existingSource: TileSetSource = _tileSet.get_source(_sourceId)
+	if not (existingSource is TileSetAtlasSource):
+		push_error('Cabin: 当前 source 不是 TileSetAtlasSource')
+		_atlasSource = null
+		return
+	_atlasSource = existingSource as TileSetAtlasSource
 
 
-## 关闭侧墙显示与碰撞。
-## @param visual 侧墙视觉节点
-## @param body 侧墙物理体
-## @param shape_node 侧墙碰撞形状节点
+## 清空两个 TileMapLayer。
 ## @return void
-func _set_side_wall_disabled(visual: ColorRect, body: StaticBody2D, shape_node: CollisionShape2D) -> void:
-	visual.visible = false
-	body.collision_layer = 0
-	body.collision_mask = 0
-	shape_node.disabled = true
+func _clear_layers() -> void:
+	_visualLayer.clear()
 
 
-## 重建地板：始终保留地板优先，支持挖洞。
+## 生成基础边界单元（四边框），默认全是实体。
+## @param wallCells 视觉单元集合
 ## @return void
-func _rebuild_floor() -> void:
-	var cabin_width_value: float = _as_float(_cabin_width, 320.0)
-	var cabin_height_value: float = _as_float(_cabin_height, 240.0)
-	var wall_thickness_value: float = _as_float(_wall_thickness, 16.0)
-	var hole_position_value: float = _as_float(_floor_hole_position, 0.0)
-	var hole_size_value: float = _as_float(_floor_hole_size, 0.0)
-	var left_x: float = -cabin_width_value * 0.5
-	var right_x: float = cabin_width_value * 0.5
-	var bottom_y: float = cabin_height_value * 0.5
+func _fill_boundary_cells(wallCells: Dictionary) -> void:
+	var cols: int = _grid_cols()
+	var rows: int = _grid_rows()
+	var thickness: int = _thickness_cells()
 
-	var floor_span_start: float = left_x - SEAM_OVERLAP
-	var floor_span_end: float = right_x + SEAM_OVERLAP
-	var available_width: float = max(floor_span_end - floor_span_start, 0.0)
-	var floor_y: float = bottom_y - wall_thickness_value
+	for y in range(rows):
+		for x in range(thickness):
+			_add_cell(wallCells, Vector2i(x, y))
+		for x in range(cols - thickness, cols):
+			_add_cell(wallCells, Vector2i(x, y))
 
-	if available_width <= 0.0:
-		_floor_left_visual.visible = false
-		_floor_right_visual.visible = false
-		_floor_left_shape.disabled = true
-		_floor_right_shape.disabled = true
-		_floor_body.collision_layer = 0
-		_floor_body.collision_mask = 0
+	for y in range(rows - thickness, rows):
+		for x in range(cols):
+			_add_cell(wallCells, Vector2i(x, y))
+
+	for y in range(0, thickness):
+		for x in range(cols):
+			_add_cell(wallCells, Vector2i(x, y))
+
+
+## 应用左右墙门洞挖空规则。
+## @param wallCells 视觉单元集合
+## @return void
+func _apply_door_openings(wallCells: Dictionary) -> void:
+	var cols: int = _grid_cols()
+	var rows: int = _grid_rows()
+	var thickness: int = _thickness_cells()
+	var doorCells: int = clampi(int(round(_doorHeight / float(tile_size))), 0, rows)
+	var openStartY: int = rows - doorCells
+
+	var ownsLeftWall: bool = true
+	var ownsRightWall: bool = true
+
+	if not ownsLeftWall:
+		for y in range(rows):
+			for x in range(thickness):
+				_remove_cell(wallCells, Vector2i(x, y))
+	elif _leftDoorOpen:
+		for y in range(openStartY, rows):
+			for x in range(thickness):
+				_remove_cell(wallCells, Vector2i(x, y))
+
+	if not ownsRightWall:
+		for y in range(rows):
+			for x in range(cols - thickness, cols):
+				_remove_cell(wallCells, Vector2i(x, y))
+	elif _rightDoorOpen:
+		for y in range(openStartY, rows):
+			for x in range(cols - thickness, cols):
+				_remove_cell(wallCells, Vector2i(x, y))
+
+
+## 应用地板洞（视觉与碰撞同步留空）。
+## @param wallCells 视觉单元集合
+## @return void
+func _apply_floor_hole(wallCells: Dictionary) -> void:
+	if _floorHoleSize <= 0.0:
 		return
 
-	_floor_body.collision_layer = WORLD_LAYER
-	_floor_body.collision_mask = 0
-
-	var hole_size: float = clamp(hole_size_value, 0.0, available_width)
-	var hole_anchor: float = left_x + wall_thickness_value + hole_position_value
-	var hole_start: float = clamp(hole_anchor, floor_span_start, floor_span_end)
-	var hole_end: float = clamp(hole_start + hole_size, floor_span_start, floor_span_end)
-
-	if hole_size <= 0.0 or hole_end <= hole_start:
-		_set_floor_segment(_floor_left_visual, _floor_left_shape, floor_span_start, floor_y, available_width)
-		_floor_right_visual.visible = false
-		_floor_right_shape.disabled = true
+	var cols: int = _grid_cols()
+	var rows: int = _grid_rows()
+	var thickness: int = _thickness_cells()
+	var innerLeft: int = thickness
+	var innerRight: int = cols - thickness
+	if innerRight <= innerLeft:
 		return
 
-	var left_width: float = max(hole_start - floor_span_start, 0.0)
-	var right_width: float = max(floor_span_end - hole_end, 0.0)
+	var holeStart: int = clampi(innerLeft + int(round(_floorHolePosition / float(tile_size))), innerLeft, innerRight)
+	var holeWidth: int = max(1, int(round(_floorHoleSize / float(tile_size))))
+	var holeEnd: int = clampi(holeStart + holeWidth, innerLeft, innerRight)
 
-	if left_width > 0.0:
-		_set_floor_segment(_floor_left_visual, _floor_left_shape, floor_span_start, floor_y, left_width)
-	else:
-		_floor_left_visual.visible = false
-		_floor_left_shape.disabled = true
-
-	if right_width > 0.0:
-		_set_floor_segment(_floor_right_visual, _floor_right_shape, hole_end, floor_y, right_width)
-	else:
-		_floor_right_visual.visible = false
-		_floor_right_shape.disabled = true
+	for y in range(rows - thickness, rows):
+		for x in range(holeStart, holeEnd):
+			_remove_cell(wallCells, Vector2i(x, y))
 
 
-## 设置单段地板视觉与碰撞。
-## @param visual 地板视觉节点
-## @param shape_node 地板碰撞节点
-## @param start_x 段起点 X
-## @param floor_y 地板顶部 Y
-## @param width 段宽度
+## 应用天花板洞（仅影响天花板，不影响地板洞）。
+## @param wallCells 视觉单元集合
 ## @return void
-func _set_floor_segment(visual: ColorRect, shape_node: CollisionShape2D, start_x: float, floor_y: float, width: float) -> void:
-	var wall_thickness_value: float = _as_float(_wall_thickness, 16.0)
+func _apply_ceiling_hole(wallCells: Dictionary) -> void:
+	if not _renderCeiling:
+		return
+	if _ceilingHoleSize <= 0.0:
+		return
 
-	visual.visible = true
-	visual.position = Vector2(start_x, floor_y)
-	visual.size = Vector2(width, wall_thickness_value)
+	var cols: int = _grid_cols()
+	var thickness: int = _thickness_cells()
+	var innerLeft: int = thickness
+	var innerRight: int = cols - thickness
+	if innerRight <= innerLeft:
+		return
 
-	shape_node.disabled = false
-	if shape_node.shape == null or not (shape_node.shape is RectangleShape2D):
-		shape_node.shape = RectangleShape2D.new()
-	var shape: RectangleShape2D = shape_node.shape as RectangleShape2D
-	shape.size = Vector2(width, wall_thickness_value)
-	shape_node.position = Vector2(start_x + width * 0.5, floor_y + wall_thickness_value * 0.5)
+	var holeStart: int = clampi(innerLeft + int(round(_ceilingHolePosition / float(tile_size))), innerLeft, innerRight)
+	var holeWidth: int = max(1, int(round(_ceilingHoleSize / float(tile_size))))
+	var holeEnd: int = clampi(holeStart + holeWidth, innerLeft, innerRight)
+
+	for y in range(0, thickness):
+		for x in range(holeStart, holeEnd):
+			_remove_cell(wallCells, Vector2i(x, y))
 
 
-## 重建天花板：仅视觉，无碰撞；有上邻居时隐藏。
+## 应用天花板渲染开关：关闭时隐藏本舱天花板视觉。
+## @param wallCells 视觉单元集合
 ## @return void
-func _rebuild_ceiling() -> void:
-	var cabin_width_value: float = _as_float(_cabin_width, 320.0)
-	var cabin_height_value: float = _as_float(_cabin_height, 240.0)
-	var wall_thickness_value: float = _as_float(_wall_thickness, 16.0)
-	var ceiling_start_x: float = -cabin_width_value * 0.5 - SEAM_OVERLAP
-	var ceiling_start_y: float = -cabin_height_value * 0.5 - wall_thickness_value
-	var ceiling_width: float = max(cabin_width_value + SEAM_OVERLAP * 2.0, 0.0)
-	var has_top_neighbor: bool = _has_neighbor_at(0.0, -cabin_height_value)
-
-	_ceiling_visual.position = Vector2(ceiling_start_x, ceiling_start_y)
-	_ceiling_visual.size = Vector2(ceiling_width, wall_thickness_value)
-
-	_ceiling_visual.visible = not has_top_neighbor
+func _apply_ceiling_ownership(wallCells: Dictionary) -> void:
+	if _renderCeiling:
+		return
+	var cols: int = _grid_cols()
+	var thickness: int = _thickness_cells()
+	for y in range(0, thickness):
+		for x in range(cols):
+			_remove_cell(wallCells, Vector2i(x, y))
 
 
-func _has_neighbor_at(offset_x: float, offset_y: float) -> bool:
-	for node in get_tree().get_nodes_in_group('cabin'):
-		if node == self:
-			continue
-		if not (node is Node2D):
-			continue
-		var other: Node2D = node as Node2D
-		var dx: float = other.global_position.x - global_position.x
-		var dy: float = other.global_position.y - global_position.y
-		if abs(dx - offset_x) <= EPSILON and abs(dy - offset_y) <= EPSILON:
-			return true
-	return false
+## 应用四角渲染开关。
+## @param wallCells 视觉单元集合
+## @return void
+func _apply_corner_toggles(wallCells: Dictionary) -> void:
+	var cols: int = _grid_cols()
+	var rows: int = _grid_rows()
+	var thickness: int = _thickness_cells()
+
+	if not _renderCornerNw:
+		for y in range(0, thickness):
+			for x in range(0, thickness):
+				_remove_cell(wallCells, Vector2i(x, y))
+
+	if not _renderCornerNe:
+		for y in range(0, thickness):
+			for x in range(cols - thickness, cols):
+				_remove_cell(wallCells, Vector2i(x, y))
+
+	if not _renderCornerSw:
+		for y in range(rows - thickness, rows):
+			for x in range(0, thickness):
+				_remove_cell(wallCells, Vector2i(x, y))
+
+	if not _renderCornerSe:
+		for y in range(rows - thickness, rows):
+			for x in range(cols - thickness, cols):
+				_remove_cell(wallCells, Vector2i(x, y))
+
+
+## 根据连接位掩码绘制视觉 tile。
+## @param wallCells 视觉单元集合
+## @return void
+func _draw_visual_cells(wallCells: Dictionary) -> void:
+	for key in wallCells.keys():
+		var cell: Vector2i = key
+		var mask: int = _neighbor_mask(cell, wallCells)
+		var atlas: Vector2i = _atlas_for_mask(cell, mask)
+		_visualLayer.set_cell(cell, _sourceId, atlas, 0)
+
+
+## 获取单元四邻接位掩码。
+## @param cell 目标单元
+## @param cells 单元集合
+## @return int 位掩码（N=1,E=2,S=4,W=8）
+func _neighbor_mask(cell: Vector2i, cells: Dictionary) -> int:
+	var mask: int = 0
+	if cells.has(cell + Vector2i(0, -1)):
+		mask |= MASK_N
+	if cells.has(cell + Vector2i(1, 0)):
+		mask |= MASK_E
+	if cells.has(cell + Vector2i(0, 1)):
+		mask |= MASK_S
+	if cells.has(cell + Vector2i(-1, 0)):
+		mask |= MASK_W
+	return mask
+
+
+## 位掩码映射到 atlas 坐标（仅使用四角+四方向边）。
+## @param cell 当前单元坐标
+## @param mask 邻接位掩码
+## @return Vector2i 图块坐标
+func _atlas_for_mask(cell: Vector2i, mask: int) -> Vector2i:
+	var cols: int = _grid_cols()
+	var rows: int = _grid_rows()
+	var thickness: int = _thickness_cells()
+	var onLeft: bool = cell.x < thickness
+	var onRight: bool = cell.x >= cols - thickness
+	var onTop: bool = cell.y < thickness
+	var onBottom: bool = cell.y >= rows - thickness
+
+	# 先按边界位置稳定判定，避免大面积误判为角块。
+	if onTop and onLeft:
+		return tile_corner_nw
+	if onTop and onRight:
+		return tile_corner_ne
+	if onBottom and onLeft:
+		return tile_corner_sw
+	if onBottom and onRight:
+		return tile_corner_se
+	if onTop:
+		return tile_end_n
+	if onBottom:
+		return tile_end_s
+	if onLeft:
+		return tile_end_w
+	if onRight:
+		return tile_end_e
+
+	# 兜底：异常/碎片单元按邻接掩码回退。
+	match mask:
+		MASK_N | MASK_E:
+			return tile_corner_ne
+		MASK_N | MASK_W:
+			return tile_corner_nw
+		MASK_S | MASK_E:
+			return tile_corner_se
+		MASK_S | MASK_W:
+			return tile_corner_sw
+		MASK_E | MASK_W:
+			return tile_end_n
+		MASK_N | MASK_S:
+			return tile_end_w
+		MASK_N:
+			return tile_end_n
+		MASK_S:
+			return tile_end_s
+		MASK_E:
+			return tile_end_e
+		MASK_W:
+			return tile_end_w
+		_:
+			return tile_end_n
+
+
+## 计算网格列数。
+## @return int 列数
+func _grid_cols() -> int:
+	return max(2, int(round(_cabinWidth / float(tile_size))))
+
+
+## 计算网格行数。
+## @return int 行数
+func _grid_rows() -> int:
+	return max(2, int(round(_cabinHeight / float(tile_size))))
+
+
+## 计算厚度对应的网格层数（固定 1 格）。
+## @return int 厚度单元数
+func _thickness_cells() -> int:
+	return 1
+
+
+## 向集合加入单元。
+## @param cells 单元集合
+## @param cell 单元坐标
+## @return void
+func _add_cell(cells: Dictionary, cell: Vector2i) -> void:
+	cells[cell] = true
+
+
+## 从集合移除单元。
+## @param cells 单元集合
+## @param cell 单元坐标
+## @return void
+func _remove_cell(cells: Dictionary, cell: Vector2i) -> void:
+	if cells.has(cell):
+		cells.erase(cell)
+
+
+## 检查 atlas 坐标是否在纹理网格范围内。
+## @param coords 图块 atlas 坐标
+## @return bool 坐标是否合法
+func _is_valid_atlas_coords(coords: Vector2i) -> bool:
+	if _atlasSource == null:
+		return false
+	var grid: Vector2i = _atlasSource.get_atlas_grid_size()
+	if coords.x < 0 or coords.y < 0:
+		return false
+	if coords.x >= grid.x or coords.y >= grid.y:
+		return false
+	return true
