@@ -1,0 +1,19 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/*.tscn": false,
+        "**/*.tres": false
+    },
+    "explorer.fileNesting.enabled": false,
+    "files.associations": {
+        "*.tscn": "ini",
+        "*.tres": "ini",
+        "*.gd": "python"
+    },
+    "godotTools.editorPath.godot4": "c:\\Users\\nep\\Desktop\\mao\\godot-editor\\Godot_v4.7-stable_mono_win64.exe"
+}

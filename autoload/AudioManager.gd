@@ -5,8 +5,8 @@
 ##   AudioManager.play_sfx("res://audio/sfx_hit.ogg")
 extends Node
 
-@onready var _bgm_player: AudioStreamPlayer = $BGMPlayer
-@onready var _sfx_pool: Array[AudioStreamPlayer] = []
+var _bgm_player: AudioStreamPlayer
+var _sfx_pool: Array[AudioStreamPlayer] = []
 
 var _bgm_path: String = ""
 var _sfx_pool_size: int = 8

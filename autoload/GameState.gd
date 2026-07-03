@@ -4,7 +4,7 @@
 ##   GameState.set_value("score", 100)
 ##   var score: int = GameState.get_value("score", 0)
 ##   GameState.reset()
-extends RefCounted
+extends Node
 
 signal value_changed(key: StringName, new_value: Variant)
 

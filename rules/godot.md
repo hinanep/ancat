@@ -110,12 +110,12 @@ group "EnemyGroup"  # ❌ 禁止 PascalCase
 # ✅ 正确
 var health: float = 100.0
 func apply_damage(amount: float) -> void:
-    pass
+	pass
 
 # ❌ 错误（缺少类型）
 var health = 100.0
 func apply_damage(amount):
-    pass
+	pass
 ```
 
 4.2 可选成员与空安全
@@ -141,7 +141,7 @@ signal player_died()
 
 # 静态函数优先用于纯工具方法
 static func clamp_angle(angle: float) -> float:
-    return fmod(angle + PI, TAU) - PI
+	return fmod(angle + PI, TAU) - PI
 ```
 
 4.5 类文档注释（强制）
@@ -183,14 +183,14 @@ extends CharacterBody2D
 @onready var _anim_player: AnimationPlayer = $AnimationPlayer
 
 func _ready() -> void:
-    _health.health_depleted.connect(_on_health_depleted)
-    _hurtbox.hurt.connect(_on_hurt)
+	_health.health_depleted.connect(_on_health_depleted)
+	_hurtbox.hurt.connect(_on_hurt)
 
 func _on_hurt(amount: float) -> void:
-    _health.take_damage(amount)
+	_health.take_damage(amount)
 
 func _on_health_depleted() -> void:
-    _anim_player.play("die")
+	_anim_player.play("die")
 ```
 
 5.3 组件化原则
@@ -264,13 +264,13 @@ class_name ResPath
 extends RefCounted
 
 const SCENES := {
-    MAIN_MENU = "res://scenes/ui/screens/main_menu.tscn",
-    GAME_WORLD = "res://scenes/levels/game_world.tscn",
+	MAIN_MENU = "res://scenes/ui/screens/main_menu.tscn",
+	GAME_WORLD = "res://scenes/levels/game_world.tscn",
 }
 
 const DATA := {
-    SWORD_IRON = "res://resources/data/sword_iron.tres",
-    LEVEL_001  = "res://resources/data/level_001.tres",
+	SWORD_IRON = "res://resources/data/sword_iron.tres",
+	LEVEL_001  = "res://resources/data/level_001.tres",
 }
 ```
 
@@ -282,25 +282,25 @@ const DATA := {
 ```gdscript
 # 使用 Godot 内置日志，禁止用 print() 裸写
 func take_damage(amount: float) -> void:
-    health = maxf(0.0, health - amount)
-    print_debug("HealthComponent: took %f damage, remaining %f" % [amount, health])  # 仅 Debug 构建输出
+	health = maxf(0.0, health - amount)
+	print_debug("HealthComponent: took %f damage, remaining %f" % [amount, health])  # 仅 Debug 构建输出
 
-    if health <= 0.0:
-        push_warning("HealthComponent: health depleted for %s" % owner.name)         # 警告
+	if health <= 0.0:
+		push_warning("HealthComponent: health depleted for %s" % owner.name)         # 警告
 ```
 
 8.2 断言
 ```gdscript
 func apply_damage(amount: float) -> void:
-    assert(amount >= 0.0, "Damage amount must be non-negative, got %f" % amount)
-    # ...
+	assert(amount >= 0.0, "Damage amount must be non-negative, got %f" % amount)
+	# ...
 ```
 
 8.3 条件断点辅助
 ```gdscript
 if OS.is_debug_build():
-    # 仅在 Debug 构建执行的逻辑、调试绘制等
-    pass
+	# 仅在 Debug 构建执行的逻辑、调试绘制等
+	pass
 ```
 
 ---
@@ -343,4 +343,3 @@ export/
 ## - 使用示例
 extends Node
 ```
-

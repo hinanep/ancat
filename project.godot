@@ -33,6 +33,15 @@ window/stretch/aspect="expand"
 
 project/assembly_name="ciga"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
+
+[layer_names]
+
+2d_physics/layer_1="world"
+2d_physics/layer_2="player"
+
 [physics]
 
 3d/physics_engine="Jolt Physics"

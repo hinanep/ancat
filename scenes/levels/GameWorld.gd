@@ -5,6 +5,8 @@ extends Node2D
 @onready var _camera: Camera2D = $WorldCamera
 
 func _ready() -> void:
+	_camera.enabled = true
+
 	print_debug("GameWorld: level loaded")
 
 func _input(event: InputEvent) -> void:

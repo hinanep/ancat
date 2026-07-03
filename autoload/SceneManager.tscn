@@ -1,38 +1,50 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://c4sj7eryis0ns"]
 
-[ext_resource type="Script" path="res://autoload/SceneManager.gd" id="1"]
+[ext_resource type="Script" uid="uid://dd0eduyt3w5mq" path="res://autoload/SceneManager.gd" id="1"]
+
+[sub_resource type="Animation" id="Animation_fade_in"]
+resource_name = "fade_in"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("FadeRect:modulate:a")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [1.0, 0.0]
+}
+
+[sub_resource type="Animation" id="Animation_fade_out"]
+resource_name = "fade_out"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("FadeRect:modulate:a")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 1.0]
+}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_1"]
 _data = {
-"fade_in": &"{
-\"length\": 0.3,
-\"loop_mode\": 0,
-\"tracks\": [{
-\"type\": 0,
-\"path\": \"FadeRect:modulate:a\",
-\"interp\": 1,
-\"loop_wrap\": true,
-\"keys\": [[0, 1, 1], [0.3, 0, 0]]
-}]
-}",
-"fade_out": &"{
-\"length\": 0.3,
-\"loop_mode\": 0,
-\"tracks\": [{
-\"type\": 0,
-\"path\": \"FadeRect:modulate:a\",
-\"interp\": 1,
-\"loop_wrap\": true,
-\"keys\": [[0, 0, 0], [0.3, 1, 1]]
-}]
-}"
+&"fade_in": SubResource("Animation_fade_in"),
+&"fade_out": SubResource("Animation_fade_out")
 }
 
-[node name="SceneManager" type="CanvasLayer"]
+[node name="SceneManager" type="CanvasLayer" unique_id=1893805027]
 layer = 100
 script = ExtResource("1")
 
-[node name="FadeRect" type="ColorRect" parent="."]
+[node name="FadeRect" type="ColorRect" parent="." unique_id=1723517356]
 visible = false
 anchors_preset = 15
 anchor_right = 1.0
@@ -41,5 +53,5 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=486157472]
 libraries/ = SubResource("AnimationLibrary_1")

@@ -23,6 +23,9 @@ func _ready() -> void:
 		_fade_rect.visible = false
 	if _anim_player:
 		_anim_player.animation_finished.connect(_on_transition_finished)
+	# 捕获引擎自动加载的主场景，确保后续切换时能正确释放
+	if get_tree().current_scene:
+		_current_scene = get_tree().current_scene
 
 
 ## 切换到目标场景（带过渡动画）

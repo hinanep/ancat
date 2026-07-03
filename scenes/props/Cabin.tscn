@@ -1,0 +1,84 @@
+[gd_scene format=3 uid="uid://crm4qutfr0otu"]
+
+[ext_resource type="Script" uid="uid://dw1oxgfak7xep" path="res://scripts/components/Cabin.gd" id="1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_left"]
+size = Vector2(16, 240)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_right"]
+size = Vector2(16, 120)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor_left"]
+size = Vector2(47, 16)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor_right"]
+size = Vector2(175, 16)
+
+[node name="Cabin" type="Node2D" unique_id=2118771532]
+script = ExtResource("1")
+cabin_width = 320.0
+cabin_height = 240.0
+wall_thickness = 16.0
+door_height = 120.0
+
+[node name="Visuals" type="Node2D" parent="." unique_id=1322621571]
+
+[node name="LeftWall" type="ColorRect" parent="Visuals" unique_id=1983455614]
+offset_left = -160.0
+offset_top = -120.0
+offset_right = -144.0
+offset_bottom = 120.0
+color = Color(0.3, 0.34, 0.4, 1)
+
+[node name="RightWall" type="ColorRect" parent="Visuals" unique_id=2135233138]
+offset_left = 144.0
+offset_top = -120.0
+offset_right = 160.0
+offset_bottom = 120.0
+color = Color(0.3, 0.34, 0.4, 1)
+
+[node name="FloorLeft" type="ColorRect" parent="Visuals" unique_id=1210351883]
+offset_left = -161.0
+offset_top = 104.0
+offset_right = 161.0
+offset_bottom = 120.0
+color = Color(0.3, 0.34, 0.4, 1)
+
+[node name="FloorRight" type="ColorRect" parent="Visuals" unique_id=1284378358]
+visible = false
+color = Color(0.3, 0.34, 0.4, 1)
+
+[node name="Ceiling" type="ColorRect" parent="Visuals" unique_id=363559973]
+offset_left = -161.0
+offset_top = -136.0
+offset_right = 161.0
+offset_bottom = -120.0
+color = Color(0.3, 0.34, 0.4, 1)
+
+[node name="Colliders" type="Node2D" parent="." unique_id=1587726669]
+
+[node name="LeftWallBody" type="StaticBody2D" parent="Colliders" unique_id=1695190948]
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Colliders/LeftWallBody" unique_id=645983431]
+position = Vector2(-152, 0)
+shape = SubResource("RectangleShape2D_left")
+
+[node name="RightWallBody" type="StaticBody2D" parent="Colliders" unique_id=1846320668]
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Colliders/RightWallBody" unique_id=62100416]
+position = Vector2(152, 0)
+shape = SubResource("RectangleShape2D_right")
+
+[node name="FloorBody" type="StaticBody2D" parent="Colliders" unique_id=760372429]
+collision_mask = 0
+
+[node name="FloorLeftShape" type="CollisionShape2D" parent="Colliders/FloorBody" unique_id=562377815]
+position = Vector2(0, 112)
+shape = SubResource("RectangleShape2D_floor_left")
+
+[node name="FloorRightShape" type="CollisionShape2D" parent="Colliders/FloorBody" unique_id=855144160]
+position = Vector2(0, 112)
+shape = SubResource("RectangleShape2D_floor_right")
+disabled = true
