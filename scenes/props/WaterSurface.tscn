@@ -1,0 +1,33 @@
+[gd_scene format=3 uid="uid://do27wnokmof2x"]
+
+[ext_resource type="Script" uid="uid://w6jaof6le538" path="res://scripts/components/water_surface.gd" id="1_f7txc"]
+[ext_resource type="Shader" uid="uid://duvyc7cue37c8" path="res://resources/shaders/water_surface.gdshader" id="1_m6n2a"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_f7txc"]
+shader = ExtResource("1_m6n2a")
+shader_parameter/color_surface = Color(0.25, 0.71, 0.96, 1)
+shader_parameter/color_depth = Color(0.08, 0.35, 0.7, 1)
+shader_parameter/color_foam = Color(1, 1, 1, 1)
+shader_parameter/wave_amplitude = 10.0
+shader_parameter/wave_frequency = 1.0
+shader_parameter/wave_speed = 1.0
+shader_parameter/depth_threshold = 0.1
+shader_parameter/foam_thickness = 0.02
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_mlski"]
+
+[node name="WaterSurface" type="Polygon2D" unique_id=207889442]
+material = SubResource("ShaderMaterial_f7txc")
+texture = SubResource("PlaceholderTexture2D_mlski")
+polygon = PackedVector2Array(0, 0, 10, 0, 20, 0, 30, 0, 40, 0, 50, 0, 60, 0, 70, 0, 80, 0, 90, 0, 100, 0, 110, 0, 120, 0, 130, 0, 140, 0, 150, 0, 160, 0, 170, 0, 180, 0, 190, 0, 200, 0, 210, 0, 220, 0, 230, 0, 240, 0, 250, 0, 260, 0, 270, 0, 280, 0, 290, 0, 300, 0, 310, 0, 320, 0, 330, 0, 340, 0, 350, 0, 360, 0, 370, 0, 380, 0, 390, 0, 400, 0, 410, 0, 420, 0, 430, 0, 440, 0, 450, 0, 460, 0, 470, 0, 480, 0, 490, 0, 500, 0, 500, 200, 250, 200, 0, 200)
+uv = PackedVector2Array(0, 0, 0.02, 0, 0.04, 0, 0.06, 0, 0.08, 0, 0.1, 0, 0.12, 0, 0.14, 0, 0.16, 0, 0.18, 0, 0.2, 0, 0.22, 0, 0.24, 0, 0.26, 0, 0.28, 0, 0.3, 0, 0.32, 0, 0.34, 0, 0.36, 0, 0.38, 0, 0.4, 0, 0.42, 0, 0.44, 0, 0.46, 0, 0.48, 0, 0.5, 0, 0.52, 0, 0.54, 0, 0.56, 0, 0.58, 0, 0.6, 0, 0.62, 0, 0.64, 0, 0.66, 0, 0.68, 0, 0.7, 0, 0.72, 0, 0.74, 0, 0.76, 0, 0.78, 0, 0.8, 0, 0.82, 0, 0.84, 0, 0.86, 0, 0.88, 0, 0.9, 0, 0.92, 0, 0.94, 0, 0.96, 0, 0.98, 0, 1, 0, 1, 1, 0.5, 1, 0, 1)
+script = ExtResource("1_f7txc")
+color_surface = null
+color_depth = null
+color_foam = null
+wave_amplitude = null
+wave_frequency = null
+wave_speed = null
+depth_threshold = null
+foam_thickness = null
+transition_speed = null

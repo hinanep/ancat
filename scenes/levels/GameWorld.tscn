@@ -4,6 +4,8 @@
 [ext_resource type="PackedScene" uid="uid://crm4qutfr0otu" path="res://scenes/props/Cabin.tscn" id="2_3sasu"]
 [ext_resource type="Script" uid="uid://bmtjege46adf1" path="res://scripts/components/TestPlayerController.gd" id="3_0x6r3"]
 [ext_resource type="Texture2D" uid="uid://d048tv117giwp" path="res://assets/textures/猫/Siamese/IdleCattt.png" id="3_8ghft"]
+[ext_resource type="PackedScene" uid="uid://do27wnokmof2x" path="res://scenes/props/WaterSurface.tscn" id="4_a73yp"]
+[ext_resource type="Script" uid="uid://dmx576ws301qi" path="res://scripts/components/BoatFloatController.gd" id="5_3ar6b"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_8ghft"]
 radius = 10.333334
@@ -130,45 +132,64 @@ visible = false
 layout_mode = 2
 text = "Game World"
 
-[node name="TestPlayer" type="CharacterBody2D" parent="." unique_id=1521693170]
-z_index = 10
-position = Vector2(54, -45)
-scale = Vector2(3, 3)
-script = ExtResource("3_0x6r3")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="TestPlayer" unique_id=654084598]
-position = Vector2(-0.6666641, 4)
-rotation = 1.5707964
-shape = SubResource("CapsuleShape2D_8ghft")
-
-[node name="Sprite" type="AnimatedSprite2D" parent="TestPlayer" unique_id=1430410072]
-sprite_frames = SubResource("SpriteFrames_vbnlq")
-animation = &"idle"
-
-[node name="AnimationPlayer" type="AnimationPlayer" parent="TestPlayer" unique_id=1593141126]
-libraries/ = SubResource("AnimationLibrary_q4kc4")
-autoplay = &"idle"
-
 [node name="Cabins" type="Node2D" parent="." unique_id=1560321885]
 z_index = -10
 position = Vector2(132, 166)
+script = ExtResource("5_3ar6b")
+floatAmplitudeY = 4.0
+floatFrequencyHz = 0.26
+rollAmplitudeDeg = 1.6
+rollFrequencyHz = 0.2
 
 [node name="CabinA" parent="Cabins" unique_id=1132968514 instance=ExtResource("2_3sasu")]
-position = Vector2(-303, -13)
-right_door_open = true
-ceiling_hole_position = 30.0
-ceiling_hole_size = 100.0
-
-[node name="CabinB" parent="Cabins" unique_id=188614053 instance=ExtResource("2_3sasu")]
-position = Vector2(-15, -13)
-left_door_open = true
-
-[node name="CabinC" parent="Cabins" unique_id=1843543556 instance=ExtResource("2_3sasu")]
-position = Vector2(-303, -223)
+position = Vector2(-499, -320)
 right_door_open = true
 floor_hole_position = 30.0
 floor_hole_size = 100.0
 
-[node name="CabinD" parent="Cabins" unique_id=2118771532 instance=ExtResource("2_3sasu")]
-position = Vector2(-15, -223)
+[node name="CabinB" parent="Cabins" unique_id=188614053 instance=ExtResource("2_3sasu")]
+position = Vector2(-50, -320)
 left_door_open = true
+
+[node name="CabinC" parent="Cabins" unique_id=1843543556 instance=ExtResource("2_3sasu")]
+position = Vector2(-499, 18)
+right_door_open = true
+ceiling_hole_position = 30.0
+ceiling_hole_size = 100.0
+
+[node name="CabinD" parent="Cabins" unique_id=2118771532 instance=ExtResource("2_3sasu")]
+position = Vector2(-50, 18)
+left_door_open = true
+
+[node name="TestPlayer" type="CharacterBody2D" parent="Cabins" unique_id=1521693170]
+z_index = 10
+position = Vector2(-78, -211)
+scale = Vector2(3, 3)
+script = ExtResource("3_0x6r3")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Cabins/TestPlayer" unique_id=654084598]
+position = Vector2(-0.6666641, 4)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_8ghft")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="Cabins/TestPlayer" unique_id=1430410072]
+sprite_frames = SubResource("SpriteFrames_vbnlq")
+animation = &"idle"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Cabins/TestPlayer" unique_id=1593141126]
+libraries/ = SubResource("AnimationLibrary_q4kc4")
+autoplay = &"idle"
+
+[node name="WaterSurface" parent="." unique_id=614244190 instance=ExtResource("4_a73yp")]
+z_index = -20
+position = Vector2(-1017, 84)
+scale = Vector2(4.2759995, 2.4799998)
+color_surface = Color(0.25, 0.71, 0.96, 1)
+color_depth = Color(0.08, 0.35, 0.7, 1)
+color_foam = Color(1, 1, 1, 1)
+wave_amplitude = 10.0
+wave_frequency = 1.0
+wave_speed = 1.0
+depth_threshold = 0.1
+foam_thickness = 0.02
+transition_speed = 1.0
