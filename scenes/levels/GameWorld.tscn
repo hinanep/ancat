@@ -5,8 +5,9 @@
 [ext_resource type="Script" uid="uid://bmtjege46adf1" path="res://scripts/components/TestPlayerController.gd" id="3_0x6r3"]
 [ext_resource type="Texture2D" uid="uid://d048tv117giwp" path="res://assets/textures/猫/Siamese/IdleCattt.png" id="3_8ghft"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_3sasu"]
-size = Vector2(24, 22)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_8ghft"]
+radius = 10.333334
+height = 22.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ihn80"]
 atlas = ExtResource("3_8ghft")
@@ -130,12 +131,15 @@ layout_mode = 2
 text = "Game World"
 
 [node name="TestPlayer" type="CharacterBody2D" parent="." unique_id=1521693170]
+z_index = 10
 position = Vector2(54, -45)
+scale = Vector2(3, 3)
 script = ExtResource("3_0x6r3")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="TestPlayer" unique_id=654084598]
-position = Vector2(0, 3)
-shape = SubResource("RectangleShape2D_3sasu")
+position = Vector2(-0.6666641, 4)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_8ghft")
 
 [node name="Sprite" type="AnimatedSprite2D" parent="TestPlayer" unique_id=1430410072]
 sprite_frames = SubResource("SpriteFrames_vbnlq")
@@ -145,30 +149,26 @@ animation = &"idle"
 libraries/ = SubResource("AnimationLibrary_q4kc4")
 autoplay = &"idle"
 
-[node name="CabinA" parent="." unique_id=1132968514 instance=ExtResource("2_3sasu")]
+[node name="Cabins" type="Node2D" parent="." unique_id=1560321885]
+z_index = -10
+position = Vector2(132, 166)
+
+[node name="CabinA" parent="Cabins" unique_id=1132968514 instance=ExtResource("2_3sasu")]
 position = Vector2(-303, -13)
+right_door_open = true
 ceiling_hole_position = 30.0
 ceiling_hole_size = 100.0
-render_ceiling = true
 
-[node name="CabinB" parent="." unique_id=188614053 instance=ExtResource("2_3sasu")]
-position = Vector2(-12, -13)
-ceiling_hole_position = null
-ceiling_hole_size = null
-render_ceiling = true
+[node name="CabinB" parent="Cabins" unique_id=188614053 instance=ExtResource("2_3sasu")]
+position = Vector2(-15, -13)
+left_door_open = true
 
-[node name="CabinC" parent="." unique_id=1843543556 instance=ExtResource("2_3sasu")]
+[node name="CabinC" parent="Cabins" unique_id=1843543556 instance=ExtResource("2_3sasu")]
 position = Vector2(-303, -223)
 right_door_open = true
 floor_hole_position = 30.0
 floor_hole_size = 100.0
-ceiling_hole_position = null
-ceiling_hole_size = null
-render_ceiling = true
 
-[node name="CabinD" parent="." unique_id=2118771532 instance=ExtResource("2_3sasu")]
-position = Vector2(-12, -223)
+[node name="CabinD" parent="Cabins" unique_id=2118771532 instance=ExtResource("2_3sasu")]
+position = Vector2(-15, -223)
 left_door_open = true
-ceiling_hole_position = null
-ceiling_hole_size = null
-render_ceiling = true

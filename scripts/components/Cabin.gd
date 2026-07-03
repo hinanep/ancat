@@ -225,6 +225,7 @@ func _rebuild_all() -> void:
 	_ensure_tileset()
 	if _tileSet == null or _atlasSource == null:
 		return
+	_update_layer_anchor_to_center()
 	_clear_layers()
 
 	var wallCells: Dictionary = {}
@@ -285,6 +286,16 @@ func _ensure_tileset() -> void:
 ## @return void
 func _clear_layers() -> void:
 	_visualLayer.clear()
+
+
+## 将 TileMapLayer 的局部原点平移到舱体中心。
+## @return void
+func _update_layer_anchor_to_center() -> void:
+	if _visualLayer == null:
+		return
+	var widthPixels: float = float(_grid_cols() * tile_size)
+	var heightPixels: float = float(_grid_rows() * tile_size)
+	_visualLayer.position = Vector2(-widthPixels * 0.5, -heightPixels * 0.5)
 
 
 ## 生成基础边界单元（四边框），默认全是实体。
