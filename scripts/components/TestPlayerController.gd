@@ -5,10 +5,14 @@ extends CharacterBody2D
 ## @jumpVelocity 起跳初速度（向上为负）
 ## @gravityScale 重力缩放倍率
 ## @slopeMoveScale 坡度对水平移动的加减速影响系数
+## @anchorCount 手中锚数量（决定可并行勾取数量）
+## @hookMoveBoundsMargin 拉拽时船内边界安全边距（像素）
 @export var moveSpeed: float = 240.0
 @export var jumpVelocity: float = -420.0
 @export var gravityScale: float = 1.0
 @export var slopeMoveScale: float = 0.45
+@export var anchorCount: int = 1
+@export var hookMoveBoundsMargin: float = 12.0
 
 var _scaleX: float = 1.0
 var _lastFacingDir: float = 1.0
@@ -105,20 +109,25 @@ func _process_anchor_pull(delta: float) -> void:
 	var stepLen: float = _anchorPullSpeed * delta
 	if toTarget.length() <= max(stepLen, 0.001):
 		global_position = _anchorPullTarget
+		_clamp_to_ship_bounds()
 		end_anchor_pull()
 		return
 	var moveVec: Vector2 = toTarget.normalized() * stepLen
 	if _anchorCollisionDisabled:
 		global_position += moveVec
+		_clamp_to_ship_bounds()
 		velocity = Vector2.ZERO
 		return
 	velocity = moveVec / max(delta, 0.0001)
 	move_and_slide()
+	_clamp_to_ship_bounds()
 
 
 ## 刷新玩家当前所属舱室信息。
 ## @return void
 func _update_current_cabin() -> void:
+	current_cabin_name = ''
+	current_cabin_path = NodePath('')
 	for node in get_tree().get_nodes_in_group('Cabin'):
 		if not (node is Cabin):
 			continue
@@ -148,3 +157,42 @@ func _ship_tilt_rad() -> float:
 	if get_parent() is Node2D:
 		return (get_parent() as Node2D).rotation
 	return 0.0
+
+
+## 将玩家位置限制在船舱整体范围内（主要用于锚拉拽阶段防出界）。
+## @return void
+func _clamp_to_ship_bounds() -> void:
+	if not (get_parent() is Node2D):
+		return
+	var parentNode: Node2D = get_parent() as Node2D
+	var minX: float = INF
+	var maxX: float = -INF
+	var minY: float = INF
+	var maxY: float = -INF
+	var foundAny: bool = false
+
+	for node in get_tree().get_nodes_in_group('Cabin'):
+		if not (node is Cabin):
+			continue
+		var cabin: Cabin = node as Cabin
+		if cabin.get_parent() != parentNode:
+			continue
+		var width: float = float(cabin.get('cabin_width')) * absf(cabin.scale.x)
+		var height: float = float(cabin.get('cabin_height')) * absf(cabin.scale.y)
+		var halfW: float = width * 0.5
+		var halfH: float = height * 0.5
+		var left: float = cabin.position.x - halfW
+		var right: float = cabin.position.x + halfW
+		var top: float = cabin.position.y - halfH
+		var bottom: float = cabin.position.y + halfH
+		minX = min(minX, left)
+		maxX = max(maxX, right)
+		minY = min(minY, top)
+		maxY = max(maxY, bottom)
+		foundAny = true
+
+	if not foundAny:
+		return
+	var margin: float = max(hookMoveBoundsMargin, 0.0)
+	position.x = clampf(position.x, minX + margin, maxX - margin)
+	position.y = clampf(position.y, minY + margin, maxY - margin)

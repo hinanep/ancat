@@ -152,6 +152,10 @@ func _update_current_cabin_by_position() -> void:
 	var candidate: Cabin = _find_cabin_containing(global_position)
 	if candidate != null:
 		_set_current_cabin(candidate)
+		return
+	_current_cabin = null
+	current_cabin_name = ''
+	current_cabin_path = NodePath('')
 
 
 ## 设置当前舱室并同步公开归属字段。

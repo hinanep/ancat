@@ -9,7 +9,7 @@
 [ext_resource type="Script" uid="uid://dmx576ws301qi" path="res://scripts/components/BoatFloatController.gd" id="5_3ar6b"]
 [ext_resource type="PackedScene" uid="uid://cqlyepngiwjuq" path="res://scenes/props/MovableCargo.tscn" id="7_fdut3"]
 [ext_resource type="Script" uid="uid://bbcbgceyjg16o" path="res://scripts/components/StormController.gd" id="7_hy2pk"]
-[ext_resource type="Script" path="res://scripts/components/AnchorController.gd" id="8_ankcr"]
+[ext_resource type="Script" uid="uid://cshkm83i4d55g" path="res://scripts/components/AnchorController.gd" id="8_ankcr"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_8ghft"]
 radius = 10.333334
@@ -233,6 +233,16 @@ autoplay = &"idle"
 
 [node name="AnchorController" type="Node2D" parent="Cabins/TestPlayer" unique_id=496589560]
 script = ExtResource("8_ankcr")
+maxAnchorLength = null
+anchorLaunchSpeed = null
+retractSpeed = null
+playerPullSpeed = null
+cargoPullSpeed = null
+anchorCount = null
+floorHookMaxYOffset = null
+floorPullUpOffset = null
+carryOffset = null
+debug_anchor_log = null
 
 [node name="MovableCargo" parent="Cabins" unique_id=602930434 instance=ExtResource("7_fdut3")]
 z_index = 6
