@@ -214,9 +214,10 @@ left_door_open = true
 
 [node name="TestPlayer" type="CharacterBody2D" parent="Cabins" unique_id=1521693170]
 z_index = 10
-position = Vector2(100, -259)
+position = Vector2(7.6293945e-06, -312)
 scale = Vector2(3, 3)
 script = ExtResource("3_0x6r3")
+anchorCount = 3
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Cabins/TestPlayer" unique_id=654084598]
 position = Vector2(-0.6666641, 4)
@@ -233,10 +234,24 @@ autoplay = &"idle"
 
 [node name="AnchorController" type="Node2D" parent="Cabins/TestPlayer" unique_id=496589560]
 script = ExtResource("8_ankcr")
+fallbackAnchorCount = 3
 
 [node name="MovableCargo" parent="Cabins" unique_id=602930434 instance=ExtResource("7_fdut3")]
 z_index = 6
 position = Vector2(95, -581)
+scale = Vector2(2, 2)
+debug_movable_log = true
+
+[node name="MovableCargo2" parent="Cabins" unique_id=1711991960 instance=ExtResource("7_fdut3")]
+z_index = 6
+position = Vector2(-71, -586)
+scale = Vector2(2, 2)
+debug_movable_log = true
+
+[node name="MovableCargo3" parent="Cabins" unique_id=465262206 instance=ExtResource("7_fdut3")]
+z_index = 6
+position = Vector2(-197, -583)
+scale = Vector2(2, 2)
 debug_movable_log = true
 
 [node name="WaterSurface" parent="." unique_id=614244190 instance=ExtResource("4_a73yp")]

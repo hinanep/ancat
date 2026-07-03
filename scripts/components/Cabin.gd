@@ -158,6 +158,7 @@ var _sourceId: int = SOURCE_ID
 ## 初始化：加入分组并构建 tileset/网格。
 ## @return void
 func _ready() -> void:
+	add_to_group('Cabin')
 	_cache_nodes()
 	_ensure_tileset()
 	_rebuild_all()

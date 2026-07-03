@@ -24,7 +24,7 @@ var current_cabin_path: NodePath = NodePath('')
 var _slide_speed: float = 0.0
 var _current_cabin: Cabin
 var _cabins: Array[Cabin] = []
-var _anchor_deployed_cabin_path: NodePath = NodePath('')
+var _anchor_deployed_cabin_paths: Array[NodePath] = []
 var _isHooked: bool = false
 var _isCarried: bool = false
 var _carrier: Node2D
@@ -116,6 +116,12 @@ func drop_to_world() -> void:
 	_carrier = null
 	enable_auto_move = _savedAutoMove
 	_set_collision_ignored(false)
+
+
+## 是否可被新的锚勾取。
+## @return bool
+func can_be_hooked() -> bool:
+	return (not _isHooked) and (not _isCarried)
 
 
 ## 获取可交付标签。
@@ -258,9 +264,16 @@ func _on_event(eventType: EventBus.EventType, data: Dictionary) -> void:
 	match eventType:
 		EventBus.EventType.ANCHOR_DEPLOYED:
 			var cabinPathText: String = String(data.get('cabin_path', ''))
-			_anchor_deployed_cabin_path = NodePath(cabinPathText)
+			var cabinPath: NodePath = NodePath(cabinPathText)
+			if not _anchor_deployed_cabin_paths.has(cabinPath):
+				_anchor_deployed_cabin_paths.append(cabinPath)
 		EventBus.EventType.ANCHOR_RETRIEVED:
-			_anchor_deployed_cabin_path = NodePath('')
+			var retrievePathText: String = String(data.get('cabin_path', ''))
+			if retrievePathText == '':
+				_anchor_deployed_cabin_paths.clear()
+			else:
+				var retrievePath: NodePath = NodePath(retrievePathText)
+				_anchor_deployed_cabin_paths.erase(retrievePath)
 		_:
 			pass
 
@@ -268,11 +281,14 @@ func _on_event(eventType: EventBus.EventType, data: Dictionary) -> void:
 ## 判断当前是否受“放下锚”冻结影响（仅锚所在舱室生效）。
 ## @return bool
 func _is_frozen_by_anchor() -> bool:
-	if _anchor_deployed_cabin_path == NodePath(''):
+	if _anchor_deployed_cabin_paths.is_empty():
 		return false
 	if current_cabin_path == NodePath(''):
 		return false
-	return String(current_cabin_path) == String(_anchor_deployed_cabin_path)
+	for cabinPath in _anchor_deployed_cabin_paths:
+		if String(current_cabin_path) == String(cabinPath):
+			return true
+	return false
 
 
 ## 输出调试日志。
