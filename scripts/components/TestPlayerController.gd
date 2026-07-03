@@ -4,12 +4,23 @@ extends CharacterBody2D
 ## @moveSpeed 水平移动速度（像素/秒）
 ## @jumpVelocity 起跳初速度（向上为负）
 ## @gravityScale 重力缩放倍率
+## @slopeMoveScale 坡度对水平移动的加减速影响系数
 @export var moveSpeed: float = 240.0
 @export var jumpVelocity: float = -420.0
 @export var gravityScale: float = 1.0
+@export var slopeMoveScale: float = 0.45
 
 var _scaleX: float = 1.0
 var _lastFacingDir: float = 1.0
+var _anchorPullActive: bool = false
+var _anchorPullTarget: Vector2 = Vector2.ZERO
+var _anchorPullSpeed: float = 0.0
+var _anchorCollisionDisabled: bool = false
+var _savedCollisionLayer: int = 0
+var _savedCollisionMask: int = 0
+
+var current_cabin_name: String = ''
+var current_cabin_path: NodePath = NodePath('')
 
 @onready var _sprite: CanvasItem = $Sprite
 
@@ -29,13 +40,19 @@ func _ready() -> void:
 ## @param delta 物理帧间隔（秒）
 ## @return void
 func _physics_process(delta: float) -> void:
+	_update_current_cabin()
+	if _anchorPullActive:
+		_process_anchor_pull(delta)
+		return
+
 	var gravity: float = ProjectSettings.get_setting('physics/2d/default_gravity', 980.0)
 
 	if not is_on_floor():
 		velocity.y += gravity * gravityScale * delta
 
 	var horizontalInput: float = Input.get_axis('ui_left', 'ui_right')
-	velocity.x = horizontalInput * moveSpeed
+	var slopeFactor: float = 1.0 + sin(_ship_tilt_rad()) * horizontalInput * slopeMoveScale
+	velocity.x = horizontalInput * moveSpeed * slopeFactor
 	if _sprite != null:
 		var speedDir: float = sign(velocity.x)
 		if speedDir != 0.0:
@@ -49,3 +66,85 @@ func _physics_process(delta: float) -> void:
 		velocity.y = jumpVelocity
 
 	move_and_slide()
+
+
+## 开始锚拉拽移动。
+## @param targetGlobal 目标点（全局坐标）
+## @param pullSpeed 拉拽速度
+## @param disableCollision 是否关闭碰撞
+## @return void
+func begin_anchor_pull(targetGlobal: Vector2, pullSpeed: float, disableCollision: bool) -> void:
+	_anchorPullActive = true
+	_anchorPullTarget = targetGlobal
+	_anchorPullSpeed = max(pullSpeed, 1.0)
+	if disableCollision and not _anchorCollisionDisabled:
+		_savedCollisionLayer = collision_layer
+		_savedCollisionMask = collision_mask
+		collision_layer = 0
+		collision_mask = 0
+		_anchorCollisionDisabled = true
+
+
+## 停止锚拉拽并恢复常规移动状态。
+## @return void
+func end_anchor_pull() -> void:
+	_anchorPullActive = false
+	_anchorPullSpeed = 0.0
+	velocity = Vector2.ZERO
+	if _anchorCollisionDisabled:
+		collision_layer = _savedCollisionLayer
+		collision_mask = _savedCollisionMask
+		_anchorCollisionDisabled = false
+
+
+## 锚拉拽阶段的玩家移动。
+## @param delta 物理帧间隔（秒）
+## @return void
+func _process_anchor_pull(delta: float) -> void:
+	var toTarget: Vector2 = _anchorPullTarget - global_position
+	var stepLen: float = _anchorPullSpeed * delta
+	if toTarget.length() <= max(stepLen, 0.001):
+		global_position = _anchorPullTarget
+		end_anchor_pull()
+		return
+	var moveVec: Vector2 = toTarget.normalized() * stepLen
+	if _anchorCollisionDisabled:
+		global_position += moveVec
+		velocity = Vector2.ZERO
+		return
+	velocity = moveVec / max(delta, 0.0001)
+	move_and_slide()
+
+
+## 刷新玩家当前所属舱室信息。
+## @return void
+func _update_current_cabin() -> void:
+	for node in get_tree().get_nodes_in_group('Cabin'):
+		if not (node is Cabin):
+			continue
+		var cabin: Cabin = node as Cabin
+		if _is_inside_cabin(cabin, global_position):
+			current_cabin_name = String(cabin.name)
+			current_cabin_path = cabin.get_path()
+			return
+
+
+## 判断点是否在舱室包围范围内。
+## @param cabin 舱室
+## @param pointGlobal 全局点
+## @return bool
+func _is_inside_cabin(cabin: Cabin, pointGlobal: Vector2) -> bool:
+	var localPos: Vector2 = cabin.to_local(pointGlobal)
+	var width: float = float(cabin.get('cabin_width'))
+	var height: float = float(cabin.get('cabin_height'))
+	var halfW: float = width * 0.5
+	var halfH: float = height * 0.5
+	return localPos.x >= -halfW and localPos.x <= halfW and localPos.y >= -halfH and localPos.y <= halfH
+
+
+## 读取船体当前倾斜角。
+## @return float
+func _ship_tilt_rad() -> float:
+	if get_parent() is Node2D:
+		return (get_parent() as Node2D).rotation
+	return 0.0

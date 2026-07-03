@@ -23,6 +23,11 @@ enum EventType {
 	STORM_DIRECTION_CHANGED,
 	STORM_RECOVER_STARTED,
 	STORM_ENDED,
+	ANCHOR_DEPLOYED,
+	ANCHOR_RETRIEVED,
+	ANCHOR_FIRED,
+	ANCHOR_HIT_CARGO,
+	ANCHOR_HIT_FLOOR,
 }
 
 signal event_triggered(event_type: EventType, data: Dictionary)
