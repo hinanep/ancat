@@ -1,0 +1,15 @@
+[gd_resource type="TileSet" format=3 uid="uid://brjfsqjoa50q8"]
+
+[ext_resource type="Texture2D" uid="uid://chtu11greqd2j" path="res://assets/textures/瓦片/瓦片-地板.png" id="1_8fypa"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_erhnx"]
+texture = ExtResource("1_8fypa")
+texture_region_size = Vector2i(16, 12)
+0:0/0 = 0
+1:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+
+[resource]
+tile_size = Vector2i(16, 12)
+sources/0 = SubResource("TileSetAtlasSource_erhnx")
