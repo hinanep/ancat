@@ -1,0 +1,43 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/components/CuttingBoardCargo.gd" id="1_board_script"]
+[ext_resource type="Texture2D" path="res://assets/textures/烹饪/64. Dark plate.png" id="2_board_texture"]
+[ext_resource type="Script" path="res://scripts/components/CuttingBoardInteractable.gd" id="3_board_interact"]
+[ext_resource type="PackedScene" path="res://scenes/components/InteractRangeComponent.tscn" id="4_interact_range"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_board"]
+radius = 15.0
+height = 18.0
+
+[node name="CuttingBoardCargo" type="CharacterBody2D"]
+collision_layer = 5
+collision_mask = 5
+script = ExtResource("1_board_script")
+friction_coefficient = 80.0
+slide_accel_scale = 500.0
+max_slide_speed = 100.0
+deliveryTag = "cutting_board"
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_board_texture")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -1)
+shape = SubResource("CapsuleShape2D_board")
+
+[node name="FoodAnchor" type="Marker2D" parent="."]
+position = Vector2(0, -8)
+
+[node name="InteractRangeComponent" parent="." instance=ExtResource("4_interact_range")]
+script = ExtResource("3_board_interact")
+rangeShapeType = 1
+rangeRectSize = Vector2(30, 18)
+rangeCircleRadius = 30.0
+
+[node name="InteractArea" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea"]
+position = Vector2(0, -1)
+shape = SubResource("CapsuleShape2D_board")

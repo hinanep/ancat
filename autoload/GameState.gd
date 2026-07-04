@@ -9,6 +9,7 @@ extends Node
 signal value_changed(key: StringName, new_value: Variant)
 
 var _state: Dictionary = {}
+const GOLD_KEY: StringName = &"gold"
 
 ## 设置全局状态值
 func set_value(key: StringName, value: Variant) -> void:
@@ -30,6 +31,7 @@ func remove_value(key: StringName) -> void:
 ## 重置所有状态（新游戏时调用）
 func reset() -> void:
 	_state.clear()
+	_state[GOLD_KEY] = 0
 	print_debug("GameState: state reset")
 
 ## 导出为 Dictionary（供 SaveManager 使用）
@@ -39,4 +41,24 @@ func to_dict() -> Dictionary:
 ## 从 Dictionary 导入（供 SaveManager 使用）
 func from_dict(data: Dictionary) -> void:
 	_state = data.duplicate()
+	if not _state.has(GOLD_KEY):
+		_state[GOLD_KEY] = 0
 	print_debug("GameState: state loaded, keys=%s" % [_state.keys()])
+
+
+## 增加金币并广播变化事件。
+## @param amount 增加数量
+## @return int
+func add_gold(amount: int) -> int:
+	var current: int = get_gold()
+	var next: int = max(current + amount, 0)
+	_state[GOLD_KEY] = next
+	value_changed.emit(GOLD_KEY, next)
+	EventBus.emit(EventBus.EventType.COIN_CHANGED, {'gold': next, 'delta': amount})
+	return next
+
+
+## 获取当前金币。
+## @return int
+func get_gold() -> int:
+	return int(_state.get(GOLD_KEY, 0))

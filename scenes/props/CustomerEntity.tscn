@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/components/CustomerEntity.gd" id="1_customer_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_customer"]
+radius = 10.0
+
+[node name="CustomerEntity" type="Node2D"]
+script = ExtResource("1_customer_script")
+
+[node name="Sprite2D" type="Polygon2D" parent="."]
+color = Color(1, 0.86, 0.5, 1)
+polygon = PackedVector2Array(-10, -14, 10, -14, 10, 10, -10, 10)
+
+[node name="DemandIcons" type="Node2D" parent="."]
+position = Vector2(0, -24)

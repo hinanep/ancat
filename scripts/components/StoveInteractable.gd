@@ -2,8 +2,10 @@ extends InteractableBase
 
 ## 锅炉交互逻辑：接受 Pot 分组锅放置，通过 Area2D 检测锅进出并驱动烹饪。
 ## @potGroupName 锅的 Godot 分组名
+## @fryingPanGroupName 煎锅的 Godot 分组名
 ## @potPlacementOffset 锅放置在炉子上的位置偏移（相对于本节点全局位置）
 @export var potGroupName: StringName = 'Pot'
+@export var fryingPanGroupName: StringName = 'FryingPan'
 @export var potPlacementOffset: Vector2 = Vector2(0.0, -20.0)
 
 var _currentPot: Node2D
@@ -15,7 +17,7 @@ var _currentPot: Node2D
 func _is_item_valid(item: Node) -> bool:
 	if item == null:
 		return false
-	if not item.is_in_group(potGroupName):
+	if not _is_stove_cookware(item):
 		return false
 	if _currentPot != null and is_instance_valid(_currentPot):
 		_log_interact('stove already has a pot')
@@ -41,7 +43,7 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 ## PotDetectionArea body_entered 信号回调：锅进入检测区域时通知锅开始烹饪。
 ## @param body 进入的物理体
 func _on_pot_detection_area_body_entered(body: Node2D) -> void:
-	if not body.is_in_group(potGroupName):
+	if not _is_stove_cookware(body):
 		return
 	if _currentPot != null and is_instance_valid(_currentPot):
 		return
@@ -58,3 +60,12 @@ func _on_pot_detection_area_body_exited(body: Node2D) -> void:
 	if is_instance_valid(_currentPot) and _currentPot.has_method('set_on_stove'):
 		_currentPot.call('set_on_stove', false)
 	_currentPot = null
+
+
+## 判定节点是否属于炉具类型（锅/煎锅）。
+## @param node 候选节点
+## @return bool
+func _is_stove_cookware(node: Node) -> bool:
+	if node == null:
+		return false
+	return node.is_in_group(potGroupName) or node.is_in_group(fryingPanGroupName)

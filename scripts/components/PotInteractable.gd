@@ -3,12 +3,8 @@ extends InteractableBase
 ## 锅交互逻辑：接受 Cookable 分组食材入锅，接受 Plate 分组盘子取出已熟食材。
 ## @cookableGroupName 可烹饪食材的 Godot 分组名
 ## @plateGroupName 盘子的 Godot 分组名
-## @cookedPlateTexture 装盘后盘子使用的图集纹理
-## @cookedPlateAtlasRegion 从图集中提取的帧区域
 @export var cookableGroupName: StringName = 'Cookable'
 @export var plateGroupName: StringName = 'Plate'
-@export var cookedPlateTexture: Texture2D = preload('res://assets/textures/烹饪/料理.png')
-@export var cookedPlateAtlasRegion: Rect2 = Rect2(0.0, 0.0, 32.0, 29.0)
 
 
 ## 物品合法性判定：Cookable + 锅空 或 Plate + 已熟。
@@ -47,7 +43,10 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 		if food == null:
 			return
 		food.queue_free()
-		_apply_cooked_texture_to_plate(item)
+		if item.has_method('set_food_type'):
+			item.call('set_food_type', FoodConfig.FoodType.BOILED_FISH)
+		if item.has_method('apply_food_texture'):
+			item.call('apply_food_texture')
 		_log_interact('food served to plate')
 
 
@@ -60,22 +59,3 @@ func _consume_carried_on_item_valid(item: Node) -> bool:
 	if item.is_in_group(plateGroupName):
 		return false
 	return true
-
-
-## 将盘子的 Sprite2D 纹理替换为料理图集帧。
-## @param plate 盘子节点
-## @return void
-func _apply_cooked_texture_to_plate(plate: Node) -> void:
-	if cookedPlateTexture == null:
-		return
-	var sprite: Sprite2D = null
-	for child in plate.get_children():
-		if child is Sprite2D:
-			sprite = child as Sprite2D
-			break
-	if sprite == null:
-		return
-	var atlas := AtlasTexture.new()
-	atlas.atlas = cookedPlateTexture
-	atlas.region = cookedPlateAtlasRegion
-	sprite.texture = atlas

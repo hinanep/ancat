@@ -124,6 +124,14 @@ func can_be_hooked() -> bool:
 	return _state == FishState.SWIMMING or _state == FishState.OUT_TANK or _state == FishState.DEAD
 
 
+## 获取当前鱼可交付的食物类型。
+## @return int
+func get_food_type() -> int:
+	if _state == FishState.DEAD:
+		return -1
+	return FoodConfig.FoodType.RAW_FISH
+
+
 ## 标记为被锚勾取。
 ## @param byAnchor 锚控制器
 ## @return void

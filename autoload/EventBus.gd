@@ -28,6 +28,11 @@ enum EventType {
 	ANCHOR_FIRED,
 	ANCHOR_HIT_CARGO,
 	ANCHOR_HIT_FLOOR,
+	CUSTOMER_SPAWNED,
+	CUSTOMER_SEATED,
+	CUSTOMER_SERVED,
+	CUSTOMER_LEFT,
+	COIN_CHANGED,
 }
 
 signal event_triggered(event_type: EventType, data: Dictionary)

@@ -17,6 +17,13 @@
 [ext_resource type="PackedScene" uid="uid://5v62jfn1esl4" path="res://scenes/props/StoveInteractable.tscn" id="14_stove"]
 [ext_resource type="PackedScene" uid="uid://c7lx2qlu08jmm" path="res://scenes/props/PotCargo.tscn" id="15_pot"]
 [ext_resource type="PackedScene" uid="uid://41sqlk7pbma5" path="res://scenes/props/PlateCargo.tscn" id="16_plate"]
+[ext_resource type="PackedScene" path="res://scenes/props/DiningTableInteractable.tscn" id="17_dining_table"]
+[ext_resource type="PackedScene" path="res://scenes/props/FryingPanCargo.tscn" id="18_frying_pan"]
+[ext_resource type="PackedScene" path="res://scenes/props/CuttingBoardCargo.tscn" id="19_cutting_board"]
+[ext_resource type="PackedScene" uid="uid://bjm2ehurbhosl" path="res://scenes/props/JuicerInteractable.tscn" id="20_juicer"]
+[ext_resource type="Script" uid="uid://bngtwf0cobb8g" path="res://scripts/components/CustomerSpawner.gd" id="21_customer_spawner"]
+[ext_resource type="Script" uid="uid://bjkt27vdgr04t" path="res://scripts/components/CoinHudUI.gd" id="22_coin_hud"]
+[ext_resource type="PackedScene" path="res://scenes/props/FruitCargo.tscn" id="23_fruit_cargo"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_8ghft"]
 radius = 10.333334
@@ -155,6 +162,15 @@ offset_bottom = -472.0
 position = Vector2(-460, -556)
 scale = Vector2(3, 3)
 
+[node name="CoinHud" type="Label" parent="CanvasLayer" unique_id=1156597198]
+offset_left = -458.0
+offset_top = -518.0
+offset_right = -298.0
+offset_bottom = -492.0
+theme_override_font_sizes/font_size = 24
+text = "金币: 0"
+script = ExtResource("22_coin_hud")
+
 [node name="Cabins" type="Node2D" parent="." unique_id=1560321885]
 z_index = -10
 position = Vector2(-60, 393)
@@ -195,30 +211,35 @@ left_door_open = true
 ceiling_hole_position = 160.0
 ceiling_hole_size = 120.0
 
-[node name="Cabin4" parent="Cabins" unique_id=891480747 instance=ExtResource("2_3sasu")]
+[node name="JuicerInteractable" parent="Cabins/Cabin3-水果" unique_id=328487474 instance=ExtResource("20_juicer")]
+z_index = 4
+position = Vector2(5, 74)
+scale = Vector2(2, 2)
+
+[node name="Cabin4-果酱" parent="Cabins" unique_id=891480747 instance=ExtResource("2_3sasu")]
 position = Vector2(446, -384)
 scale = Vector2(1, 0.9)
 left_door_open = true
 floor_hole_position = 160.0
 floor_hole_size = 120.0
 
-[node name="Cabin5" parent="Cabins" unique_id=1346611279 instance=ExtResource("2_3sasu")]
+[node name="Cabin5-厨房" parent="Cabins" unique_id=1346611279 instance=ExtResource("2_3sasu")]
 position = Vector2(-3, -384)
 scale = Vector2(1, 0.9)
 left_door_open = true
 right_door_open = true
 
-[node name="StoveInteractable" parent="Cabins/Cabin5" unique_id=785188061 instance=ExtResource("14_stove")]
+[node name="StoveInteractable" parent="Cabins/Cabin5-厨房" unique_id=785188061 instance=ExtResource("14_stove")]
 z_index = 4
 position = Vector2(-134, 80.00001)
 scale = Vector2(1.5, 2)
 
-[node name="StoveInteractable2" parent="Cabins/Cabin5" unique_id=1228169956 instance=ExtResource("14_stove")]
+[node name="StoveInteractable2" parent="Cabins/Cabin5-厨房" unique_id=1228169956 instance=ExtResource("14_stove")]
 z_index = 4
 position = Vector2(-18, 81.111115)
 scale = Vector2(1.5, 2)
 
-[node name="StoveInteractable3" parent="Cabins/Cabin5" unique_id=1184835922 instance=ExtResource("14_stove")]
+[node name="StoveInteractable3" parent="Cabins/Cabin5-厨房" unique_id=1184835922 instance=ExtResource("14_stove")]
 z_index = 4
 position = Vector2(97, 81.111115)
 scale = Vector2(1.5, 2)
@@ -230,7 +251,12 @@ right_door_open = true
 ceiling_hole_position = 50.0
 ceiling_hole_size = 120.0
 
-[node name="Cabin7" parent="Cabins" unique_id=257969542 instance=ExtResource("2_3sasu")]
+[node name="DiningTableInteractable" parent="Cabins/Cabin6" unique_id=1487772996 instance=ExtResource("17_dining_table")]
+z_index = 4
+position = Vector2(-66, 72)
+scale = Vector2(1.6, 1.6)
+
+[node name="Cabin7-盘子" parent="Cabins" unique_id=257969542 instance=ExtResource("2_3sasu")]
 position = Vector2(-452, -686)
 scale = Vector2(1, 0.9)
 right_door_open = true
@@ -243,10 +269,21 @@ scale = Vector2(1, 0.9)
 left_door_open = true
 right_door_open = true
 
+[node name="DiningTableInteractable" parent="Cabins/Cabin8" unique_id=1527173859 instance=ExtResource("17_dining_table")]
+z_index = 4
+position = Vector2(-4, 70)
+scale = Vector2(1.6, 1.6)
+isVipTable = true
+
 [node name="Cabin9" parent="Cabins" unique_id=1632845120 instance=ExtResource("2_3sasu")]
 position = Vector2(446, -686)
 scale = Vector2(1, 0.9)
 left_door_open = true
+
+[node name="DiningTableInteractable" parent="Cabins/Cabin9" unique_id=21189508 instance=ExtResource("17_dining_table")]
+z_index = 4
+position = Vector2(-55, 70)
+scale = Vector2(1.6, 1.6)
 
 [node name="TestPlayer" type="CharacterBody2D" parent="Cabins" unique_id=1521693170]
 z_index = 20
@@ -295,10 +332,37 @@ z_index = 6
 position = Vector2(-155, -469)
 scale = Vector2(2, 2)
 
+[node name="FryingPanCargo" parent="Cabins" unique_id=1946618425 instance=ExtResource("18_frying_pan")]
+z_index = 6
+position = Vector2(-77, -470)
+scale = Vector2(2, 2)
+
+[node name="CuttingBoardCargo" parent="Cabins" unique_id=107998297 instance=ExtResource("19_cutting_board")]
+z_index = 6
+position = Vector2(1, -469)
+scale = Vector2(2, 2)
+
 [node name="PlateCargo" parent="Cabins" unique_id=863683806 instance=ExtResource("16_plate")]
 z_index = 6
 position = Vector2(204, -464)
 scale = Vector2(2, 2)
+
+[node name="FruitCargoApple" parent="Cabins" unique_id=1650770416 instance=ExtResource("23_fruit_cargo")]
+z_index = 6
+position = Vector2(357, 10)
+scale = Vector2(2, 2)
+
+[node name="FruitCargoPeach" parent="Cabins" unique_id=1945133139 instance=ExtResource("23_fruit_cargo")]
+z_index = 6
+position = Vector2(408, 10)
+scale = Vector2(2, 2)
+fruitType = 5
+
+[node name="FruitCargoPear" parent="Cabins" unique_id=299880419 instance=ExtResource("23_fruit_cargo")]
+z_index = 6
+position = Vector2(459, 10)
+scale = Vector2(2, 2)
+fruitType = 6
 
 [node name="WaterSurface" parent="." unique_id=614244190 instance=ExtResource("4_a73yp")]
 z_index = -20
@@ -332,3 +396,7 @@ debugStormLog = true
 [node name="FishingZone" parent="." unique_id=1196822258 instance=ExtResource("13_46q1d")]
 position = Vector2(-65, 569)
 spawnIntervalSec = 5.0
+
+[node name="CustomerSpawner" type="Node" parent="." unique_id=252203174]
+script = ExtResource("21_customer_spawner")
+minSpawnIntervalSec = 25.0
