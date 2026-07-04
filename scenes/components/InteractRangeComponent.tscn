@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://cvlujgnml141e"]
+
+[ext_resource type="Script" uid="uid://clapoirvssl72" path="res://scripts/components/InteractRangeComponent.gd" id="1_interact_range_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_default"]
+size = Vector2(64, 48)
+
+[node name="InteractRangeComponent" type="Area2D" unique_id=1815537822]
+collision_layer = 16
+script = ExtResource("1_interact_range_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1838581898]
+shape = SubResource("RectangleShape2D_default")

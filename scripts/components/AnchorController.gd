@@ -333,19 +333,20 @@ func _try_interact() -> int:
 	if _player == null or not (_player is Node2D):
 		_debug_log('interact skip: player invalid')
 		return INTERACT_NO_TARGET
+	var clickPos: Vector2 = get_global_mouse_position()
 	var bestTarget: Node2D
 	for node in get_tree().get_nodes_in_group('Interactable'):
 		if not (node is Node2D):
 			continue
 		var interactive: Node2D = node as Node2D
-		if not interactive.has_method('is_player_in_interact_range'):
+		if not interactive.has_method('is_click_in_interact_range'):
 			continue
-		if not bool(interactive.call('is_player_in_interact_range', _player)):
+		if not bool(interactive.call('is_click_in_interact_range', clickPos)):
 			continue
 		bestTarget = interactive
 		break
 	if bestTarget == null:
-		_debug_log('interact no target in range area')
+		_debug_log('interact no target at click point')
 		return INTERACT_NO_TARGET
 
 	var carriedItem: Node = null

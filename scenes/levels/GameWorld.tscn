@@ -168,7 +168,9 @@ scale = Vector2(1, 0.9)
 right_door_open = true
 
 [node name="IncineratorInteractable" parent="Cabins/Cabin1-垃圾" unique_id=1466142704 instance=ExtResource("9_incinerator")]
-z_index = 1
+z_index = 4
+position = Vector2(-4, 50.000004)
+scale = Vector2(2.5, 2.5)
 
 [node name="Cabin2-钓鱼" parent="Cabins" unique_id=188614053 instance=ExtResource("2_3sasu")]
 position = Vector2(-3, -82)
@@ -222,7 +224,7 @@ scale = Vector2(1, 0.9)
 left_door_open = true
 
 [node name="TestPlayer" type="CharacterBody2D" parent="Cabins" unique_id=1521693170]
-z_index = 10
+z_index = 20
 position = Vector2(7.6293945e-06, -312)
 scale = Vector2(3, 3)
 script = ExtResource("3_0x6r3")
@@ -262,10 +264,6 @@ z_index = 6
 position = Vector2(-197, -583)
 scale = Vector2(2, 2)
 debug_movable_log = true
-
-[node name="IncineratorInteractable" parent="Cabins" unique_id=562218545 instance=ExtResource("9_incinerator")]
-z_index = 6
-position = Vector2(282, -585)
 
 [node name="WaterSurface" parent="." unique_id=614244190 instance=ExtResource("4_a73yp")]
 z_index = -20

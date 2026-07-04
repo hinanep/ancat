@@ -1,5 +1,5 @@
 class_name InteractableBase
-extends Node2D
+extends InteractRangeComponent
 
 ## 可交互基类参数：统一分组、交互协议与子类钩子接口。
 ## 交互分组名。
@@ -8,8 +8,6 @@ extends Node2D
 @export var debugInteractLog: bool = true
 ## 日志前缀。
 @export var interactLogPrefix: String = 'InteractableBase'
-## 交互范围 Area2D 路径。
-@export var interactAreaPath: NodePath = NodePath('InteractArea')
 
 
 ## 初始化：加入可交互组。
@@ -162,41 +160,8 @@ func _log_interact(message: String) -> void:
 	print('[%s] %s' % [interactLogPrefix, message])
 
 
-## 判断玩家是否进入交互范围（基于 Area2D 重叠）。
-## @param player 玩家节点
+## 判断点击点是否进入交互范围（基于组件 Area2D）。
+## @param clickGlobal 点击全局坐标
 ## @return bool
-func is_player_in_interact_range(player: Node) -> bool:
-	if player == null:
-		return false
-	var interactArea: Area2D = get_node_or_null(interactAreaPath) as Area2D
-	if interactArea == null:
-		return false
-	for body in interactArea.get_overlapping_bodies():
-		if _is_player_related_node(body as Node, player):
-			return true
-	for area in interactArea.get_overlapping_areas():
-		if _is_player_related_node(area as Node, player):
-			return true
-	return false
-
-
-## 判断节点是否属于玩家节点链。
-## @param candidate 候选节点
-## @param player 玩家节点
-## @return bool
-func _is_player_related_node(candidate: Node, player: Node) -> bool:
-	if candidate == null or player == null:
-		return false
-	if candidate == player:
-		return true
-	var current: Node = candidate
-	while current != null:
-		if current == player:
-			return true
-		current = current.get_parent()
-	current = player
-	while current != null:
-		if current == candidate:
-			return true
-		current = current.get_parent()
-	return false
+func is_click_in_interact_range(clickGlobal: Vector2) -> bool:
+	return is_point_in_range(clickGlobal)

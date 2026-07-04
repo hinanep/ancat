@@ -25,13 +25,7 @@ func _is_item_valid(item: Node) -> bool:
 		return false
 	if item.is_in_group(nonIncinerableGroup):
 		return false
-	var tag: String = _resolve_item_tag(item)
-	if tag.is_empty():
-		return false
-	for accepted in acceptedTags:
-		if tag == accepted:
-			return true
-	return false
+	return true
 
 
 ## 处理前状态校验：焚化期间拒绝新请求。
