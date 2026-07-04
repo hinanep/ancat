@@ -1,16 +1,16 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://vx623nu3ftjc"]
 
-[ext_resource type="Script" path="res://scripts/components/FishEntity.gd" id="1_fish_script"]
+[ext_resource type="Script" uid="uid://cc1td5su1nngn" path="res://scripts/components/FishEntity.gd" id="1_fish_script"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_fish"]
 size = Vector2(22, 12)
 
-[node name="FishEntity" type="CharacterBody2D"]
+[node name="FishEntity" type="CharacterBody2D" unique_id=899968043]
 script = ExtResource("1_fish_script")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=387235451]
 shape = SubResource("RectangleShape2D_fish")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=195666601]
 z_index = 1
 scale = Vector2(1.2, 1.2)

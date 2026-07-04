@@ -5,6 +5,10 @@ extends CharacterBody2D
 @export var aliveTexture: Texture2D = preload('res://assets/textures/烹饪/鱼.png')
 ## 死鱼精灵图（帧动画图集）。
 @export var deadTexture: Texture2D = preload('res://assets/textures/烹饪/死鱼.png')
+## 烹饪完成后装盘整体图集。
+@export var cookedTexture: Texture2D = preload('res://assets/textures/烹饪/料理.png')
+## 从图集中提取的帧区域（默认取左上角 32x29）。
+@export var cookedAtlasRegion: Rect2 = Rect2(0.0, 0.0, 32.0, 29.0)
 ## 活鱼帧数（按单行切分）。
 @export var aliveFrameCount: int = 2
 ## 死鱼帧数（按单行切分）。
@@ -76,6 +80,7 @@ func _ready() -> void:
 	_rng.randomize()
 	add_to_group('Hitable')
 	add_to_group('Fish')
+	add_to_group('Cookable')
 	_setup_sprite_frames()
 	_enter_swimming()
 
@@ -154,6 +159,14 @@ func drop_to_world() -> void:
 	_carrier = null
 	_freeMoveEnabled = true
 	velocity = Vector2.ZERO
+
+
+## 应用投掷速度（丢弃时给予初速度）。
+## @param throwVel 投掷速度向量
+## @return void
+func apply_throw(throwVel: Vector2) -> void:
+	_slideSpeed = throwVel.x
+	velocity = throwVel
 
 
 ## 标记进入鱼缸（停更新、隐藏、不可交互）。
@@ -359,11 +372,31 @@ func _update_out_of_tank_timer(delta: float) -> void:
 		_mark_dead()
 
 
+## 烹饪完成回调：切换为装盘贴图，移除 Cookable 分组。
+func set_cooked() -> void:
+	if is_in_group('Cookable'):
+		remove_from_group('Cookable')
+	if _sprite == null or _spriteFrames == null:
+		return
+	if not _spriteFrames.has_animation('cooked'):
+		_spriteFrames.add_animation('cooked')
+		_spriteFrames.set_animation_speed('cooked', 1.0)
+		if cookedTexture != null:
+			var atlas := AtlasTexture.new()
+			atlas.atlas = cookedTexture
+			atlas.region = cookedAtlasRegion
+			_spriteFrames.add_frame('cooked', atlas)
+	_sprite.play('cooked')
+	_debug_log('set cooked')
+
+
 ## 标记死鱼并切换动画。
 ## @return void
 func _mark_dead() -> void:
 	_state = FishState.DEAD
 	_deadTimerRemaining = 0.0
+	if is_in_group('Cookable'):
+		remove_from_group('Cookable')
 	_play_anim('dead')
 	_debug_log('mark dead')
 

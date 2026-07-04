@@ -1,0 +1,55 @@
+[gd_scene format=3 uid="uid://c7lx2qlu08jmm"]
+
+[ext_resource type="Script" uid="uid://cy6650aoy3xos" path="res://scripts/components/PotCargo.gd" id="1_pot_script"]
+[ext_resource type="Texture2D" uid="uid://rlsh6qyt0gp7" path="res://assets/textures/烹饪/62. Cooker.png" id="2_ncoua"]
+[ext_resource type="Script" uid="uid://cs0uflomscl14" path="res://scripts/components/PotInteractable.gd" id="2_pot_interact_script"]
+[ext_resource type="PackedScene" uid="uid://cvlujgnml141e" path="res://scenes/components/InteractRangeComponent.tscn" id="3_interact_range"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_vbnlq"]
+radius = 15.0
+height = 34.0
+
+[node name="PotCargo" type="CharacterBody2D" unique_id=420604083]
+collision_layer = 5
+collision_mask = 5
+script = ExtResource("1_pot_script")
+friction_coefficient = 70.0
+slide_accel_scale = 580.0
+max_slide_speed = 120.0
+deliveryTag = "pot"
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=125906400]
+texture = ExtResource("2_ncoua")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1570134403]
+position = Vector2(0, -1)
+shape = SubResource("CapsuleShape2D_vbnlq")
+
+[node name="FoodAnchor" type="Marker2D" parent="." unique_id=1425998552]
+position = Vector2(0, -10)
+
+[node name="InteractRangeComponent" parent="." unique_id=1715729106 instance=ExtResource("3_interact_range")]
+script = ExtResource("2_pot_interact_script")
+cookableGroupName = &"Cookable"
+plateGroupName = &"Plate"
+interactableGroupName = &"Interactable"
+debugInteractLog = true
+interactLogPrefix = "PotInteractable"
+rangeShapeType = 1
+rangeRectSize = Vector2(28, 20)
+rangeCircleRadius = 30.0
+
+[node name="InteractArea" type="Area2D" parent="." unique_id=2041972615]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea" unique_id=1981570278]
+position = Vector2(0, -1)
+shape = SubResource("CapsuleShape2D_vbnlq")
+
+[node name="CookProgressBar" type="ProgressBar" parent="." unique_id=479993181]
+offset_left = -15.0
+offset_top = -22.0
+offset_right = 15.0
+offset_bottom = -18.0
+show_percentage = false

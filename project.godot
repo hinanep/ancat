@@ -40,11 +40,13 @@ enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
 [global_group]
 
 NonIncinerable="不可焚毁"
+Cookable=""
 
 [layer_names]
 
 2d_physics/layer_1="world"
 2d_physics/layer_2="player"
+2d_physics/layer_3="stove"
 
 [physics]
 

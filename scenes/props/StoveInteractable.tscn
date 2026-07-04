@@ -1,0 +1,52 @@
+[gd_scene format=3 uid="uid://5v62jfn1esl4"]
+
+[ext_resource type="Script" uid="uid://c84beur1oyq6i" path="res://scripts/components/StoveInteractable.gd" id="1_stove_script"]
+[ext_resource type="PackedScene" uid="uid://cvlujgnml141e" path="res://scenes/components/InteractRangeComponent.tscn" id="2_interact_range"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_surface"]
+size = Vector2(48, 35)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_detect"]
+size = Vector2(44, 20)
+
+[node name="StoveInteractable" type="Node2D" unique_id=1762543785]
+
+[node name="InteractRangeComponent" parent="." unique_id=1803536949 instance=ExtResource("2_interact_range")]
+script = ExtResource("1_stove_script")
+potGroupName = &"Pot"
+potPlacementOffset = Vector2(0, -24)
+interactableGroupName = &"Interactable"
+debugInteractLog = true
+interactLogPrefix = "StoveInteractable"
+
+[node name="StoveBody" type="Polygon2D" parent="." unique_id=1164314623]
+color = Color(0.3, 0.3, 0.32, 1)
+polygon = PackedVector2Array(-22, -10, 22, -10, 24, 20, -24, 20)
+
+[node name="StoveTop" type="Polygon2D" parent="." unique_id=2143269621]
+z_index = 1
+color = Color(0.4, 0.4, 0.42, 1)
+polygon = PackedVector2Array(-24, -14, 24, -14, 22, -10, -22, -10)
+
+[node name="StoveGrate" type="Polygon2D" parent="." unique_id=602132126]
+z_index = 2
+color = Color(0.6, 0.25, 0.15, 1)
+polygon = PackedVector2Array(-10, -12, 10, -12, 10, -10, -10, -10)
+
+[node name="StoveSurface" type="StaticBody2D" parent="." unique_id=445071632]
+collision_layer = 4
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StoveSurface" unique_id=1226696507]
+position = Vector2(0, 2.5)
+shape = SubResource("RectangleShape2D_surface")
+
+[node name="PotDetectionArea" type="Area2D" parent="." unique_id=1002479527]
+collision_layer = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PotDetectionArea" unique_id=1386522758]
+position = Vector2(0, -24)
+shape = SubResource("RectangleShape2D_detect")
+
+[connection signal="body_entered" from="PotDetectionArea" to="InteractRangeComponent" method="_on_pot_detection_area_body_entered"]
+[connection signal="body_exited" from="PotDetectionArea" to="InteractRangeComponent" method="_on_pot_detection_area_body_exited"]

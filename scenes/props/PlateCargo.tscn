@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://41sqlk7pbma5"]
+
+[ext_resource type="Script" uid="uid://cna2vtmuquhhh" path="res://scripts/components/PlateCargo.gd" id="1_plate_script"]
+[ext_resource type="Texture2D" uid="uid://dro8d3ai0nv2f" path="res://assets/textures/烹饪/46. Plate.png" id="2_um8is"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_tuu8v"]
+radius = 16.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_txj6r"]
+radius = 16.0
+
+[node name="PlateCargo" type="CharacterBody2D" unique_id=1305908970]
+script = ExtResource("1_plate_script")
+friction_coefficient = 70.0
+slide_accel_scale = 580.0
+max_slide_speed = 120.0
+deliveryTag = "plate"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1150668897]
+position = Vector2(0, -1)
+shape = SubResource("CircleShape2D_tuu8v")
+
+[node name="FoodAnchor" type="Marker2D" parent="." unique_id=1807943181]
+position = Vector2(0, -6)
+
+[node name="InteractArea" type="Area2D" parent="." unique_id=932131950]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea" unique_id=8082038]
+position = Vector2(0, -1)
+shape = SubResource("CircleShape2D_txj6r")
+
+[node name="46_Plate" type="Sprite2D" parent="." unique_id=159650382]
+position = Vector2(0, -2)
+texture = ExtResource("2_um8is")

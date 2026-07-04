@@ -10,10 +10,13 @@
 [ext_resource type="Script" uid="uid://dmx576ws301qi" path="res://scripts/components/BoatFloatController.gd" id="5_3ar6b"]
 [ext_resource type="PackedScene" uid="uid://cqlyepngiwjuq" path="res://scenes/props/MovableCargo.tscn" id="7_fdut3"]
 [ext_resource type="Script" uid="uid://bbcbgceyjg16o" path="res://scripts/components/StormController.gd" id="7_hy2pk"]
-[ext_resource type="PackedScene" path="res://scenes/props/FishTankInteractable.tscn" id="7_q4kc4"]
+[ext_resource type="PackedScene" uid="uid://bj3xbh3bkitqi" path="res://scenes/props/FishTankInteractable.tscn" id="7_q4kc4"]
 [ext_resource type="Script" uid="uid://cshkm83i4d55g" path="res://scripts/components/AnchorController.gd" id="8_ankcr"]
 [ext_resource type="PackedScene" uid="uid://b85mvrq0ews6p" path="res://scenes/props/IncineratorInteractable.tscn" id="9_incinerator"]
 [ext_resource type="PackedScene" path="res://scenes/props/FishingZone.tscn" id="13_46q1d"]
+[ext_resource type="PackedScene" uid="uid://5v62jfn1esl4" path="res://scenes/props/StoveInteractable.tscn" id="14_stove"]
+[ext_resource type="PackedScene" uid="uid://c7lx2qlu08jmm" path="res://scenes/props/PotCargo.tscn" id="15_pot"]
+[ext_resource type="PackedScene" uid="uid://41sqlk7pbma5" path="res://scenes/props/PlateCargo.tscn" id="16_plate"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_8ghft"]
 radius = 10.333334
@@ -182,7 +185,7 @@ right_door_open = true
 
 [node name="FishTankInteractable" parent="Cabins/Cabin2-钓鱼" unique_id=85633376 instance=ExtResource("7_q4kc4")]
 z_index = 5
-position = Vector2(145, -32.222214)
+position = Vector2(145, -12.222229)
 scale = Vector2(2, 5)
 
 [node name="Cabin3-水果" parent="Cabins" unique_id=1843543556 instance=ExtResource("2_3sasu")]
@@ -204,6 +207,21 @@ position = Vector2(-3, -384)
 scale = Vector2(1, 0.9)
 left_door_open = true
 right_door_open = true
+
+[node name="StoveInteractable" parent="Cabins/Cabin5" unique_id=785188061 instance=ExtResource("14_stove")]
+z_index = 4
+position = Vector2(-134, 80.00001)
+scale = Vector2(1.5, 2)
+
+[node name="StoveInteractable2" parent="Cabins/Cabin5" unique_id=1228169956 instance=ExtResource("14_stove")]
+z_index = 4
+position = Vector2(-18, 81.111115)
+scale = Vector2(1.5, 2)
+
+[node name="StoveInteractable3" parent="Cabins/Cabin5" unique_id=1184835922 instance=ExtResource("14_stove")]
+z_index = 4
+position = Vector2(97, 81.111115)
+scale = Vector2(1.5, 2)
 
 [node name="Cabin6" parent="Cabins" unique_id=2118771532 instance=ExtResource("2_3sasu")]
 position = Vector2(-452, -384)
@@ -271,6 +289,16 @@ z_index = 6
 position = Vector2(-197, -583)
 scale = Vector2(2, 2)
 debug_movable_log = true
+
+[node name="PotCargo" parent="Cabins" unique_id=1171608071 instance=ExtResource("15_pot")]
+z_index = 6
+position = Vector2(-155, -469)
+scale = Vector2(2, 2)
+
+[node name="PlateCargo" parent="Cabins" unique_id=863683806 instance=ExtResource("16_plate")]
+z_index = 6
+position = Vector2(204, -464)
+scale = Vector2(2, 2)
 
 [node name="WaterSurface" parent="." unique_id=614244190 instance=ExtResource("4_a73yp")]
 z_index = -20

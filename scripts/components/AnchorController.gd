@@ -29,6 +29,8 @@ signal slot_state_changed(totalSlots: int, consumedSlots: int)
 @export var dropWallPadding: float = 10.0
 ## 丢弃点船体边界安全边距（像素）。
 @export var dropShipBoundsMargin: float = 12.0
+## 丢弃物品时投掷初速度（像素/秒）。
+@export var dropThrowSpeed: float = 320.0
 ## 地板命中允许的最高 Y 偏移（只允许同层或更高层）。
 @export var floorHookMaxYOffset: float = 4.0
 ## 钩中地板后，玩家终点向上偏移（像素）。
@@ -47,6 +49,8 @@ signal slot_state_changed(totalSlots: int, consumedSlots: int)
 @export var retrieveAnchorPlayerRange: float = 72.0
 ## 勾中物体后，触发回收所需的左键长按阈值（秒）。
 @export var holdToRetrieveSec: float = 0.2
+## 左键松开发射锚的最大按住时长（超过则不发射，秒）。
+@export var anchorFireMaxHoldSec: float = 0.25
 ## 调试日志开关。
 @export var debug_anchor_log: bool = true
 
@@ -60,7 +64,8 @@ var _leftPressedPrev: bool = false
 var _rightPressedPrev: bool = false
 var _leftPressedNow: bool = false
 var _leftHoldSec: float = 0.0
-var _leftClickQueued: bool = false
+var _leftReleaseQueued: bool = false
+var _leftHoldAtRelease: float = 0.0
 var _lastAvailableAnchorCapacity: int = 1
 var _lastSlotTotal: int = -1
 var _lastSlotConsumed: int = -1
@@ -113,9 +118,10 @@ func _process(delta: float) -> void:
 	else:
 		_leftHoldSec = 0.0
 
-	if _leftClickQueued:
-		_leftClickQueued = false
-		_fire_anchor()
+	if _leftReleaseQueued:
+		_leftReleaseQueued = false
+		if _leftHoldAtRelease <= max(anchorFireMaxHoldSec, 0.0):
+			_fire_anchor()
 	if not _hooks.is_empty():
 		_update_hooks(delta)
 
@@ -127,14 +133,15 @@ func _process(delta: float) -> void:
 	_emit_slot_state_if_changed()
 
 
-## 输入事件：捕获左键短按，避免轮询漏检。
+## 输入事件：捕获左键松开，短按则发射锚。
 ## @param event 输入事件
 ## @return void
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mouseEvent: InputEventMouseButton = event as InputEventMouseButton
-		if mouseEvent.button_index == MOUSE_BUTTON_LEFT and mouseEvent.pressed and not mouseEvent.is_echo():
-			_leftClickQueued = true
+		if mouseEvent.button_index == MOUSE_BUTTON_LEFT and not mouseEvent.pressed and not mouseEvent.is_echo():
+			_leftHoldAtRelease = _leftHoldSec
+			_leftReleaseQueued = true
 
 
 ## 创建锚链可视节点（按锚槽位创建）。
@@ -306,7 +313,22 @@ func _release_all_hooks() -> void:
 	_hooks.clear()
 
 
-## 右键：优先交互 > 丢弃 > 拾取 > 放锚/回收放置锚。
+## 右键取消当前勾取中的物体：释放物体并移除对应锚。
+## @return bool
+func _try_cancel_hooked_cargo() -> bool:
+	for i in range(_hooks.size() - 1, -1, -1):
+		var hook: Dictionary = _hooks[i]
+		if String(hook.get('state', '')) != 'hooked_cargo':
+			continue
+		var cargoNode: Node = hook.get('cargo', null)
+		if cargoNode != null and cargoNode.has_method('drop_to_world'):
+			cargoNode.call('drop_to_world')
+		_hooks.remove_at(i)
+		return true
+	return false
+
+
+## 右键：优先交互 > 取消勾取 > 丢弃 > 拾取 > 放锚/回收放置锚。
 ## @return void
 func _handle_right_click() -> void:
 	_debug_log('right click trigger: hooks=%d carried=%d deployed=%d' % [_hooks.size(), _carriedCargo.size(), _deployedCabinPaths.size()])
@@ -314,12 +336,17 @@ func _handle_right_click() -> void:
 	if interactResult == INTERACT_SUCCESS or interactResult == INTERACT_REJECTED:
 		_debug_log('right click end by interact, result=%d' % interactResult)
 		return
+	if _try_cancel_hooked_cargo():
+		_debug_log('right click end by cancel hooked cargo')
+		return
 	if not _carriedCargo.is_empty():
 		var cargo: Node = _carriedCargo.pop_back()
 		if cargo.has_method('drop_to_world'):
 			cargo.call('drop_to_world')
-		if cargo is Node2D:
-			(cargo as Node2D).global_position = _resolve_drop_position(cargo as Node2D)
+		if cargo is Node2D and _player is Node2D:
+			var throwDir: Vector2 = get_global_mouse_position() - (_player as Node2D).global_position
+			if not throwDir.is_zero_approx() and cargo.has_method('apply_throw'):
+				cargo.call('apply_throw', throwDir.normalized() * max(dropThrowSpeed, 0.0))
 		_refresh_carried_offsets()
 		_debug_log('right click drop carried cargo=%s' % cargo.name)
 		return

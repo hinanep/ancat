@@ -1,3 +1,4 @@
+class_name MovableCargo
 extends CharacterBody2D
 
 ## 可移动物体参数：控制自主滑动与舱室归属维护。
@@ -116,6 +117,14 @@ func drop_to_world() -> void:
 	_carrier = null
 	enable_auto_move = _savedAutoMove
 	_set_collision_ignored(false)
+
+
+## 应用投掷速度（丢弃时给予初速度）。
+## @param throwVel 投掷速度向量
+## @return void
+func apply_throw(throwVel: Vector2) -> void:
+	_slide_speed = throwVel.x
+	velocity = throwVel
 
 
 ## 是否可被新的锚勾取。
