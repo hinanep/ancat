@@ -265,6 +265,7 @@ prefix = ""
 position = Vector2(-45, 21)
 scale = Vector2(4, 4)
 sprite_frames = SubResource("SpriteFrames_2665p")
+autoplay = "default"
 frame_progress = 0.660208
 
 [node name="Cabins" type="Node2D" parent="." unique_id=1560321885]
@@ -372,17 +373,17 @@ right_door_open = true
 [node name="StoveInteractable" parent="Cabins/Cabin5-厨房" unique_id=785188061 instance=ExtResource("14_stove")]
 z_index = 4
 position = Vector2(-134, 80.00001)
-scale = Vector2(1.5, 2)
+scale = Vector2(2, 2.4)
 
 [node name="StoveInteractable2" parent="Cabins/Cabin5-厨房" unique_id=1228169956 instance=ExtResource("14_stove")]
 z_index = 4
-position = Vector2(-18, 81.111115)
-scale = Vector2(1.5, 2)
+position = Vector2(-1, 81.111115)
+scale = Vector2(2, 2.4)
 
 [node name="StoveInteractable3" parent="Cabins/Cabin5-厨房" unique_id=1184835922 instance=ExtResource("14_stove")]
 z_index = 4
-position = Vector2(97, 81.111115)
-scale = Vector2(1.5, 2)
+position = Vector2(132, 81.111115)
+scale = Vector2(2, 2.4)
 
 [node name="Cabin6" parent="Cabins" unique_id=2118771532 instance=ExtResource("2_3sasu")]
 position = Vector2(-452, -384)
@@ -466,7 +467,7 @@ scale = Vector2(2, 2)
 
 [node name="CuttingBoardCargo" parent="Cabins" unique_id=107998297 instance=ExtResource("19_cutting_board")]
 z_index = 6
-position = Vector2(104, -469)
+position = Vector2(128, -355)
 scale = Vector2(2, 2)
 
 [node name="WaterSurface" parent="." unique_id=614244190 instance=ExtResource("4_a73yp")]

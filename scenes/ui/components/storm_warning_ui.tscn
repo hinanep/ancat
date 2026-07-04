@@ -93,4 +93,5 @@ vertical_alignment = 1
 position = Vector2(-31, 25)
 scale = Vector2(2, 2)
 sprite_frames = SubResource("SpriteFrames_vbnlq")
+autoplay = "default"
 frame_progress = 0.70219624

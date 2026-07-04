@@ -54,6 +54,7 @@ shape = SubResource("RectangleShape2D_ksfrn")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1612758506]
 sprite_frames = SubResource("SpriteFrames_vbnlq")
+autoplay = "default"
 frame_progress = 0.9295747
 
 [editable path="InteractRangeComponent"]
