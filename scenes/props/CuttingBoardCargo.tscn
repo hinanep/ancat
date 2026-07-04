@@ -28,6 +28,10 @@ shape = SubResource("CapsuleShape2D_board")
 [node name="FoodAnchor" type="Marker2D" parent="."]
 position = Vector2(0, -8)
 
+[node name="SashimiPromptBubble" type="Sprite2D" parent="."]
+position = Vector2(0, -28)
+scale = Vector2(0.9, 0.9)
+
 [node name="InteractRangeComponent" parent="." instance=ExtResource("4_interact_range")]
 script = ExtResource("3_board_interact")
 rangeShapeType = 1

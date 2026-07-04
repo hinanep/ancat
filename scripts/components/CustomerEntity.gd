@@ -198,7 +198,12 @@ func _find_free_table_in_current_cabin() -> Node:
 	for table in get_tree().get_nodes_in_group('DiningTable'):
 		if table == null or not is_instance_valid(table):
 			continue
-		if table.get_parent() != parentNode:
+		var tableCabin: Node = null
+		if table.get_parent() == parentNode:
+			tableCabin = parentNode
+		elif table.get_parent() != null and table.get_parent().get_parent() == parentNode:
+			tableCabin = parentNode
+		if tableCabin == null:
 			continue
 		if not table.has_method('is_seat_free') or not bool(table.call('is_seat_free')):
 			continue

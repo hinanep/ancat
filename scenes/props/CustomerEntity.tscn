@@ -1,16 +1,73 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://givtsu2nyink"]
 
-[ext_resource type="Script" path="res://scripts/components/CustomerEntity.gd" id="1_customer_script"]
+[ext_resource type="Script" uid="uid://cj2i2aonksbkf" path="res://scripts/components/CustomerEntity.gd" id="1_customer_script"]
+[ext_resource type="Texture2D" uid="uid://iqigt6w8q1b8" path="res://assets/textures/猫/BatmanCatFree/IdleCatt 2.png" id="2_qudvb"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_customer"]
-radius = 10.0
+[sub_resource type="AtlasTexture" id="AtlasTexture_4li0m"]
+atlas = ExtResource("2_qudvb")
+region = Rect2(0, 0, 32, 32)
 
-[node name="CustomerEntity" type="Node2D"]
+[sub_resource type="AtlasTexture" id="AtlasTexture_6t0bh"]
+atlas = ExtResource("2_qudvb")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ramx5"]
+atlas = ExtResource("2_qudvb")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ptokg"]
+atlas = ExtResource("2_qudvb")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_et32i"]
+atlas = ExtResource("2_qudvb")
+region = Rect2(128, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wgv6x"]
+atlas = ExtResource("2_qudvb")
+region = Rect2(160, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qi2wb"]
+atlas = ExtResource("2_qudvb")
+region = Rect2(192, 0, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_vbnlq"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4li0m")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6t0bh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ramx5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ptokg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_et32i")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wgv6x")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qi2wb")
+}],
+"loop": 1,
+"name": &"cat1",
+"speed": 6.0
+}]
+
+[node name="CustomerEntity" type="Node2D" unique_id=422639079]
 script = ExtResource("1_customer_script")
 
-[node name="Sprite2D" type="Polygon2D" parent="."]
-color = Color(1, 0.86, 0.5, 1)
-polygon = PackedVector2Array(-10, -14, 10, -14, 10, 10, -10, 10)
-
-[node name="DemandIcons" type="Node2D" parent="."]
+[node name="DemandIcons" type="Node2D" parent="." unique_id=836177353]
 position = Vector2(0, -24)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=765454042]
+sprite_frames = SubResource("SpriteFrames_vbnlq")
+animation = &"cat1"
+autoplay = "cat1"
+frame_progress = 0.39627856

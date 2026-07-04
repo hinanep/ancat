@@ -10,8 +10,10 @@ extends InteractableBase
 var _seatedCustomer: Node
 var _lastServeAccepted: bool = false
 
+const PLATE_SCENE: PackedScene = preload('res://scenes/props/PlateCargo.tscn')
 
-## 初始化：加入就餐桌分组。
+
+## 初始化：加入就餐桌分组（顾客据此搜索）。
 func _ready() -> void:
 	super._ready()
 	add_to_group('DiningTable')
@@ -26,7 +28,10 @@ func is_seat_free() -> bool:
 ## 获取座位全局坐标。
 ## @return Vector2
 func get_seat_global_position() -> Vector2:
-	var marker: Node2D = get_node_or_null('SeatMarker') as Node2D
+	var tableRoot: Node = get_parent()
+	var marker: Node2D = null
+	if tableRoot != null:
+		marker = tableRoot.get_node_or_null('SeatMarker') as Node2D
 	if marker != null:
 		return marker.global_position
 	return global_position + seatOffset
@@ -43,7 +48,11 @@ func seat_customer(customer: Node) -> bool:
 	_seatedCustomer = customer
 	if customer is Node2D:
 		(customer as Node2D).global_position = get_seat_global_position()
-		customer.reparent(self)
+		var tableRoot: Node = get_parent()
+		if tableRoot != null:
+			customer.reparent(tableRoot)
+		else:
+			customer.reparent(self)
 	EventBus.emit(EventBus.EventType.CUSTOMER_SEATED, {'table': String(get_path())})
 	return true
 
@@ -95,6 +104,8 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 	if not accepted:
 		return
 	_lastServeAccepted = true
+	if _seatedCustomer.has_method('is_satisfied') and bool(_seatedCustomer.call('is_satisfied')):
+		_spawn_empty_plate_after_meal()
 	EventBus.emit(EventBus.EventType.CUSTOMER_SERVED, {'table': String(get_path()), 'food_type': foodType})
 
 
@@ -131,3 +142,25 @@ func _resolve_item_food_type(item: Node) -> int:
 	if tag == 'pear':
 		return FoodConfig.FoodType.PEAR
 	return -1
+
+
+## 顾客吃完后在桌旁生成空盘（受全局上限限制）。
+func _spawn_empty_plate_after_meal() -> void:
+	if _current_plate_count() >= 8:
+		return
+	if PLATE_SCENE == null:
+		return
+	var plateNode: Node = PLATE_SCENE.instantiate()
+	if plateNode == null:
+		return
+	get_tree().current_scene.add_child(plateNode)
+	if plateNode is Node2D:
+		(plateNode as Node2D).global_position = get_seat_global_position() + Vector2(18.0, 0.0)
+	if plateNode.has_method('clear_food'):
+		plateNode.call('clear_food')
+
+
+## 统计当前场景中的盘子数量。
+## @return int
+func _current_plate_count() -> int:
+	return get_tree().get_nodes_in_group('Plate').size()

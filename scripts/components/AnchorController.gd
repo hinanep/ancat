@@ -43,6 +43,10 @@ signal slot_state_changed(totalSlots: int, consumedSlots: int)
 @export var maxCarryCount: int = 1
 ## 放置锚实体预制体。
 @export var deployedAnchorScene: PackedScene = preload('res://scenes/props/AnchorPlaced.tscn')
+## 锚链纹理（用于 Line2D）。
+@export var anchorChainTexture: Texture2D = preload('res://assets/textures/锚链.png')
+## 飞行中锚头纹理。
+@export var anchorHeadTexture: Texture2D = preload('res://assets/textures/锚.png')
 ## 回收锚时，鼠标到锚实体的最大命中半径（像素）。
 @export var retrieveAnchorClickRadius: float = 18.0
 ## 回收锚时，玩家到锚实体的最大距离（像素）。
@@ -60,6 +64,7 @@ var _deployedCabinPaths: Array[NodePath] = []
 var _deployedAnchorNodesByCabin: Dictionary = {}
 var _player: Node
 var _lines: Array[Line2D] = []
+var _hookHeads: Array[Sprite2D] = []
 var _leftPressedPrev: bool = false
 var _rightPressedPrev: bool = false
 var _leftPressedNow: bool = false
@@ -151,14 +156,28 @@ func _ensure_lines() -> void:
 		if line != null:
 			line.queue_free()
 	_lines.clear()
+	for head in _hookHeads:
+		if head != null:
+			head.queue_free()
+	_hookHeads.clear()
 	var count: int = _available_anchor_capacity()
 	for i in range(count):
 		var line: Line2D = Line2D.new()
-		line.width = 2.0
-		line.default_color = Color(0.95, 0.92, 0.78, 0.95)
+		line.width = 12.0
+		line.default_color = Color(0.92, 0.92, 0.92, 0.95)
+		line.texture = anchorChainTexture
+		line.texture_mode = Line2D.LINE_TEXTURE_TILE
+		line.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+		line.antialiased = true
 		line.z_index = 100 + i
 		add_child(line)
 		_lines.append(line)
+		var head: Sprite2D = Sprite2D.new()
+		head.texture = anchorHeadTexture
+		head.z_index = 120 + i
+		head.visible = false
+		add_child(head)
+		_hookHeads.append(head)
 
 
 ## 更新锚链可视（多锚并行）。
@@ -168,6 +187,8 @@ func _update_lines() -> void:
 		return
 	for line in _lines:
 		line.clear_points()
+	for head in _hookHeads:
+		head.visible = false
 	if _hooks.is_empty() or not (_player is Node2D):
 		return
 	var origin: Vector2 = (_player as Node2D).global_position
@@ -175,6 +196,13 @@ func _update_lines() -> void:
 		var hookPos: Vector2 = _hooks[i].get('pos', origin)
 		_lines[i].add_point(to_local(origin))
 		_lines[i].add_point(to_local(hookPos))
+		if i < _hookHeads.size():
+			_hookHeads[i].visible = true
+			_hookHeads[i].position = to_local(hookPos)
+			var dir: Vector2 = hookPos - origin
+			if not dir.is_zero_approx():
+				# 锚默认朝下，减 PI/2 让锚尖随发射方向对齐。
+				_hookHeads[i].rotation = dir.angle() - PI * 0.5
 
 
 ## 发射锚：终点尽量落在鼠标位置，超长才截断。
@@ -521,6 +549,26 @@ func _refresh_carried_offsets() -> void:
 			continue
 		if cargo.has_method('set_carried'):
 			cargo.call('set_carried', _player, _carry_offset_for_slot(i, total))
+
+
+## 尝试将物体加入玩家携带列表。
+## @param cargo 待携带物体
+## @return bool
+func try_add_carried_cargo(cargo: Node) -> bool:
+	if cargo == null:
+		return false
+	if not _can_carry_more():
+		return false
+	if _carriedCargo.size() >= _available_anchor_capacity():
+		return false
+	if not cargo.has_method('set_carried'):
+		return false
+	var slotIndex: int = _carriedCargo.size()
+	cargo.call('set_carried', _player, _carry_offset_for_slot(slotIndex, slotIndex + 1))
+	if not _carriedCargo.has(cargo):
+		_carriedCargo.append(cargo)
+	_refresh_carried_offsets()
+	return true
 
 
 ## 判断是否还能继续携带物体。

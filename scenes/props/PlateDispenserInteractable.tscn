@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://v2o8ndm3yu4e"]
+
+[ext_resource type="Script" uid="uid://gjfemb6apdfj" path="res://scripts/components/PlateDispenserInteractable.gd" id="1_dispenser_script"]
+[ext_resource type="PackedScene" uid="uid://41sqlk7pbma5" path="res://scenes/props/PlateCargo.tscn" id="3_ejolg"]
+[ext_resource type="PackedScene" uid="uid://cvlujgnml141e" path="res://scenes/components/InteractRangeComponent.tscn" id="3_interact_range"]
+[ext_resource type="Texture2D" uid="uid://cjuur6lbsnhjg" path="res://assets/textures/烹饪/kitchen_LRK.png" id="4_ibhc8"]
+[ext_resource type="Texture2D" uid="uid://dro8d3ai0nv2f" path="res://assets/textures/烹饪/46. Plate.png" id="5_plate_icon"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4ta1d"]
+atlas = ExtResource("4_ibhc8")
+region = Rect2(352, 176, 32, 64)
+
+[node name="PlateDispenserInteractable" type="Node2D" unique_id=860576931]
+
+[node name="InteractRangeComponent" parent="." unique_id=1798808947 instance=ExtResource("3_interact_range")]
+script = ExtResource("1_dispenser_script")
+plateScene = ExtResource("3_ejolg")
+cooldownSec = 10.0
+maxPlateCount = 8
+interactableGroupName = &"Interactable"
+debugInteractLog = true
+interactLogPrefix = "InteractableBase"
+rangeRectSize = Vector2(33, 70)
+rangeCircleRadius = 26.0
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1078071044]
+texture = SubResource("AtlasTexture_4ta1d")
+
+[node name="PlatePromptBubble" type="Sprite2D" parent="." unique_id=991961448]
+position = Vector2(0, -55)
+scale = Vector2(0.85, 0.85)
+texture = ExtResource("5_plate_icon")
+
+[node name="CooldownProgress" type="ProgressBar" parent="." unique_id=1487675050]
+offset_left = -18.0
+offset_top = -36.0
+offset_right = 18.0
+offset_bottom = -30.0
+show_percentage = false

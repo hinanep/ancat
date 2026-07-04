@@ -1,22 +1,46 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/components/DiningTableInteractable.gd" id="1_table_script"]
+[ext_resource type="Script" path="res://scripts/components/DiningTableCargo.gd" id="1_table_cargo_script"]
+[ext_resource type="Script" path="res://scripts/components/DiningTableInteractable.gd" id="2_table_interact_script"]
+[ext_resource type="PackedScene" path="res://scenes/components/InteractRangeComponent.tscn" id="3_interact_range"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_table_range"]
-size = Vector2(56, 40)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_table_body"]
+radius = 14.0
+height = 28.0
 
-[node name="DiningTableInteractable" type="Area2D"]
-collision_layer = 1
-collision_mask = 0
-script = ExtResource("1_table_script")
-rangeShapeType = 0
-rangeRectSize = Vector2(56, 40)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_table_hit"]
+size = Vector2(58, 30)
+
+[node name="DiningTableInteractable" type="CharacterBody2D"]
+collision_layer = 5
+collision_mask = 5
+script = ExtResource("1_table_cargo_script")
+friction_coefficient = 90.0
+slide_accel_scale = 420.0
+max_slide_speed = 85.0
+deliveryTag = "dining_table"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_table_range")
+position = Vector2(0, -1)
+shape = SubResource("CapsuleShape2D_table_body")
 
 [node name="SeatMarker" type="Marker2D" parent="."]
 position = Vector2(0, -18)
+
+[node name="InteractRangeComponent" parent="." instance=ExtResource("3_interact_range")]
+position = Vector2(0, -5)
+script = ExtResource("2_table_interact_script")
+rangeShapeType = 0
+rangeRectSize = Vector2(56, 40)
+rangeCircleRadius = 32.0
+
+[node name="InteractArea" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea"]
+position = Vector2(0, -1)
+shape = SubResource("RectangleShape2D_table_hit")
 
 [node name="Top" type="Polygon2D" parent="."]
 z_index = 2

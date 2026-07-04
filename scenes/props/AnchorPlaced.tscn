@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://da5wxh7qyr0w8"]
 
+[ext_resource type="Texture2D" path="res://assets/textures/锚.png" id="1_anchor_tex"]
+
 [sub_resource type="CircleShape2D" id="CircleShape2D_1"]
 radius = 8.0
 
@@ -7,13 +9,8 @@ radius = 8.0
 z_index = 8
 scale = Vector2(2, 2)
 
-[node name="Body" type="Polygon2D" parent="." unique_id=1251166353]
-color = Color(0.168627, 0.156863, 0.207843, 1)
-polygon = PackedVector2Array(-3, -12, 3, -12, 3, 5, 10, 5, 10, 9, 3, 9, 3, 12, -3, 12, -3, 9, -10, 9, -10, 5, -3, 5)
-
-[node name="Ring" type="Polygon2D" parent="." unique_id=1774280768]
-color = Color(0.87451, 0.831373, 0.643137, 1)
-polygon = PackedVector2Array(-5, -16, 5, -16, 5, -11, -5, -11)
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1251166353]
+texture = ExtResource("1_anchor_tex")
 
 [node name="Collider" type="CollisionShape2D" parent="." unique_id=1147362357]
 shape = SubResource("CircleShape2D_1")
