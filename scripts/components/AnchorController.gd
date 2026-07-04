@@ -42,11 +42,11 @@ signal slot_state_changed(totalSlots: int, consumedSlots: int)
 ## 玩家可同时携带的最大物体数。
 @export var maxCarryCount: int = 1
 ## 放置锚实体预制体。
-@export var deployedAnchorScene: PackedScene = preload('res://scenes/props/AnchorPlaced.tscn')
+@export var deployedAnchorScene: PackedScene = ResPath.PROP_SCENES.ANCHOR_PLACED
 ## 锚链纹理（用于 Line2D）。
-@export var anchorChainTexture: Texture2D = preload('res://assets/textures/锚链.png')
+@export var anchorChainTexture: Texture2D = ResPath.TEXTURES.ANCHOR_CHAIN
 ## 飞行中锚头纹理。
-@export var anchorHeadTexture: Texture2D = preload('res://assets/textures/锚.png')
+@export var anchorHeadTexture: Texture2D = ResPath.TEXTURES.ANCHOR_HEAD
 ## 回收锚时，鼠标到锚实体的最大命中半径（像素）。
 @export var retrieveAnchorClickRadius: float = 18.0
 ## 回收锚时，玩家到锚实体的最大距离（像素）。

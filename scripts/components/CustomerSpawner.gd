@@ -8,7 +8,7 @@ extends Node
 ## @minSpawnIntervalSec 最小刷新间隔（秒）
 ## @spawnAccelFactor 每次刷新后的间隔倍率（<1 逐渐加快）
 ## @maxCustomers 最大同时顾客数
-@export var customerScene: PackedScene = preload('res://scenes/props/CustomerEntity.tscn')
+@export var customerScene: PackedScene = ResPath.PROP_SCENES.CUSTOMER_ENTITY
 @export var diningCabinNames: PackedStringArray = PackedStringArray(['Cabin6', 'Cabin8', 'Cabin9'])
 @export var vipCabinName: StringName = 'Cabin8'
 @export var spawnIntervalSec: float = 60.0

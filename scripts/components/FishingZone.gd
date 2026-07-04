@@ -2,7 +2,7 @@ extends Area2D
 
 ## 钓鱼区参数：鱼生成、游动边界与风暴禁钓状态。
 ## 鱼预制体。
-@export var fishScene: PackedScene = preload('res://scenes/props/FishEntity.tscn')
+@export var fishScene: PackedScene = ResPath.PROP_SCENES.FISH_ENTITY
 ## 目标鱼数量。
 @export var targetFishCount: int = 6
 ## 补鱼间隔（秒）。

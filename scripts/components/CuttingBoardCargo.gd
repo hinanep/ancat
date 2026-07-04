@@ -59,6 +59,16 @@ func take_food() -> Node2D:
 	return food
 
 
+## 清空菜板内部存储，不销毁菜板本体。
+## @return void
+func clear_internal_storage() -> void:
+	if _foodNode != null and is_instance_valid(_foodNode):
+		_foodNode.queue_free()
+	_foodNode = null
+	_hasSashimi = false
+	_set_sashimi_prompt_visible(false)
+
+
 ## 初始化生鱼片提示气泡贴图。
 func _setup_sashimi_prompt_bubble() -> void:
 	if _sashimiPromptBubble == null:

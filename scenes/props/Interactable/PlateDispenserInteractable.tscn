@@ -1,0 +1,79 @@
+[gd_scene format=3 uid="uid://v2o8ndm3yu4e"]
+
+[ext_resource type="Script" uid="uid://gjfemb6apdfj" path="res://scripts/components/PlateDispenserInteractable.gd" id="1_dispenser_script"]
+[ext_resource type="PackedScene" uid="uid://41sqlk7pbma5" path="res://scenes/props/Cargo/PlateCargo.tscn" id="3_ejolg"]
+[ext_resource type="PackedScene" uid="uid://cvlujgnml141e" path="res://scenes/components/InteractRangeComponent.tscn" id="3_interact_range"]
+[ext_resource type="Texture2D" uid="uid://5bwehgw0vt5k" path="res://assets/textures/烹饪/洗碗机.png" id="4_4ad5n"]
+[ext_resource type="Texture2D" uid="uid://dro8d3ai0nv2f" path="res://assets/textures/烹饪/46. Plate.png" id="5_plate_icon"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ibhc8"]
+size = Vector2(66, 65)
+
+[sub_resource type="Animation" id="Animation_prompt_float"]
+resource_name = "float"
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("PromptContainer:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5, 1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, -55), Vector2(0, -62), Vector2(0, -55)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_prompt"]
+_data = {
+&"float": SubResource("Animation_prompt_float")
+}
+
+[node name="PlateDispenserInteractable" type="Node2D" unique_id=860576931]
+
+[node name="InteractRangeComponent" parent="." unique_id=1798808947 instance=ExtResource("3_interact_range")]
+script = ExtResource("1_dispenser_script")
+rangeRectSize = Vector2(70, 33)
+rangeCircleRadius = 26.0
+plateScene = ExtResource("3_ejolg")
+cooldownSec = 10.0
+maxPlateCount = 8
+dispensedPlateScale = Vector2(2.3, 2.3)
+interactableGroupName = &"Interactable"
+debugInteractLog = true
+interactLogPrefix = "InteractableBase"
+
+[node name="CollisionShape2D" parent="InteractRangeComponent" index="0" unique_id=1838581898]
+position = Vector2(0, -0.5)
+shape = SubResource("RectangleShape2D_ibhc8")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1078071044]
+scale = Vector2(2, 2)
+texture = ExtResource("4_4ad5n")
+
+[node name="PromptContainer" type="Node2D" parent="." unique_id=1969700299]
+position = Vector2(0, -55)
+
+[node name="PlatePromptBubble" type="Sprite2D" parent="PromptContainer" unique_id=991961448]
+position = Vector2(0, -9)
+scale = Vector2(0.85, 0.85)
+texture = ExtResource("5_plate_icon")
+
+[node name="PlatePromptArrow" type="Polygon2D" parent="PromptContainer" unique_id=1903028662]
+position = Vector2(0, 16)
+color = Color(1, 1, 0.47058824, 0.9490196)
+polygon = PackedVector2Array(0, 0, -7, -9, 7, -9)
+
+[node name="PromptFloatPlayer" type="AnimationPlayer" parent="." unique_id=646090367]
+libraries/ = SubResource("AnimationLibrary_prompt")
+autoplay = &"float"
+
+[node name="CooldownProgress" type="ProgressBar" parent="." unique_id=1487675050]
+offset_left = -18.0
+offset_top = -36.0
+offset_right = 18.0
+offset_bottom = -30.0
+show_percentage = false
+
+[editable path="InteractRangeComponent"]

@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://b85mvrq0ews6p"]
+
+[ext_resource type="Script" uid="uid://bfrh00okge1xo" path="res://scripts/components/IncineratorInteractable.gd" id="1_incinerator_script"]
+[ext_resource type="Texture2D" uid="uid://bcxba7prm6ukx" path="res://assets/textures/livingroom_LRK.png" id="2_ooywy"]
+[ext_resource type="PackedScene" uid="uid://cvlujgnml141e" path="res://scenes/components/InteractRangeComponent.tscn" id="3_interact_range_component"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vpbk2"]
+size = Vector2(68, 65)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vbnlq"]
+atlas = ExtResource("2_ooywy")
+region = Rect2(569.45105, 89.84615, 44.17334, 42.730965)
+
+[node name="IncineratorInteractable" type="Node2D" unique_id=1466142704]
+
+[node name="InteractRangeComponent" parent="." unique_id=1154273728 instance=ExtResource("3_interact_range_component")]
+script = ExtResource("1_incinerator_script")
+acceptedTags = PackedStringArray("food")
+nonIncinerableGroup = &"NonIncinerable"
+processDurationSec = 10.0
+processItemOffset = Vector2(0, -14)
+allowAnchorInteract = false
+interactableGroupName = &"Interactable"
+debugInteractLog = true
+interactLogPrefix = "InteractableBase"
+
+[node name="CollisionShape2D" parent="InteractRangeComponent" index="0" unique_id=1838581898]
+position = Vector2(1, -2.5)
+shape = SubResource("RectangleShape2D_vpbk2")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=174336907]
+scale = Vector2(2, 1.7)
+texture = SubResource("AtlasTexture_vbnlq")
+
+[editable path="InteractRangeComponent"]

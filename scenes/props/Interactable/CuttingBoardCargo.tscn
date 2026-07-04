@@ -1,0 +1,63 @@
+[gd_scene format=3 uid="uid://daotoqyv4pigc"]
+
+[ext_resource type="Script" uid="uid://ciwjdpeje5pfg" path="res://scripts/components/CuttingBoardCargo.gd" id="1_board_script"]
+[ext_resource type="Texture2D" uid="uid://67raa1gndksy" path="res://assets/textures/烹饪/砧板.png" id="2_4nopp"]
+[ext_resource type="Script" uid="uid://bk7vm37q45ogq" path="res://scripts/components/CuttingBoardInteractable.gd" id="3_board_interact"]
+[ext_resource type="PackedScene" uid="uid://cvlujgnml141e" path="res://scenes/components/InteractRangeComponent.tscn" id="4_interact_range"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ycjlk"]
+size = Vector2(65, 24)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_6qwv7"]
+size = Vector2(65, 33)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4nopp"]
+size = Vector2(65, 24)
+
+[node name="CuttingBoardCargo" type="CharacterBody2D" unique_id=1935794644]
+collision_layer = 5
+collision_mask = 5
+script = ExtResource("1_board_script")
+friction_coefficient = 80.0
+slide_accel_scale = 500.0
+max_slide_speed = 100.0
+deliveryTag = "cutting_board"
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=124467788]
+position = Vector2(0, -1)
+texture = ExtResource("2_4nopp")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1571187305]
+position = Vector2(0.5, 3)
+shape = SubResource("RectangleShape2D_ycjlk")
+
+[node name="FoodAnchor" type="Marker2D" parent="." unique_id=679469276]
+position = Vector2(0, -8)
+
+[node name="SashimiPromptBubble" type="Sprite2D" parent="." unique_id=1957785925]
+position = Vector2(0, -28)
+scale = Vector2(0.9, 0.9)
+
+[node name="InteractRangeComponent" parent="." unique_id=1185070161 instance=ExtResource("4_interact_range")]
+script = ExtResource("3_board_interact")
+cookableGroupName = &"Cookable"
+plateGroupName = &"Plate"
+interactableGroupName = &"Interactable"
+debugInteractLog = true
+interactLogPrefix = "InteractableBase"
+rangeRectSize = Vector2(70, 18)
+rangeCircleRadius = 30.0
+
+[node name="CollisionShape2D" parent="InteractRangeComponent" index="0" unique_id=1838581898]
+position = Vector2(0.5, -1.5)
+shape = SubResource("RectangleShape2D_6qwv7")
+
+[node name="InteractArea" type="Area2D" parent="." unique_id=1020824098]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea" unique_id=1133863328]
+position = Vector2(0.5, 3)
+shape = SubResource("RectangleShape2D_4nopp")
+
+[editable path="InteractRangeComponent"]

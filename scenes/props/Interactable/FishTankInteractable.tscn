@@ -1,0 +1,59 @@
+[gd_scene format=3 uid="uid://bj3xbh3bkitqi"]
+
+[ext_resource type="Script" uid="uid://dh78jxiyxygoh" path="res://scripts/components/FishTankInteractable.gd" id="1_fish_tank_script"]
+[ext_resource type="PackedScene" uid="uid://cvlujgnml141e" path="res://scenes/components/InteractRangeComponent.tscn" id="2_interact_range_component"]
+[ext_resource type="Texture2D" uid="uid://b52qlb3qhgwwf" path="res://assets/textures/鱼缸.png" id="3_gmukt"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ksfrn"]
+size = Vector2(95, 79)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_txwlc"]
+atlas = ExtResource("3_gmukt")
+region = Rect2(0, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5lsnf"]
+atlas = ExtResource("3_gmukt")
+region = Rect2(96, 0, 96, 96)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_vbnlq"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_txwlc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5lsnf")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 3.0
+}]
+
+[node name="FishTankInteractable" type="Node2D" unique_id=1875132186]
+
+[node name="InteractRangeComponent" parent="." unique_id=159618791 instance=ExtResource("2_interact_range_component")]
+script = ExtResource("1_fish_tank_script")
+plateGroupName = &"Plate"
+maxFishCount = 3
+spillTiltThresholdDeg = 8.0
+spillIntervalSec = 0.5
+spillDropOffset = Vector2(0, 22)
+spillDropRandomX = 18.0
+tankSwimRectSize = Vector2(44, 16)
+tankSwimRectOffset = Vector2(0, 2)
+spillAnimDurationSec = 0.28
+spillAnimArcHeight = 22.0
+interactableGroupName = &"Interactable"
+debugInteractLog = true
+interactLogPrefix = "InteractableBase"
+rangeRectSize = Vector2(64, 36)
+
+[node name="CollisionShape2D" parent="InteractRangeComponent" index="0" unique_id=1838581898]
+position = Vector2(0.5, 8.5)
+shape = SubResource("RectangleShape2D_ksfrn")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1612758506]
+sprite_frames = SubResource("SpriteFrames_vbnlq")
+frame_progress = 0.9295747
+
+[editable path="InteractRangeComponent"]

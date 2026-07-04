@@ -5,7 +5,7 @@ extends InteractableBase
 ## @cooldownSec 产出冷却时长（秒）
 ## @maxPlateCount 全局盘子上限
 ## @dispensedPlateScale 产出盘子缩放
-@export var plateScene: PackedScene = preload('res://scenes/props/PlateCargo.tscn')
+@export var plateScene: PackedScene = ResPath.PROP_SCENES.PLATE_CARGO
 @export var cooldownSec: float = 10.0
 @export var maxPlateCount: int = 8
 @export var dispensedPlateScale: Vector2 = Vector2(2.3, 2.3)

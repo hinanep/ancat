@@ -2,11 +2,11 @@ extends CharacterBody2D
 
 ## 鱼实体参数：游动、钩取携带、离缸死亡与动画状态。
 ## 活鱼精灵图（帧动画图集）。
-@export var aliveTexture: Texture2D = preload('res://assets/textures/烹饪/鱼.png')
+@export var aliveTexture: Texture2D = ResPath.TEXTURES.FISH_ALIVE
 ## 死鱼精灵图（帧动画图集）。
-@export var deadTexture: Texture2D = preload('res://assets/textures/烹饪/死鱼.png')
+@export var deadTexture: Texture2D = ResPath.TEXTURES.FISH_DEAD
 ## 烹饪完成后装盘整体图集。
-@export var cookedTexture: Texture2D = preload('res://assets/textures/烹饪/料理.png')
+@export var cookedTexture: Texture2D = ResPath.TEXTURES.DISH_ATLAS
 ## 从图集中提取的帧区域（默认取左上角 32x29）。
 @export var cookedAtlasRegion: Rect2 = Rect2(0.0, 0.0, 32.0, 29.0)
 ## 活鱼帧数（按单行切分）。

@@ -16,9 +16,9 @@ enum FoodType {
 	PEAR_JAM
 }
 
-const FOOD_ATLAS_DISH: Texture2D = preload('res://assets/textures/烹饪/料理.png')
-const FOOD_ATLAS_FRUIT: Texture2D = preload('res://assets/textures/烹饪/水果.png')
-const FOOD_ATLAS_JAM: Texture2D = preload('res://assets/textures/烹饪/果酱.png')
+const FOOD_ATLAS_DISH: Texture2D = ResPath.TEXTURES.DISH_ATLAS
+const FOOD_ATLAS_FRUIT: Texture2D = ResPath.TEXTURES.FRUIT_ATLAS
+const FOOD_ATLAS_JAM: Texture2D = ResPath.TEXTURES.JAM_ATLAS
 
 ## 食物静态数据：价格、图集、区域、标签、分组类型。
 ## @price 价格（r）

@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://bjm2ehurbhosl"]
+
+[ext_resource type="Script" uid="uid://b1h5wncwnduv3" path="res://scripts/components/JuicerInteractable.gd" id="1_juicer_script"]
+[ext_resource type="Texture2D" uid="uid://1s3qeojltm03" path="res://assets/textures/烹饪/榨汁机.png" id="2_juicer_texture"]
+[ext_resource type="PackedScene" uid="uid://cvlujgnml141e" path="res://scenes/components/InteractRangeComponent.tscn" id="3_interact_range"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gcno2"]
+size = Vector2(33, 34)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wdhn4"]
+atlas = ExtResource("2_juicer_texture")
+region = Rect2(0, 0, 32, 32)
+
+[node name="JuicerInteractable" type="Node2D" unique_id=519975888]
+
+[node name="InteractRangeComponent" parent="." unique_id=709276546 instance=ExtResource("3_interact_range")]
+script = ExtResource("1_juicer_script")
+plateGroupName = &"Plate"
+maxStoredJams = 3
+machineAtlas = ExtResource("2_juicer_texture")
+atlasCellSize = Vector2(32, 32)
+emptyRegion = Rect2(0, 0, 32, 32)
+stock3Regions = Array[Rect2]([Rect2(32, 0, 32, 32), Rect2(64, 0, 32, 32), Rect2(96, 0, 32, 32)])
+stock2Regions = Array[Rect2]([Rect2(32, 32, 32, 32), Rect2(64, 32, 32, 32), Rect2(96, 32, 32, 32)])
+stock1Regions = Array[Rect2]([Rect2(32, 64, 32, 32), Rect2(64, 64, 32, 32), Rect2(96, 64, 32, 32)])
+shakeOffsetPx = 4.0
+shakeDurationSec = 0.12
+interactableGroupName = &"Interactable"
+debugInteractLog = true
+interactLogPrefix = "InteractableBase"
+rangeRectSize = Vector2(30, 30)
+rangeCircleRadius = 45.0
+
+[node name="CollisionShape2D" parent="InteractRangeComponent" index="0" unique_id=1838581898]
+position = Vector2(-0.5, 0)
+shape = SubResource("RectangleShape2D_gcno2")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1113261455]
+texture = SubResource("AtlasTexture_wdhn4")
+
+[editable path="InteractRangeComponent"]

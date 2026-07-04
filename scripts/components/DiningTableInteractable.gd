@@ -10,7 +10,7 @@ extends InteractableBase
 var _seatedCustomer: Node
 var _lastServeAccepted: bool = false
 
-const PLATE_SCENE: PackedScene = preload('res://scenes/props/PlateCargo.tscn')
+const PLATE_SCENE: PackedScene = ResPath.PROP_SCENES.PLATE_CARGO
 
 
 ## 初始化：加入就餐桌分组（顾客据此搜索）。

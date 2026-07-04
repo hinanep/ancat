@@ -15,6 +15,7 @@ extends InteractableBase
 var _processingItem: Node
 var _processingRemainingSec: float = 0.0
 var _isProcessing: bool = false
+var _lastStorageCleared: bool = false
 
 
 ## 判断物品是否可焚化（白名单 + 非不可销毁组）。
@@ -58,6 +59,11 @@ func _is_anchor_valid(anchorController: Node) -> bool:
 func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 	var _unusedPlayer: Node = player
 	var _unusedAnchorController: Node = anchorController
+	_lastStorageCleared = false
+	if _try_clear_item_storage(item):
+		_lastStorageCleared = true
+		_log_interact('interact accepted: storage cleared only')
+		return
 	_processingItem = item
 	_processingRemainingSec = max(processDurationSec, 0.0)
 	_isProcessing = true
@@ -68,6 +74,16 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 	if item != null and item.has_method('set_physics_process'):
 		item.call('set_physics_process', false)
 	_log_interact('interact accepted: item processing started')
+
+
+## 控制是否消耗携带物（仅清空容器时不消耗本体）。
+## @param item 携带物品
+## @return bool
+func _consume_carried_on_item_valid(item: Node) -> bool:
+	var _unusedItem: Node = item
+	if _lastStorageCleared:
+		return false
+	return true
 
 
 ## 锚合法分支回调。
@@ -100,3 +116,18 @@ func _process(delta: float) -> void:
 		return
 	_consume_item(item)
 	_log_interact('processing finish: item destroyed')
+
+
+## 尝试清空物品内部存储（容器类）。
+## @param item 携带物品
+## @return bool
+func _try_clear_item_storage(item: Node) -> bool:
+	if item == null:
+		return false
+	if item.has_method('clear_internal_storage'):
+		item.call('clear_internal_storage')
+		return true
+	if item.has_method('clear_food'):
+		item.call('clear_food')
+		return true
+	return false

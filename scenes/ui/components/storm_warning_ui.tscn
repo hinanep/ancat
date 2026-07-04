@@ -1,6 +1,36 @@
 [gd_scene format=3 uid="uid://biqskj7ncenho"]
 
 [ext_resource type="Script" uid="uid://xyreevqly7v5" path="res://scripts/components/StormWarningUI.gd" id="1_i36kh"]
+[ext_resource type="Texture2D" uid="uid://ofgkdqj61o21" path="res://assets/textures/kenney_pixel-ui-pack/9-Slice/Colored/yellow.png" id="2_n4umn"]
+[ext_resource type="FontFile" uid="uid://dgbvi4ssteyx8" path="res://assets/fonts/PixelOperator8.ttf" id="2_nmjvc"]
+[ext_resource type="Texture2D" uid="uid://bog7lfmjxv1rb" path="res://assets/textures/WarningSign_PixyFantasy/WarningSign02.png" id="2_sh25i"]
+[ext_resource type="Texture2D" uid="uid://cqb7iabd3b8ok" path="res://assets/textures/WarningSign_PixyFantasy/WarningSign03.png" id="3_nmjvc"]
+[ext_resource type="Texture2D" uid="uid://dk27fqjka10gt" path="res://assets/textures/WarningSign_PixyFantasy/WarningSign04.png" id="4_n4umn"]
+[ext_resource type="Texture2D" uid="uid://csqpafg0vwafn" path="res://assets/textures/WarningSign_PixyFantasy/WarningSign05.png" id="5_onft3"]
+[ext_resource type="Texture2D" uid="uid://btnsreb26h4yh" path="res://assets/textures/WarningSign_PixyFantasy/WarningSign06.png" id="6_fyu4g"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_vbnlq"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_sh25i")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_nmjvc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_n4umn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_onft3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_fyu4g")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 15.0
+}]
 
 [node name="StormWarningUI" type="Control" unique_id=868499573]
 layout_mode = 3
@@ -14,46 +44,53 @@ offset_bottom = -409.0
 grow_horizontal = 0
 mouse_filter = 2
 script = ExtResource("1_i36kh")
-warningText = "STORM INCOMING AT"
+warningText = " STORM INCOMING AT"
+stormingText = "  Storm Coming!"
 
 [node name="Panel" type="PanelContainer" parent="." unique_id=1295111824]
+self_modulate = Color(1, 1, 1, 0)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -68.0
+offset_top = 45.0
+offset_right = 47.5
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="NinePatchRect" type="NinePatchRect" parent="Panel" unique_id=405812357]
+layout_mode = 2
+texture = ExtResource("2_n4umn")
+patch_margin_left = 16
+patch_margin_top = 16
+patch_margin_right = 16
+patch_margin_bottom = 16
 
 [node name="Content" type="HBoxContainer" parent="Panel" unique_id=924863988]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="IconBg" type="ColorRect" parent="Panel/Content" unique_id=1391307213]
-custom_minimum_size = Vector2(46, 46)
-layout_mode = 2
-color = Color(0.86, 0.19, 0.2, 0.95)
-
-[node name="IconText" type="Label" parent="Panel/Content/IconBg" unique_id=1353896355]
-layout_mode = 0
-offset_left = 16.0
-offset_top = 32.0
-offset_right = 30.0
-offset_bottom = 68.0
-theme_override_font_sizes/font_size = 26
-text = "!"
-horizontal_alignment = 1
-vertical_alignment = 1
-
 [node name="WarningLabel" type="Label" parent="Panel/Content" unique_id=995015524]
+modulate = Color(1, 0.35686275, 0.2, 1)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("2_nmjvc")
 theme_override_font_sizes/font_size = 20
-text = "STORM INCOMING AT"
+text = " STORM INCOMING AT"
 vertical_alignment = 1
 
 [node name="CountdownLabel" type="Label" parent="Panel/Content" unique_id=1472384266]
+modulate = Color(1, 0.011764706, 0, 1)
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_nmjvc")
 theme_override_font_sizes/font_size = 22
-text = "60s"
+text = "60s "
 horizontal_alignment = 2
 vertical_alignment = 1
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Panel/Content" unique_id=2082631737]
+position = Vector2(-31, 25)
+scale = Vector2(2, 2)
+sprite_frames = SubResource("SpriteFrames_vbnlq")
+frame_progress = 0.70219624

@@ -2,27 +2,70 @@
 
 [ext_resource type="Script" uid="uid://b2v05ltnww8ik" path="res://scenes/levels/GameWorld.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://crm4qutfr0otu" path="res://scenes/props/Cabin.tscn" id="2_3sasu"]
+[ext_resource type="Texture2D" uid="uid://dh81vk7gq6783" path="res://assets/textures/Forever Morning/0_sky.png" id="2_4ta1d"]
 [ext_resource type="PackedScene" uid="uid://biqskj7ncenho" path="res://scenes/ui/components/storm_warning_ui.tscn" id="2_dhmek"]
 [ext_resource type="Script" uid="uid://bmtjege46adf1" path="res://scripts/components/TestPlayerController.gd" id="3_0x6r3"]
 [ext_resource type="Texture2D" uid="uid://d048tv117giwp" path="res://assets/textures/猫/Siamese/IdleCattt.png" id="3_8ghft"]
 [ext_resource type="PackedScene" uid="uid://dd80avoqr4dl4" path="res://scenes/ui/components/anchor_slots_ui.tscn" id="3_fy6ti"]
+[ext_resource type="Texture2D" uid="uid://b3313l38amk5n" path="res://assets/textures/Forever Morning/1_spaceship.png" id="3_sef5n"]
 [ext_resource type="PackedScene" uid="uid://do27wnokmof2x" path="res://scenes/props/WaterSurface.tscn" id="4_a73yp"]
+[ext_resource type="Texture2D" uid="uid://c580ug24bjk4t" path="res://assets/textures/Forever Morning/1_stars.png" id="4_cvyl1"]
 [ext_resource type="Script" uid="uid://dmx576ws301qi" path="res://scripts/components/BoatFloatController.gd" id="5_3ar6b"]
+[ext_resource type="Texture2D" uid="uid://bpctc6cjutgna" path="res://assets/textures/Forever Morning/1_stars_trail.png" id="5_7um7j"]
+[ext_resource type="Texture2D" uid="uid://gsh6von6awgj" path="res://assets/textures/Mini FX, Items & UI/Common Pick-ups/Coin (16 x 16).png" id="5_dhq8s"]
+[ext_resource type="Texture2D" uid="uid://x2etpdac7gse" path="res://assets/textures/Forever Morning/2_clouds.png" id="6_3qubl"]
 [ext_resource type="Script" uid="uid://bbcbgceyjg16o" path="res://scripts/components/StormController.gd" id="7_hy2pk"]
-[ext_resource type="PackedScene" uid="uid://bj3xbh3bkitqi" path="res://scenes/props/FishTankInteractable.tscn" id="7_q4kc4"]
+[ext_resource type="PackedScene" uid="uid://bj3xbh3bkitqi" path="res://scenes/props/Interactable/FishTankInteractable.tscn" id="7_q4kc4"]
 [ext_resource type="Script" uid="uid://cshkm83i4d55g" path="res://scripts/components/AnchorController.gd" id="8_ankcr"]
-[ext_resource type="PackedScene" uid="uid://bilqy4usaryy7" path="res://scenes/props/FruitTreeInteractable.tscn" id="9_6ecue"]
-[ext_resource type="PackedScene" uid="uid://b85mvrq0ews6p" path="res://scenes/props/IncineratorInteractable.tscn" id="9_incinerator"]
+[ext_resource type="PackedScene" uid="uid://bilqy4usaryy7" path="res://scenes/props/Interactable/FruitTreeInteractable.tscn" id="9_6ecue"]
+[ext_resource type="PackedScene" uid="uid://b85mvrq0ews6p" path="res://scenes/props/Interactable/IncineratorInteractable.tscn" id="9_incinerator"]
+[ext_resource type="FontFile" uid="uid://dgbvi4ssteyx8" path="res://assets/fonts/PixelOperator8.ttf" id="9_smoeg"]
 [ext_resource type="PackedScene" path="res://scenes/props/FishingZone.tscn" id="13_46q1d"]
-[ext_resource type="PackedScene" uid="uid://5v62jfn1esl4" path="res://scenes/props/StoveInteractable.tscn" id="14_stove"]
-[ext_resource type="PackedScene" uid="uid://c7lx2qlu08jmm" path="res://scenes/props/PotCargo.tscn" id="15_pot"]
-[ext_resource type="PackedScene" uid="uid://bhjyu1jxf3jny" path="res://scenes/props/DiningTableInteractable.tscn" id="17_dining_table"]
-[ext_resource type="PackedScene" path="res://scenes/props/FryingPanCargo.tscn" id="18_frying_pan"]
-[ext_resource type="PackedScene" uid="uid://daotoqyv4pigc" path="res://scenes/props/CuttingBoardCargo.tscn" id="19_cutting_board"]
-[ext_resource type="PackedScene" uid="uid://bjm2ehurbhosl" path="res://scenes/props/JuicerInteractable.tscn" id="20_juicer"]
+[ext_resource type="PackedScene" uid="uid://5v62jfn1esl4" path="res://scenes/props/Interactable/StoveInteractable.tscn" id="14_stove"]
+[ext_resource type="PackedScene" uid="uid://c7lx2qlu08jmm" path="res://scenes/props/Interactable/PotCargo.tscn" id="15_pot"]
+[ext_resource type="PackedScene" uid="uid://bhjyu1jxf3jny" path="res://scenes/props/Interactable/DiningTableInteractable.tscn" id="17_dining_table"]
+[ext_resource type="PackedScene" uid="uid://deh8niwjmxmfs" path="res://scenes/props/Interactable/FryingPanCargo.tscn" id="18_frying_pan"]
+[ext_resource type="PackedScene" uid="uid://daotoqyv4pigc" path="res://scenes/props/Interactable/CuttingBoardCargo.tscn" id="19_cutting_board"]
+[ext_resource type="PackedScene" uid="uid://bjm2ehurbhosl" path="res://scenes/props/Interactable/JuicerInteractable.tscn" id="20_juicer"]
 [ext_resource type="Script" uid="uid://bngtwf0cobb8g" path="res://scripts/components/CustomerSpawner.gd" id="21_customer_spawner"]
 [ext_resource type="Script" uid="uid://bjkt27vdgr04t" path="res://scripts/components/CoinHudUI.gd" id="22_coin_hud"]
-[ext_resource type="PackedScene" uid="uid://v2o8ndm3yu4e" path="res://scenes/props/PlateDispenserInteractable.tscn" id="24_plate_dispenser"]
+[ext_resource type="PackedScene" uid="uid://v2o8ndm3yu4e" path="res://scenes/props/Interactable/PlateDispenserInteractable.tscn" id="24_plate_dispenser"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4ta1d"]
+atlas = ExtResource("5_dhq8s")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ppx4y"]
+atlas = ExtResource("5_dhq8s")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8fc6g"]
+atlas = ExtResource("5_dhq8s")
+region = Rect2(32, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wqi5v"]
+atlas = ExtResource("5_dhq8s")
+region = Rect2(48, 0, 16, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_2665p"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4ta1d")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ppx4y")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8fc6g")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wqi5v")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_8ghft"]
 radius = 10.333334
@@ -128,6 +171,57 @@ script = ExtResource("1")
 [node name="WorldCamera" type="Camera2D" parent="." unique_id=945099590]
 zoom = Vector2(0.8, 0.8)
 
+[node name="back" type="Node2D" parent="WorldCamera" unique_id=3672821]
+z_index = -100
+
+[node name="0Sky" type="Sprite2D" parent="WorldCamera/back" unique_id=1101138054]
+position = Vector2(0, -2.5)
+scale = Vector2(9.547619, 12.435185)
+texture = ExtResource("2_4ta1d")
+
+[node name="1Spaceship" type="Sprite2D" parent="WorldCamera/back" unique_id=1091805476]
+position = Vector2(369, -381)
+texture = ExtResource("3_sef5n")
+
+[node name="1Stars" type="Sprite2D" parent="WorldCamera/back" unique_id=578569400]
+position = Vector2(-944, -485)
+texture = ExtResource("4_cvyl1")
+
+[node name="1StarsTrail" type="Sprite2D" parent="WorldCamera/back" unique_id=129894073]
+position = Vector2(-574, -344)
+texture = ExtResource("5_7um7j")
+
+[node name="1Stars2" type="Sprite2D" parent="WorldCamera/back" unique_id=972461623]
+position = Vector2(520, -609)
+texture = ExtResource("4_cvyl1")
+
+[node name="1Stars3" type="Sprite2D" parent="WorldCamera/back" unique_id=1558570369]
+position = Vector2(-228, -612)
+texture = ExtResource("4_cvyl1")
+
+[node name="2Clouds" type="Sprite2D" parent="WorldCamera/back" unique_id=920126945]
+self_modulate = Color(1, 1, 1, 0.78431374)
+position = Vector2(-901, -451)
+texture = ExtResource("6_3qubl")
+
+[node name="2Clouds2" type="Sprite2D" parent="WorldCamera/back" unique_id=1097075748]
+self_modulate = Color(1, 1, 1, 0.7411765)
+position = Vector2(548, -316)
+texture = ExtResource("6_3qubl")
+
+[node name="2Clouds3" type="Sprite2D" parent="WorldCamera/back" unique_id=921510351]
+position = Vector2(-580, -543)
+texture = ExtResource("6_3qubl")
+
+[node name="2Clouds4" type="Sprite2D" parent="WorldCamera/back" unique_id=1476477708]
+position = Vector2(276, -513)
+texture = ExtResource("6_3qubl")
+
+[node name="2Clouds5" type="Sprite2D" parent="WorldCamera/back" unique_id=575481901]
+self_modulate = Color(1, 1, 1, 0.57254905)
+position = Vector2(829, 54)
+texture = ExtResource("6_3qubl")
+
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=538021173]
 follow_viewport_enabled = true
 
@@ -146,11 +240,6 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="Label" type="Label" parent="CanvasLayer/MarginContainer" unique_id=991418925]
-visible = false
-layout_mode = 2
-text = "Game World"
-
 [node name="StormWarningUI" parent="CanvasLayer" unique_id=868499573 instance=ExtResource("2_dhmek")]
 offset_left = -1209.0
 offset_top = -568.0
@@ -162,13 +251,21 @@ position = Vector2(-460, -556)
 scale = Vector2(3, 3)
 
 [node name="CoinHud" type="Label" parent="CanvasLayer" unique_id=1156597198]
-offset_left = -458.0
-offset_top = -518.0
-offset_right = -298.0
-offset_bottom = -492.0
-theme_override_font_sizes/font_size = 24
-text = "金币: 0"
+offset_left = -145.0
+offset_top = -546.0
+offset_right = 15.0
+offset_bottom = -479.0
+theme_override_fonts/font = ExtResource("9_smoeg")
+theme_override_font_sizes/font_size = 48
+text = "0"
 script = ExtResource("22_coin_hud")
+prefix = ""
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CanvasLayer/CoinHud" unique_id=151212311]
+position = Vector2(-45, 21)
+scale = Vector2(4, 4)
+sprite_frames = SubResource("SpriteFrames_2665p")
+frame_progress = 0.660208
 
 [node name="Cabins" type="Node2D" parent="." unique_id=1560321885]
 z_index = -10
@@ -200,8 +297,8 @@ right_door_open = true
 
 [node name="FishTankInteractable" parent="Cabins/Cabin2-钓鱼" unique_id=85633376 instance=ExtResource("7_q4kc4")]
 z_index = 5
-position = Vector2(145, -12.222229)
-scale = Vector2(2, 5)
+position = Vector2(69, -60.000008)
+scale = Vector2(3, 3)
 
 [node name="Cabin3-水果" parent="Cabins" unique_id=1843543556 instance=ExtResource("2_3sasu")]
 position = Vector2(446, -82)
@@ -214,18 +311,40 @@ ceiling_hole_size = 120.0
 z_index = 6
 position = Vector2(-157, 76.66667)
 scale = Vector2(2, 2)
+fruitType = null
+fruitScene = null
+cooldownSec = null
+interactableGroupName = null
+debugInteractLog = null
+debugRangeLog = null
+rangeRectSize = null
+rangeOffset = null
 
 [node name="FruitTreeInteractable2" parent="Cabins/Cabin3-水果" unique_id=2012134646 instance=ExtResource("9_6ecue")]
 z_index = 6
 position = Vector2(158, 81.111115)
 scale = Vector2(2, 2)
 fruitType = 5
+fruitScene = null
+cooldownSec = null
+interactableGroupName = null
+debugInteractLog = null
+debugRangeLog = null
+rangeRectSize = null
+rangeOffset = null
 
 [node name="FruitTreeInteractable3" parent="Cabins/Cabin3-水果" unique_id=1801752209 instance=ExtResource("9_6ecue")]
 z_index = 6
 position = Vector2(5, 82.22223)
 scale = Vector2(2, 2)
 fruitType = 6
+fruitScene = null
+cooldownSec = null
+interactableGroupName = null
+debugInteractLog = null
+debugRangeLog = null
+rangeRectSize = null
+rangeOffset = null
 
 [node name="Cabin4-果酱" parent="Cabins" unique_id=891480747 instance=ExtResource("2_3sasu")]
 position = Vector2(446, -384)
@@ -287,7 +406,7 @@ floor_hole_size = 120.0
 [node name="PlateDispenserInteractable" parent="Cabins/Cabin7-盘子" unique_id=728974413 instance=ExtResource("24_plate_dispenser")]
 z_index = 4
 position = Vector2(-6, 70)
-scale = Vector2(2, 2)
+scale = Vector2(1.8, 2)
 
 [node name="Cabin8" parent="Cabins" unique_id=968442119 instance=ExtResource("2_3sasu")]
 position = Vector2(-3, -686)
@@ -381,8 +500,19 @@ debugStormLog = true
 
 [node name="FishingZone" parent="." unique_id=1196822258 instance=ExtResource("13_46q1d")]
 position = Vector2(-65, 569)
+fishScene = null
+targetFishCount = null
 spawnIntervalSec = 5.0
+debugFishingZoneLog = null
 
 [node name="CustomerSpawner" type="Node" parent="." unique_id=252203174]
 script = ExtResource("21_customer_spawner")
+customerScene = null
+vipCabinName = null
+spawnIntervalSec = null
 minSpawnIntervalSec = 25.0
+spawnAccelFactor = null
+maxCustomers = null
+midStageStartServedCount = null
+lateStageStartServedCount = null
+debugSpawnerLog = null

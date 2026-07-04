@@ -12,6 +12,26 @@ const SCENES := {
 	GAME_WORLD = "res://scenes/levels/GameWorld.tscn",
 }
 
+const PROP_SCENES := {
+	ANCHOR_PLACED = preload('res://scenes/props/AnchorPlaced.tscn'),
+	PLATE_CARGO = preload('res://scenes/props/Cargo/PlateCargo.tscn'),
+	FISH_ENTITY = preload('res://scenes/props/Cargo/FishEntity.tscn'),
+	FRUIT_CARGO = preload('res://scenes/props/Cargo/FruitCargo.tscn'),
+	CUSTOMER_ENTITY = preload('res://scenes/props/CustomerEntity.tscn'),
+}
+
+const TEXTURES := {
+	FISH_ALIVE = preload('res://assets/textures/烹饪/鱼.png'),
+	FISH_DEAD = preload('res://assets/textures/烹饪/骨鱼.png'),
+	DISH_ATLAS = preload('res://assets/textures/烹饪/料理.png'),
+	FRUIT_ATLAS = preload('res://assets/textures/烹饪/水果.png'),
+	JAM_ATLAS = preload('res://assets/textures/烹饪/果酱.png'),
+	PLATE_EMPTY = preload('res://assets/textures/烹饪/46. Plate.png'),
+	JUICER_ATLAS = preload('res://assets/textures/烹饪/榨汁机.png'),
+	ANCHOR_CHAIN = preload('res://assets/textures/锚链.png'),
+	ANCHOR_HEAD = preload('res://assets/textures/锚.png'),
+}
+
 const DATA := {
 	# 示例：SWORD_IRON = "res://resources/data/sword_iron.tres",
 }

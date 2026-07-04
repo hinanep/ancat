@@ -99,6 +99,18 @@ func take_food() -> Node2D:
 	return food
 
 
+## 清空煎锅内部存储，不销毁煎锅本体。
+## @return void
+func clear_internal_storage() -> void:
+	if _foodNode != null and is_instance_valid(_foodNode):
+		_foodNode.queue_free()
+	_foodNode = null
+	_isCooked = false
+	_cookRemainingSec = 0.0
+	_cookProgressBar.visible = false
+	_cookProgressBar.value = 0.0
+
+
 ## 更新进度条。
 func _update_progress_bar() -> void:
 	if totalCookSec <= 0.0:

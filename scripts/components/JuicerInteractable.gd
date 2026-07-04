@@ -7,7 +7,7 @@ extends InteractableBase
 ## @atlasCellSize 图集单格尺寸
 @export var plateGroupName: StringName = 'Plate'
 @export var maxStoredJams: int = 3
-@export var machineAtlas: Texture2D = preload('res://assets/textures/烹饪/榨汁机.png')
+@export var machineAtlas: Texture2D = ResPath.TEXTURES.JUICER_ATLAS
 @export var atlasCellSize: Vector2 = Vector2(32.0, 32.0)
 ## 空机器贴图区域（左上角）。
 @export var emptyRegion: Rect2 = Rect2(0.0, 0.0, 32.0, 32.0)

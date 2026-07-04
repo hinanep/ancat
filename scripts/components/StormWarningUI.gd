@@ -2,10 +2,10 @@ extends Control
 
 ## 风暴预警UI：角落警示图标与倒计时控制。
 ## 警示文案
-@export var warningText: String = 'STORM INCOMING'
+@export var warningText: String = ' STORM INCOMING'
 
 ## 风暴进行中文案
-@export var stormingText: String = 'Storm Coming!'
+@export var stormingText: String = ' Storm Coming!'
 
 @onready var _warningLabel: Label = $Panel/Content/WarningLabel
 @onready var _countdownLabel: Label = $Panel/Content/CountdownLabel
@@ -54,7 +54,7 @@ func show_warning(secondsRemaining: int, message: String = '') -> void:
 ## @param secondsRemaining 剩余秒数
 ## @return void
 func update_countdown(secondsRemaining: int) -> void:
-	_countdownLabel.text = '%ss' % max(secondsRemaining, 0)
+	_countdownLabel.text = '%ss ' % max(secondsRemaining, 0)
 
 
 ## 隐藏预警 UI。

@@ -8,7 +8,7 @@ extends Node2D
 ## 槽位间距（像素）。
 @export var slotSpacingX: float = 26.0
 ## 槽位图标场景（默认使用放置锚实体图标）。
-@export var slotIconScene: PackedScene = preload('res://scenes/props/AnchorPlaced.tscn')
+@export var slotIconScene: PackedScene = ResPath.PROP_SCENES.ANCHOR_PLACED
 ## 正常槽位颜色。
 @export var slotNormalColor: Color = Color(1.0, 1.0, 1.0, 1.0)
 ## 已消耗槽位颜色。

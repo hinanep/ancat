@@ -1,6 +1,8 @@
 extends InteractableBase
 
 ## 鱼缸交互参数：入缸容量、倾斜滑出与滑出落点配置。
+## 盘子分组名（用于从鱼缸取鱼装盘）。
+@export var plateGroupName: StringName = 'Plate'
 ## 鱼缸最大存储数量。
 @export var maxFishCount: int = 3
 ## 触发滑出的船体倾斜阈值（度）。
@@ -23,6 +25,7 @@ extends InteractableBase
 var _storedFish: Array[Node] = []
 var _spillCooldown: float = 0.0
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
+var _lastPlateTakeAccepted: bool = false
 
 
 ## 初始化随机数。
@@ -55,6 +58,8 @@ func _is_item_valid(item: Node) -> bool:
 	if item == null:
 		return false
 	_cleanup_stored_fish()
+	if item.is_in_group(plateGroupName):
+		return _can_plate_take_fish(item)
 	if _storedFish.size() >= max(maxFishCount, 0):
 		return false
 	if not item.has_method('mark_in_tank'):
@@ -72,6 +77,12 @@ func _is_item_valid(item: Node) -> bool:
 func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 	var _unusedPlayer: Node = player
 	var _unusedAnchorController: Node = anchorController
+	_lastPlateTakeAccepted = false
+	if item != null and item.is_in_group(plateGroupName):
+		_lastPlateTakeAccepted = _take_one_fish_to_plate(item)
+		if _lastPlateTakeAccepted:
+			_log_interact('tank serve raw fish to plate count=%d' % _storedFish.size())
+		return
 	var swimRect: Rect2 = _tank_swim_rect_global()
 	if item.has_method('mark_in_tank_with_bounds'):
 		item.call('mark_in_tank_with_bounds', swimRect)
@@ -92,6 +103,15 @@ func _on_interact_failed(player: Node, item: Node, anchorController: Node) -> vo
 	var _unusedAnchorController: Node = anchorController
 	_cleanup_stored_fish()
 	_log_interact('tank store rejected count=%d max=%d' % [_storedFish.size(), maxFishCount])
+
+
+## 控制是否消耗携带物（盘子取鱼时不消耗盘子）。
+## @param item 携带物品
+## @return bool
+func _consume_carried_on_item_valid(item: Node) -> bool:
+	if item != null and item.is_in_group(plateGroupName) and _lastPlateTakeAccepted:
+		return false
+	return true
 
 
 ## 清理无效缓存引用。
@@ -121,6 +141,41 @@ func _spill_one_fish() -> void:
 	else:
 		fishNode.call('mark_out_of_tank', dropPos)
 	_log_interact('tank spill fish count=%d' % _storedFish.size())
+
+
+## 判定盘子是否可取鱼（需有库存且盘子为空）。
+## @param plate 盘子节点
+## @return bool
+func _can_plate_take_fish(plate: Node) -> bool:
+	if plate == null:
+		return false
+	if _storedFish.is_empty():
+		return false
+	if not plate.has_method('get_food_type'):
+		return false
+	var plateFoodType: Variant = plate.call('get_food_type')
+	if typeof(plateFoodType) != TYPE_INT:
+		return false
+	return int(plateFoodType) == -1
+
+
+## 从鱼缸取一条鱼并装盘为生鱼料理。
+## @param plate 盘子节点
+## @return bool
+func _take_one_fish_to_plate(plate: Node) -> bool:
+	if not _can_plate_take_fish(plate):
+		return false
+	_cleanup_stored_fish()
+	if _storedFish.is_empty():
+		return false
+	var fishNode: Node = _storedFish.pop_back()
+	if fishNode != null and is_instance_valid(fishNode):
+		_consume_item(fishNode)
+	if plate.has_method('set_food_type'):
+		plate.call('set_food_type', FoodConfig.FoodType.RAW_FISH)
+	if plate.has_method('apply_food_texture'):
+		plate.call('apply_food_texture')
+	return true
 
 
 ## 计算鱼缸内部游动范围（全局矩形）。
