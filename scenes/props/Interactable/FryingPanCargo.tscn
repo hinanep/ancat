@@ -1,16 +1,16 @@
 [gd_scene format=3 uid="uid://deh8niwjmxmfs"]
 
 [ext_resource type="Script" uid="uid://bq2cg27nc8s63" path="res://scripts/components/FryingPanCargo.gd" id="1_pan_script"]
-[ext_resource type="Texture2D" uid="uid://bddl87f7w8ai6" path="res://assets/textures/烹饪/63. Pan.png" id="2_pan_texture"]
+[ext_resource type="Texture2D" uid="uid://dyxar5x1qe78h" path="res://assets/textures/烹饪/煎锅.png" id="2_ivo45"]
 [ext_resource type="Script" uid="uid://bi70ntdby8oma" path="res://scripts/components/FryingPanInteractable.gd" id="3_pan_interact"]
 [ext_resource type="PackedScene" uid="uid://cvlujgnml141e" path="res://scenes/components/InteractRangeComponent.tscn" id="4_interact_range"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_pan"]
-radius = 17.0
-height = 34.0
+radius = 14.0
+height = 28.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ivo45"]
-size = Vector2(35, 33)
+size = Vector2(35, 22)
 
 [node name="FryingPanCargo" type="CharacterBody2D" unique_id=1779276350]
 collision_layer = 5
@@ -22,7 +22,8 @@ max_slide_speed = 120.0
 deliveryTag = "frying_pan"
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=364653749]
-texture = ExtResource("2_pan_texture")
+scale = Vector2(1.1, 1.1)
+texture = ExtResource("2_ivo45")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=800129281]
 position = Vector2(0, -1)
@@ -43,7 +44,7 @@ rangeRectSize = Vector2(28, 18)
 rangeCircleRadius = 15.0
 
 [node name="CollisionShape2D" parent="InteractRangeComponent" index="0" unique_id=1838581898]
-position = Vector2(-0.5, 0.5)
+position = Vector2(-0.5, 1)
 shape = SubResource("RectangleShape2D_ivo45")
 
 [node name="InteractArea" type="Area2D" parent="." unique_id=1648247689]
