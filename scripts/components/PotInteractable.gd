@@ -36,6 +36,7 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 	if item.is_in_group(cookableGroupName):
 		# 食材入锅
 		pot.call('add_food', item)
+		AudioManager.play_sfx(ResPath.AUDIO.STOVE_BOIL)
 		_log_interact('food added to pot')
 		return
 	if item.is_in_group(plateGroupName):
@@ -47,6 +48,7 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 			item.call('set_food_type', FoodConfig.FoodType.BOILED_FISH)
 		if item.has_method('apply_food_texture'):
 			item.call('apply_food_texture')
+		AudioManager.play_sfx(ResPath.AUDIO.PICK_UP_ITEM)
 		_log_interact('food served to plate')
 
 

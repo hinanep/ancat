@@ -50,6 +50,8 @@ func _on_pot_detection_area_body_entered(body: Node2D) -> void:
 	_currentPot = body
 	if body.has_method('set_on_stove'):
 		body.call('set_on_stove', true)
+	if body.is_in_group(potGroupName):
+		AudioManager.play_sfx_loop(_stove_loop_key(body), ResPath.AUDIO.STOVE_BOIL)
 
 
 ## PotDetectionArea body_exited 信号回调：锅离开检测区域时通知锅暂停烹饪。
@@ -59,6 +61,8 @@ func _on_pot_detection_area_body_exited(body: Node2D) -> void:
 		return
 	if is_instance_valid(_currentPot) and _currentPot.has_method('set_on_stove'):
 		_currentPot.call('set_on_stove', false)
+	if body.is_in_group(potGroupName):
+		AudioManager.stop_sfx_loop(_stove_loop_key(body))
 	_currentPot = null
 
 
@@ -69,3 +73,12 @@ func _is_stove_cookware(node: Node) -> bool:
 	if node == null:
 		return false
 	return node.is_in_group(potGroupName) or node.is_in_group(fryingPanGroupName)
+
+
+## 生成炉子循环音效 key（按锅实例区分）。
+## @param node 炉具节点
+## @return String
+func _stove_loop_key(node: Node) -> String:
+	if node == null:
+		return 'stove_loop'
+	return 'stove_%s' % node.get_instance_id()

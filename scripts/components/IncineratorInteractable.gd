@@ -67,6 +67,7 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 	_processingItem = item
 	_processingRemainingSec = max(processDurationSec, 0.0)
 	_isProcessing = true
+	AudioManager.play_sfx(ResPath.AUDIO.INCINERATOR_BURN)
 	if item != null and item.has_method('drop_to_world'):
 		item.call('drop_to_world')
 	if item is Node2D:

@@ -35,6 +35,7 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 		return
 	if item.is_in_group(cookableGroupName):
 		board.call('add_food', item)
+		AudioManager.play_sfx(ResPath.AUDIO.CUT_FISH)
 		_log_interact('food added to cutting board')
 		return
 	if item.is_in_group(plateGroupName):

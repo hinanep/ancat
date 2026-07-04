@@ -242,6 +242,7 @@ func _on_all_demands_satisfied() -> void:
 	if GameState.has_method('add_gold'):
 		GameState.call('add_gold', payAmount)
 	EventBus.emit(EventBus.EventType.CUSTOMER_SERVED, {'pay': payAmount, 'vip': _isVip})
+	AudioManager.play_sfx_random(ResPath.AUDIO.CAT_MEOW)
 	_start_leave(true)
 
 

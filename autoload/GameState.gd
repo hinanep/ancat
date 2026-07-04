@@ -54,6 +54,12 @@ func add_gold(amount: int) -> int:
 	var next: int = max(current + amount, 0)
 	_state[GOLD_KEY] = next
 	value_changed.emit(GOLD_KEY, next)
+	if amount >= 10:
+		AudioManager.play_sfx(ResPath.AUDIO.COIN_MANY)
+	elif amount >= 4:
+		AudioManager.play_sfx(ResPath.AUDIO.COIN_MEDIUM)
+	elif amount > 0:
+		AudioManager.play_sfx(ResPath.AUDIO.COIN_FEW)
 	EventBus.emit(EventBus.EventType.COIN_CHANGED, {'gold': next, 'delta': amount})
 	return next
 
@@ -62,3 +68,48 @@ func add_gold(amount: int) -> int:
 ## @return int
 func get_gold() -> int:
 	return int(_state.get(GOLD_KEY, 0))
+
+
+## 检查金币是否足够支付。
+## @param amount 目标花费
+## @return bool
+func can_afford(amount: int) -> bool:
+	if amount <= 0:
+		return true
+	return get_gold() >= amount
+
+
+## 消费金币并广播变化事件，失败时不改动状态。
+## @param amount 消费数量
+## @return bool
+func spend_gold(amount: int) -> bool:
+	if amount <= 0:
+		return true
+	if not can_afford(amount):
+		return false
+	add_gold(-amount)
+	return true
+
+
+## 获取某升级项当前等级（仅运行时内存）。
+## @param key 升级等级键
+## @return int
+func get_upgrade_level(key: StringName) -> int:
+	if key == &'':
+		return 0
+	var value: Variant = get_value(key, 0)
+	if typeof(value) != TYPE_INT:
+		return 0
+	return max(int(value), 0)
+
+
+## 设置某升级项等级并广播状态变更。
+## @param key 升级等级键
+## @param level 新等级
+## @return int
+func set_upgrade_level(key: StringName, level: int) -> int:
+	if key == &'':
+		return 0
+	var safeLevel: int = max(level, 0)
+	set_value(key, safeLevel)
+	return safeLevel

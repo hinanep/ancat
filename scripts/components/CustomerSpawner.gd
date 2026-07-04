@@ -76,6 +76,7 @@ func _try_spawn_customer() -> void:
 		'vip': isVip,
 		'demands': demandTemplate
 	})
+	AudioManager.play_sfx_random(ResPath.AUDIO.CAT_MEOW)
 	_debug_log('spawn customer in %s, vip=%s, interval=%.2f' % [targetCabin.name, str(isVip), _currentIntervalSec])
 
 

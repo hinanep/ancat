@@ -10,6 +10,7 @@ var _foodNode: Node2D
 var _isOnStove: bool = false
 var _cookRemainingSec: float = 0.0
 var _isCooked: bool = false
+var _fryLoopActive: bool = false
 
 @onready var _cookProgressBar: ProgressBar = $CookProgressBar
 
@@ -30,14 +31,20 @@ func _process(delta: float) -> void:
 	if _foodNode == null or not is_instance_valid(_foodNode):
 		_foodNode = null
 		_cookProgressBar.visible = false
+		_stop_fry_loop()
 		return
 	if not _isOnStove or _isCooked:
+		if not _isOnStove:
+			_stop_fry_loop()
 		return
+	_ensure_fry_loop_started()
 	_cookRemainingSec = max(_cookRemainingSec - delta, 0.0)
 	_update_progress_bar()
 	if _cookRemainingSec <= 0.0:
 		_isCooked = true
 		_cookProgressBar.visible = false
+		_stop_fry_loop()
+		AudioManager.play_sfx(ResPath.AUDIO.PROGRESS_COMPLETE)
 		_debug_log('fried food ready')
 
 
@@ -50,6 +57,7 @@ func set_on_stove(value: bool) -> void:
 		_update_progress_bar()
 	elif not value:
 		_cookProgressBar.visible = false
+		_stop_fry_loop()
 
 
 ## 是否有食材。
@@ -96,6 +104,7 @@ func take_food() -> Node2D:
 	_isCooked = false
 	_cookRemainingSec = 0.0
 	_cookProgressBar.visible = false
+	_stop_fry_loop()
 	return food
 
 
@@ -109,6 +118,32 @@ func clear_internal_storage() -> void:
 	_cookRemainingSec = 0.0
 	_cookProgressBar.visible = false
 	_cookProgressBar.value = 0.0
+	_stop_fry_loop()
+
+
+## 覆盖煎锅总烹饪时长，并按当前进度重映射剩余时间。
+## @param newTotalSec 新总时长（秒）
+## @return void
+func apply_cook_total_sec(newTotalSec: float) -> void:
+	var clampedTotalSec: float = max(newTotalSec, 0.0)
+	var oldTotalSec: float = max(totalCookSec, 0.0)
+	totalCookSec = clampedTotalSec
+	if _foodNode != null and is_instance_valid(_foodNode) and not _isCooked:
+		if oldTotalSec <= 0.0:
+			_cookRemainingSec = clampedTotalSec
+		else:
+			var progress: float = 1.0 - (_cookRemainingSec / oldTotalSec)
+			var safeProgress: float = clampf(progress, 0.0, 1.0)
+			_cookRemainingSec = clampedTotalSec * (1.0 - safeProgress)
+		if _isOnStove and _cookRemainingSec <= 0.0:
+			_cookRemainingSec = 0.0
+			_isCooked = true
+			_cookProgressBar.visible = false
+			_stop_fry_loop()
+			AudioManager.play_sfx(ResPath.AUDIO.PROGRESS_COMPLETE)
+			_debug_log('fried food ready')
+			return
+	_update_progress_bar()
 
 
 ## 更新进度条。
@@ -117,3 +152,27 @@ func _update_progress_bar() -> void:
 		_cookProgressBar.value = 1.0
 		return
 	_cookProgressBar.value = 1.0 - (_cookRemainingSec / totalCookSec)
+
+
+## 启动煎锅持续音效。
+## @return void
+func _ensure_fry_loop_started() -> void:
+	if _fryLoopActive:
+		return
+	_fryLoopActive = true
+	AudioManager.play_sfx_loop(_fry_loop_key(), ResPath.AUDIO.FRY_PAN)
+
+
+## 停止煎锅持续音效。
+## @return void
+func _stop_fry_loop() -> void:
+	if not _fryLoopActive:
+		return
+	_fryLoopActive = false
+	AudioManager.stop_sfx_loop(_fry_loop_key())
+
+
+## 返回煎锅循环音效 key。
+## @return String
+func _fry_loop_key() -> String:
+	return 'fry_pan_%s' % get_instance_id()

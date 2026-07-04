@@ -19,6 +19,7 @@ atlas = ExtResource("4_we83e")
 region = Rect2(224, 208, 32, 32)
 
 [node name="DiningTableInteractable" type="CharacterBody2D" unique_id=1453950512]
+scale = Vector2(2, 2)
 collision_layer = 5
 collision_mask = 5
 script = ExtResource("1_table_cargo_script")

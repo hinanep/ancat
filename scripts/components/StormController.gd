@@ -75,6 +75,7 @@ func _enter_idle() -> void:
 func _enter_warning() -> void:
 	_state = StormState.WARNING
 	_stateTimer = warningDurationSec
+	AudioManager.play_sfx(ResPath.AUDIO.STORM_WARNING)
 	EventBus.emit(EventBus.EventType.STORM_WARNING_STARTED, {
 		'remaining_seconds': int(ceil(_stateTimer)),
 		'duration_seconds': warningDurationSec

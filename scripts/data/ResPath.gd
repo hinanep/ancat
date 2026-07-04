@@ -59,6 +59,10 @@ const AUDIO := {
 	COIN_MANY = "res://assets/audio/sfx/金币多（根据顾客给的钱数分音效）.mp3",
 	COIN_FEW = "res://assets/audio/sfx/金币少.mp3",
 	ANCHOR_HIT_ITEM = "res://assets/audio/sfx/锚碰到物品.mp3",
+	ANCHOR_FIRE = "res://assets/audio/sfx/ImpactAudio（一些碰撞音效，脚步声）/impactGeneric_light_000.ogg",
+	ANCHOR_RETRIEVE = "res://assets/audio/sfx/ImpactAudio（一些碰撞音效，脚步声）/impactGeneric_light_000.ogg",
+	FISH_TANK_DROP = "res://assets/audio/sfx/ImpactAudio（一些碰撞音效，脚步声）/impactGeneric_light_000.ogg",
+	INCINERATOR_BURN = "res://assets/audio/sfx/ImpactAudio（一些碰撞音效，脚步声）/impactGeneric_light_000.ogg",
 	STORM_WARNING = "res://assets/audio/sfx/风暴警告.mp3",
 	CAT_MEOW = [
 		"res://assets/audio/sfx/猫叫（顾客出现时，顾客吃饱时，顾客或顾客的桌子被锚击中，顾客或顾客桌子摔落一层）/猫叫1.wav",

@@ -7,11 +7,14 @@ extends Node
 
 var _bgm_player: AudioStreamPlayer
 var _sfx_pool: Array[AudioStreamPlayer] = []
+var _loop_players: Dictionary = {}
+var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 var _bgm_path: String = ""
 var _sfx_pool_size: int = 8
 
 func _ready() -> void:
+	_rng.randomize()
 	# 创建 BGM 播放器
 	_bgm_player = AudioStreamPlayer.new()
 	_bgm_player.name = "BGMPlayer"
@@ -47,13 +50,59 @@ func stop_bgm() -> void:
 
 ## 播放 SFX（从池中取空闲播放器）
 func play_sfx(audio_path: String) -> void:
+	if audio_path == "":
+		return
 	var player: AudioStreamPlayer = _get_free_sfx_player()
 	if not player:
 		push_warning("AudioManager: SFX pool full, dropping %s" % audio_path)
 		return
 	player.stream = load(audio_path) as AudioStream
+	if player.stream == null:
+		return
 	player.volume_db = linear_to_db(GameSettings.get_sfx_volume())
 	player.play()
+
+## 播放随机 SFX（从路径数组随机选一条）。
+func play_sfx_random(paths: Array) -> void:
+	if paths.is_empty():
+		return
+	var pickIndex: int = _rng.randi_range(0, paths.size() - 1)
+	var pickedPath: Variant = paths[pickIndex]
+	if typeof(pickedPath) != TYPE_STRING:
+		return
+	var audioPath: String = String(pickedPath)
+	if audioPath == "":
+		return
+	play_sfx(audioPath)
+
+## 启动循环 SFX（同 key 不重复创建）。
+func play_sfx_loop(key: String, audio_path: String) -> void:
+	if key == "" or audio_path == "":
+		return
+	var player: AudioStreamPlayer = _loop_players.get(key, null) as AudioStreamPlayer
+	if player == null or not is_instance_valid(player):
+		player = AudioStreamPlayer.new()
+		player.name = "LoopSFX_%s" % key
+		player.bus = "Master"
+		add_child(player)
+		_loop_players[key] = player
+	var stream: AudioStream = load(audio_path) as AudioStream
+	if stream == null:
+		return
+	stream.loop = true
+	player.stream = stream
+	player.volume_db = linear_to_db(GameSettings.get_sfx_volume())
+	if not player.playing:
+		player.play()
+
+## 停止指定 key 的循环 SFX。
+func stop_sfx_loop(key: String) -> void:
+	if key == "":
+		return
+	var player: AudioStreamPlayer = _loop_players.get(key, null) as AudioStreamPlayer
+	if player == null or not is_instance_valid(player):
+		return
+	player.stop()
 
 ## 获取空闲的 SFX 播放器
 func _get_free_sfx_player() -> AudioStreamPlayer:
@@ -71,3 +120,8 @@ func _on_music_volume_changed(new_volume: float) -> void:
 func _on_sfx_volume_changed(new_volume: float) -> void:
 	for player: AudioStreamPlayer in _sfx_pool:
 		player.volume_db = linear_to_db(new_volume)
+	for key in _loop_players.keys():
+		var loopPlayer: AudioStreamPlayer = _loop_players[key] as AudioStreamPlayer
+		if loopPlayer == null or not is_instance_valid(loopPlayer):
+			continue
+		loopPlayer.volume_db = linear_to_db(new_volume)

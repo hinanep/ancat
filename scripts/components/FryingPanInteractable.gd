@@ -35,6 +35,7 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 		return
 	if item.is_in_group(cookableGroupName):
 		pan.call('add_food', item)
+		AudioManager.play_sfx(ResPath.AUDIO.FRY_PAN)
 		_log_interact('food added to frying pan')
 		return
 	if item.is_in_group(plateGroupName):
@@ -46,6 +47,7 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 			item.call('set_food_type', FoodConfig.FoodType.FRIED_FISH)
 		if item.has_method('apply_food_texture'):
 			item.call('apply_food_texture')
+		AudioManager.play_sfx(ResPath.AUDIO.PICK_UP_ITEM)
 		_log_interact('fried fish served to plate')
 
 

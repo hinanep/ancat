@@ -1,0 +1,122 @@
+[gd_scene format=3 uid="uid://cvwh7w0os4co7"]
+
+[ext_resource type="Script" uid="uid://byiy5r4iestgd" path="res://scripts/components/ShopPanelUI.gd" id="1_shop_panel_script"]
+[ext_resource type="Texture2D" uid="uid://cij21nruwxda8" path="res://assets/textures/锚.png" id="2_2nvah"]
+[ext_resource type="Texture2D" uid="uid://c8w4ba7fdga8i" path="res://assets/textures/锚链.png" id="3_22h75"]
+[ext_resource type="FontFile" uid="uid://3cx7qvdiqgil" path="res://assets/fonts/DreamHanSansCN-W24.ttf" id="4_a48ju"]
+
+[node name="ShopPanelUI" type="Control" unique_id=124597666]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 34.0
+offset_top = 19.0
+offset_right = 34.0
+offset_bottom = 19.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_shop_panel_script")
+
+[node name="ShopRoot" type="PanelContainer" parent="." unique_id=506511346]
+self_modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 85.0
+offset_top = 313.0
+offset_right = 415.0
+offset_bottom = 499.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 8
+size_flags_vertical = 10
+mouse_filter = 1
+
+[node name="Rows" type="HBoxContainer" parent="ShopRoot" unique_id=308352687]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AnchorCountRow" type="VBoxContainer" parent="ShopRoot/Rows" unique_id=264420101]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="BuyButton" type="Button" parent="ShopRoot/Rows/AnchorCountRow" unique_id=1086031738]
+custom_minimum_size = Vector2(120, 36)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_a48ju")
+text = "锚数量增加"
+icon = ExtResource("2_2nvah")
+
+[node name="PriceLabel" type="Label" parent="ShopRoot/Rows/AnchorCountRow" unique_id=1063201068]
+layout_mode = 2
+text = "0"
+horizontal_alignment = 1
+
+[node name="AnchorLengthRow" type="VBoxContainer" parent="ShopRoot/Rows" unique_id=839713878]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="BuyButton" type="Button" parent="ShopRoot/Rows/AnchorLengthRow" unique_id=169525178]
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_a48ju")
+text = "锚长度"
+
+[node name="Sprite2D" type="Sprite2D" parent="ShopRoot/Rows/AnchorLengthRow/BuyButton" unique_id=744934044]
+position = Vector2(19, 19)
+texture = ExtResource("3_22h75")
+
+[node name="PriceLabel" type="Label" parent="ShopRoot/Rows/AnchorLengthRow" unique_id=793554194]
+layout_mode = 2
+text = "0"
+horizontal_alignment = 1
+
+[node name="MoveSpeedRow" type="VBoxContainer" parent="ShopRoot/Rows" unique_id=1514312498]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="BuyButton" type="Button" parent="ShopRoot/Rows/MoveSpeedRow" unique_id=148585810]
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_a48ju")
+text = "移动速度"
+
+[node name="PriceLabel" type="Label" parent="ShopRoot/Rows/MoveSpeedRow" unique_id=1031260048]
+layout_mode = 2
+text = "0"
+horizontal_alignment = 1
+
+[node name="MorePotRow" type="VBoxContainer" parent="ShopRoot/Rows" unique_id=1785596655]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="BuyButton" type="Button" parent="ShopRoot/Rows/MorePotRow" unique_id=947932850]
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_a48ju")
+text = "更多锅"
+
+[node name="PriceLabel" type="Label" parent="ShopRoot/Rows/MorePotRow" unique_id=1856018673]
+layout_mode = 2
+text = "0"
+horizontal_alignment = 1
+
+[node name="FasterProcessRow" type="VBoxContainer" parent="ShopRoot/Rows" unique_id=591444212]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="BuyButton" type="Button" parent="ShopRoot/Rows/FasterProcessRow" unique_id=1557460514]
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_a48ju")
+text = "处理速度"
+
+[node name="PriceLabel" type="Label" parent="ShopRoot/Rows/FasterProcessRow" unique_id=562247881]
+layout_mode = 2
+text = "0"
+horizontal_alignment = 1

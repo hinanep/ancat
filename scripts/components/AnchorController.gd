@@ -115,7 +115,8 @@ func _process(delta: float) -> void:
 	if _player == null or not (_player is Node2D):
 		return
 
-	var leftPressed: bool = Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+	var isMouseOverUi: bool = _is_mouse_over_ui()
+	var leftPressed: bool = Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and not isMouseOverUi
 	var rightPressed: bool = Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT)
 	_leftPressedNow = leftPressed
 	if leftPressed:
@@ -130,7 +131,7 @@ func _process(delta: float) -> void:
 	if not _hooks.is_empty():
 		_update_hooks(delta)
 
-	if rightPressed and not _rightPressedPrev:
+	if rightPressed and not _rightPressedPrev and not isMouseOverUi:
 		_handle_right_click()
 
 	_leftPressedPrev = leftPressed
@@ -144,6 +145,8 @@ func _process(delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mouseEvent: InputEventMouseButton = event as InputEventMouseButton
+		if _is_mouse_over_ui():
+			return
 		if mouseEvent.button_index == MOUSE_BUTTON_LEFT and not mouseEvent.pressed and not mouseEvent.is_echo():
 			_leftHoldAtRelease = _leftHoldSec
 			_leftReleaseQueued = true
@@ -227,6 +230,7 @@ func _fire_anchor() -> void:
 		'end_pos': endPos
 	}
 	_hooks.append(hookData)
+	AudioManager.play_sfx(ResPath.AUDIO.ANCHOR_FIRE)
 	EventBus.emit(EventBus.EventType.ANCHOR_FIRED, {'from': origin, 'to': endPos})
 	_debug_log('fire to %s' % endPos)
 
@@ -281,6 +285,7 @@ func _update_single_hook(hookIndex: int, delta: float) -> void:
 						hook['cargo'] = cargo
 						hook['pos'] = hit.get('position', (cargo as Node2D).global_position if cargo is Node2D else position)
 						_hooks[hookIndex] = hook
+						AudioManager.play_sfx(ResPath.AUDIO.ANCHOR_HIT_ITEM)
 						EventBus.emit(EventBus.EventType.ANCHOR_HIT_CARGO, {'node': String(cargo.get_path())})
 						_debug_log('hook cargo %s' % cargo.name)
 						return
@@ -323,6 +328,7 @@ func _update_single_hook(hookIndex: int, delta: float) -> void:
 				if not _carriedCargo.has(cargoNode):
 					_carriedCargo.append(cargoNode)
 					_refresh_carried_offsets()
+					AudioManager.play_sfx(ResPath.AUDIO.PICK_UP_ITEM)
 			else:
 				if cargoNode.has_method('drop_to_world'):
 					cargoNode.call('drop_to_world')
@@ -381,6 +387,7 @@ func _handle_right_click() -> void:
 			if not throwDir.is_zero_approx() and cargo.has_method('apply_throw'):
 				cargo.call('apply_throw', throwDir.normalized() * max(dropThrowSpeed, 0.0))
 		_refresh_carried_offsets()
+		AudioManager.play_sfx_random(ResPath.AUDIO.PUT_DOWN_ITEM)
 		_debug_log('right click drop carried cargo=%s' % cargo.name)
 		return
 	if _try_pickup_nearby_cargo():
@@ -495,6 +502,7 @@ func _try_pickup_nearby_cargo() -> bool:
 		bestNode.call('set_carried', _player, _carry_offset_for_slot(_carriedCargo.size(), _carriedCargo.size() + 1))
 		_carriedCargo.append(bestNode)
 		_refresh_carried_offsets()
+		AudioManager.play_sfx(ResPath.AUDIO.PICK_UP_ITEM)
 		_debug_log('pickup success: %s' % bestNode.name)
 		return true
 	_debug_log('pickup failed: target has no set_carried %s' % bestNode.name)
@@ -521,6 +529,7 @@ func _toggle_anchor_deploy() -> void:
 		return
 	_deployedCabinPaths.append(cabinPath)
 	_add_deployed_anchor_visual(cabinPathText)
+	AudioManager.play_sfx(ResPath.AUDIO.DROP_ANCHOR)
 	EventBus.emit(EventBus.EventType.ANCHOR_DEPLOYED, {'cabin_path': cabinPathText})
 	_debug_log('deploy anchor @%s total=%d' % [cabinPathText, _deployedCabinPaths.size()])
 	_lastAvailableAnchorCapacity = _available_anchor_capacity()
@@ -775,6 +784,7 @@ func _remove_deployed_anchor_by_cabin(cabinPathText: String) -> void:
 		if String(_deployedCabinPaths[i]) == cabinPathText:
 			_deployedCabinPaths.remove_at(i)
 	_remove_deployed_anchor_visual(cabinPathText)
+	AudioManager.play_sfx(ResPath.AUDIO.ANCHOR_RETRIEVE)
 	EventBus.emit(EventBus.EventType.ANCHOR_RETRIEVED, {'cabin_path': cabinPathText})
 	_debug_log('retrieve anchor @%s' % cabinPathText)
 	_lastAvailableAnchorCapacity = _available_anchor_capacity()
@@ -866,3 +876,12 @@ func _debug_log(message: String) -> void:
 	if not debug_anchor_log:
 		return
 	print('[AnchorController] %s' % message)
+
+
+## 判断鼠标当前是否悬停在可交互UI上（用于屏蔽右键玩法操作）。
+## @return bool
+func _is_mouse_over_ui() -> bool:
+	var hoveredControl: Control = get_viewport().gui_get_hovered_control()
+	if hoveredControl == null:
+		return false
+	return hoveredControl.mouse_filter != Control.MOUSE_FILTER_IGNORE

@@ -89,6 +89,7 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 		if item.has_method('apply_food_texture'):
 			item.call('apply_food_texture')
 		_update_machine_visual()
+		AudioManager.play_sfx(ResPath.AUDIO.POUR_JAM_JUICE)
 		_log_interact('plate took jam from juicer')
 		return
 	var fruitType: int = _resolve_fruit_type(item)
@@ -187,9 +188,17 @@ func _resolve_fruit_index_by_jam(jamType: int) -> int:
 func _play_juice_shake() -> void:
 	if _juicerSprite == null:
 		return
+	AudioManager.play_sfx_loop('juicer_machine', ResPath.AUDIO.JUICER)
 	var duration: float = max(shakeDurationSec, 0.03)
 	var offset: float = max(shakeOffsetPx, 0.0)
 	var tween: Tween = create_tween()
 	tween.tween_property(_juicerSprite, 'position', _juicerSpriteBasePos + Vector2(offset, 0.0), duration * 0.33)
 	tween.tween_property(_juicerSprite, 'position', _juicerSpriteBasePos + Vector2(-offset, 0.0), duration * 0.33)
 	tween.tween_property(_juicerSprite, 'position', _juicerSpriteBasePos, duration * 0.34)
+	tween.finished.connect(_on_shake_finished)
+
+
+## 榨汁抖动结束后停止循环音效。
+## @return void
+func _on_shake_finished() -> void:
+	AudioManager.stop_sfx_loop('juicer_machine')

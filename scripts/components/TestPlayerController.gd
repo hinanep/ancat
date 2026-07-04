@@ -13,6 +13,7 @@ extends CharacterBody2D
 @export var slopeMoveScale: float = 0.45
 @export var anchorCount: int = 1
 @export var hookMoveBoundsMargin: float = 12.0
+@export var footstepIntervalSec: float = 0.35
 
 var _scaleX: float = 1.0
 var _lastFacingDir: float = 1.0
@@ -22,6 +23,7 @@ var _anchorPullSpeed: float = 0.0
 var _anchorCollisionDisabled: bool = false
 var _savedCollisionLayer: int = 0
 var _savedCollisionMask: int = 0
+var _footstepCooldownSec: float = 0.0
 
 var current_cabin_name: String = ''
 var current_cabin_path: NodePath = NodePath('')
@@ -45,6 +47,7 @@ func _ready() -> void:
 ## @return void
 func _physics_process(delta: float) -> void:
 	_update_current_cabin()
+	_footstepCooldownSec = max(_footstepCooldownSec - delta, 0.0)
 	if _anchorPullActive:
 		_process_anchor_pull(delta)
 		return
@@ -70,6 +73,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y = jumpVelocity
 
 	move_and_slide()
+	_try_play_footstep(horizontalInput)
 
 
 ## 开始锚拉拽移动。
@@ -196,3 +200,17 @@ func _clamp_to_ship_bounds() -> void:
 	var margin: float = max(hookMoveBoundsMargin, 0.0)
 	position.x = clampf(position.x, minX + margin, maxX - margin)
 	position.y = clampf(position.y, minY + margin, maxY - margin)
+
+
+## 按移动状态与地面状态播放脚步声。
+## @param horizontalInput 水平输入
+## @return void
+func _try_play_footstep(horizontalInput: float) -> void:
+	if not is_on_floor():
+		return
+	if is_zero_approx(horizontalInput):
+		return
+	if _footstepCooldownSec > 0.0:
+		return
+	_footstepCooldownSec = max(footstepIntervalSec, 0.1)
+	AudioManager.play_sfx_random(ResPath.AUDIO.FOOTSTEP_WOOD)

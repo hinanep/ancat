@@ -31,7 +31,6 @@
 [ext_resource type="Texture2D" uid="uid://bcxba7prm6ukx" path="res://assets/textures/livingroom_LRK.png" id="21_cvyl1"]
 [ext_resource type="Script" uid="uid://bjkt27vdgr04t" path="res://scripts/components/CoinHudUI.gd" id="22_coin_hud"]
 [ext_resource type="PackedScene" uid="uid://v2o8ndm3yu4e" path="res://scenes/props/Interactable/PlateDispenserInteractable.tscn" id="24_plate_dispenser"]
-[ext_resource type="PackedScene" uid="uid://cvwh7w0os4co7" path="res://scenes/ui/components/ShopPanelUI.tscn" id="25_shop_panel_ui"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_4ta1d"]
 atlas = ExtResource("5_dhq8s")
@@ -245,9 +244,6 @@ theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
-
-[node name="ShopPanelUI" parent="CanvasLayer/MarginContainer" unique_id=1853541254 instance=ExtResource("25_shop_panel_ui")]
-layout_mode = 2
 
 [node name="StormWarningUI" parent="CanvasLayer" unique_id=868499573 instance=ExtResource("2_dhmek")]
 offset_left = -1209.0
@@ -473,11 +469,25 @@ fallbackAnchorCount = 3
 z_index = 6
 position = Vector2(-155, -469)
 scale = Vector2(2, 2)
+totalCookSec = null
+foodPlacementOffset = null
+enable_auto_move = null
+gravity_accel = null
+cabin_group_name = null
+throwNoCollisionSec = null
+debug_movable_log = null
 
 [node name="FryingPanCargo" parent="Cabins" unique_id=1946618425 instance=ExtResource("18_frying_pan")]
 z_index = 6
 position = Vector2(-26, -470)
 scale = Vector2(2, 2)
+totalCookSec = null
+foodPlacementOffset = null
+enable_auto_move = null
+gravity_accel = null
+cabin_group_name = null
+throwNoCollisionSec = null
+debug_movable_log = null
 
 [node name="CuttingBoardCargo" parent="Cabins" unique_id=107998297 instance=ExtResource("19_cutting_board")]
 z_index = 6
@@ -506,8 +516,8 @@ flow_speed_max_change_per_sec = 0.001
 
 [node name="StormController" type="Node" parent="." unique_id=277297670]
 script = ExtResource("7_hy2pk")
-cycleIntervalSec = 60.0
-stormHalfCyclesMax = 5
+cycleIntervalSec = 5.0
+warningDurationSec = 10.0
 tiltMinDeg = 10.0
 tiltMaxDeg = 20.0
 recoverDurationSec = 10.0
@@ -522,7 +532,6 @@ debugFishingZoneLog = null
 
 [node name="CustomerSpawner" type="Node" parent="." unique_id=252203174]
 script = ExtResource("21_customer_spawner")
-diningCabinNames = PackedStringArray()
 minSpawnIntervalSec = 25.0
 
 [editable path="Cabins/Cabin8/DiningTableInteractable"]

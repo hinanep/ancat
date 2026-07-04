@@ -30,6 +30,7 @@ func _process(delta: float) -> void:
 	if _foodNode == null or not is_instance_valid(_foodNode):
 		_foodNode = null
 		_cookProgressBar.visible = false
+		_stop_stove_loop()
 		return
 	if not _isOnStove or _isCooked:
 		return
@@ -114,6 +115,29 @@ func clear_internal_storage() -> void:
 	_cookProgressBar.value = 0.0
 
 
+## 覆盖锅总烹饪时长，并按当前进度重映射剩余时间。
+## @param newTotalSec 新总时长（秒）
+## @return void
+func apply_cook_total_sec(newTotalSec: float) -> void:
+	var clampedTotalSec: float = max(newTotalSec, 0.0)
+	var oldTotalSec: float = max(totalCookSec, 0.0)
+	totalCookSec = clampedTotalSec
+	if _foodNode != null and is_instance_valid(_foodNode) and not _isCooked:
+		if oldTotalSec <= 0.0:
+			_cookRemainingSec = clampedTotalSec
+		else:
+			var progress: float = 1.0 - (_cookRemainingSec / oldTotalSec)
+			var safeProgress: float = clampf(progress, 0.0, 1.0)
+			_cookRemainingSec = clampedTotalSec * (1.0 - safeProgress)
+		if _isOnStove and _cookRemainingSec <= 0.0:
+			_cookRemainingSec = 0.0
+			_isCooked = true
+			_cookProgressBar.visible = false
+			_on_cook_finished()
+			return
+	_update_progress_bar()
+
+
 ## 更新进度条数值。
 func _update_progress_bar() -> void:
 	if totalCookSec <= 0.0:
@@ -128,4 +152,12 @@ func _on_cook_finished() -> void:
 		return
 	if _foodNode.has_method('set_cooked'):
 		_foodNode.call('set_cooked')
+	AudioManager.play_sfx(ResPath.AUDIO.PROGRESS_COMPLETE)
+	_stop_stove_loop()
 	_debug_log('food cooked!')
+
+
+## 停止当前锅实例对应的炉子循环音效。
+## @return void
+func _stop_stove_loop() -> void:
+	AudioManager.stop_sfx_loop('stove_%s' % get_instance_id())

@@ -196,6 +196,7 @@ func _break_plate() -> void:
 		return
 	_isBroken = true
 	_dropTracking = false
+	AudioManager.play_sfx(ResPath.AUDIO.PLATE_BREAK)
 	_spawn_break_result()
 	queue_free()
 

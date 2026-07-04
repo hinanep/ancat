@@ -81,6 +81,7 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 	if item != null and item.is_in_group(plateGroupName):
 		_lastPlateTakeAccepted = _take_one_fish_to_plate(item)
 		if _lastPlateTakeAccepted:
+			AudioManager.play_sfx(ResPath.AUDIO.PICK_UP_ITEM)
 			_log_interact('tank serve raw fish to plate count=%d' % _storedFish.size())
 		return
 	var swimRect: Rect2 = _tank_swim_rect_global()
@@ -89,6 +90,7 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 	else:
 		item.call('mark_in_tank')
 	_storedFish.append(item)
+	AudioManager.play_sfx(ResPath.AUDIO.FISH_TANK_DROP)
 	_log_interact('tank store success count=%d' % _storedFish.size())
 
 
