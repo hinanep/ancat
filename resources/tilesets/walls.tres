@@ -9,7 +9,9 @@
 [ext_resource type="Texture2D" uid="uid://j213i4v02lky" path="res://assets/textures/瓦片/Tileset_32x32_3.png" id="5_0hmuq"]
 [ext_resource type="Texture2D" uid="uid://bfw2wojq16po1" path="res://assets/textures/瓦片/Tileset_32x32_2.png" id="5_8bjyn"]
 [ext_resource type="Texture2D" uid="uid://bu1nokuess2i2" path="res://assets/textures/瓦片/Tileset_32x32_1.png" id="6_b775y"]
+[ext_resource type="Texture2D" uid="uid://b370f2sgdpinl" path="res://assets/textures/瓦片/梯子.png" id="7_m122a"]
 [ext_resource type="Texture2D" uid="uid://8vwp7syxihjn" path="res://assets/textures/瓦片/Interiors_free_32x32.png" id="8_b775y"]
+[ext_resource type="Texture2D" uid="uid://p5wxqyf5q23i" path="res://assets/textures/瓦片/活板门.png" id="8_ivbbf"]
 [ext_resource type="Texture2D" uid="uid://bmn2wa8mfu76k" path="res://assets/textures/瓦片/0003AAFE9FC705D71702B62E892DD1F0.png" id="9_d6mv4"]
 [ext_resource type="Texture2D" uid="uid://ou5u21i4oocf" path="res://assets/textures/瓦片/7FE409232EBE4BCFA38B3BC66A30BB1A.png" id="10_m122a"]
 [ext_resource type="Texture2D" uid="uid://lpdd6q0on72j" path="res://assets/textures/瓦片/AE7D57E92745165089F33D0646EE58C6.png" id="11_ivbbf"]
@@ -684,6 +686,88 @@ texture = ExtResource("6_b775y")
 13:19/0 = 0
 16:19/0 = 0
 17:19/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4dwk0"]
+texture = ExtResource("7_m122a")
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+3:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+2:2/0 = 0
+3:2/0 = 0
+0:3/0 = 0
+1:3/0 = 0
+2:3/0 = 0
+3:3/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ohwlf"]
+texture = ExtResource("8_ivbbf")
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+4:0/0 = 0
+5:0/0 = 0
+6:0/0 = 0
+7:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+3:1/0 = 0
+4:1/0 = 0
+5:1/0 = 0
+6:1/0 = 0
+7:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+3:2/0 = 0
+4:2/0 = 0
+6:2/0 = 0
+7:2/0 = 0
+0:3/0 = 0
+1:3/0 = 0
+2:3/0 = 0
+3:3/0 = 0
+4:3/0 = 0
+5:3/0 = 0
+6:3/0 = 0
+7:3/0 = 0
+0:4/0 = 0
+1:4/0 = 0
+2:4/0 = 0
+3:4/0 = 0
+4:4/0 = 0
+5:4/0 = 0
+6:4/0 = 0
+7:4/0 = 0
+0:5/0 = 0
+1:5/0 = 0
+3:5/0 = 0
+4:5/0 = 0
+6:5/0 = 0
+7:5/0 = 0
+0:6/0 = 0
+1:6/0 = 0
+2:6/0 = 0
+3:6/0 = 0
+4:6/0 = 0
+5:6/0 = 0
+6:6/0 = 0
+7:6/0 = 0
+0:7/0 = 0
+1:7/0 = 0
+2:7/0 = 0
+3:7/0 = 0
+4:7/0 = 0
+5:7/0 = 0
+6:7/0 = 0
+7:7/0 = 0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0hmuq"]
 texture = ExtResource("3_bmr78")
@@ -4958,3 +5042,5 @@ sources/10 = SubResource("TileSetAtlasSource_cgmwa")
 sources/11 = SubResource("TileSetAtlasSource_rtufq")
 sources/12 = SubResource("TileSetAtlasSource_b775y")
 sources/14 = SubResource("TileSetAtlasSource_d6mv4")
+sources/16 = SubResource("TileSetAtlasSource_4dwk0")
+sources/17 = SubResource("TileSetAtlasSource_ohwlf")
