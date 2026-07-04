@@ -19,6 +19,16 @@ signal slot_state_changed(totalSlots: int, consumedSlots: int)
 @export var interactRadius: float = 40.0
 ## 右键拾取物体检测半径（像素）。
 @export var pickupRadius: float = 52.0
+## 右键点选拾取命中半径（鼠标到物体中心，像素）。
+@export var rightClickPickupClickRadius: float = 28.0
+## 右键点选拾取最大距离（玩家到物体中心，像素）。
+@export var rightClickPickupMaxDistance: float = 100.0
+## 丢弃时最大投放距离（像素）。
+@export var dropMaxDistance: float = 100.0
+## 丢弃命中墙体时与阻挡面的最小留白（像素）。
+@export var dropWallPadding: float = 10.0
+## 丢弃点船体边界安全边距（像素）。
+@export var dropShipBoundsMargin: float = 12.0
 ## 地板命中允许的最高 Y 偏移（只允许同层或更高层）。
 @export var floorHookMaxYOffset: float = 4.0
 ## 钩中地板后，玩家终点向上偏移（像素）。
@@ -35,6 +45,8 @@ signal slot_state_changed(totalSlots: int, consumedSlots: int)
 @export var retrieveAnchorClickRadius: float = 18.0
 ## 回收锚时，玩家到锚实体的最大距离（像素）。
 @export var retrieveAnchorPlayerRange: float = 72.0
+## 勾中物体后，触发回收所需的左键长按阈值（秒）。
+@export var holdToRetrieveSec: float = 0.2
 ## 调试日志开关。
 @export var debug_anchor_log: bool = true
 
@@ -46,6 +58,9 @@ var _player: Node
 var _lines: Array[Line2D] = []
 var _leftPressedPrev: bool = false
 var _rightPressedPrev: bool = false
+var _leftPressedNow: bool = false
+var _leftHoldSec: float = 0.0
+var _leftClickQueued: bool = false
 var _lastAvailableAnchorCapacity: int = 1
 var _lastSlotTotal: int = -1
 var _lastSlotConsumed: int = -1
@@ -86,8 +101,14 @@ func _process(delta: float) -> void:
 
 	var leftPressed: bool = Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
 	var rightPressed: bool = Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT)
+	_leftPressedNow = leftPressed
+	if leftPressed:
+		_leftHoldSec += delta
+	else:
+		_leftHoldSec = 0.0
 
-	if leftPressed and not _leftPressedPrev:
+	if _leftClickQueued:
+		_leftClickQueued = false
 		_fire_anchor()
 	if not _hooks.is_empty():
 		_update_hooks(delta)
@@ -98,6 +119,16 @@ func _process(delta: float) -> void:
 	_leftPressedPrev = leftPressed
 	_rightPressedPrev = rightPressed
 	_emit_slot_state_if_changed()
+
+
+## 输入事件：捕获左键短按，避免轮询漏检。
+## @param event 输入事件
+## @return void
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		var mouseEvent: InputEventMouseButton = event as InputEventMouseButton
+		if mouseEvent.button_index == MOUSE_BUTTON_LEFT and mouseEvent.pressed and not mouseEvent.is_echo():
+			_leftClickQueued = true
 
 
 ## 创建锚链可视节点（按锚槽位创建）。
@@ -231,6 +262,10 @@ func _update_single_hook(hookIndex: int, delta: float) -> void:
 		if not (cargoNode is Node2D):
 			_hooks.remove_at(hookIndex)
 			return
+		if not _leftPressedNow or _leftHoldSec < max(holdToRetrieveSec, 0.0):
+			hook['pos'] = (cargoNode as Node2D).global_position
+			_hooks[hookIndex] = hook
+			return
 		var perHookOffset: Vector2 = carryOffset + Vector2((float(hookIndex) - float(_hooks.size() - 1) * 0.5) * carrySpacingX, 0.0)
 		var hookTargetPos: Vector2 = origin + perHookOffset
 		var nextCargoPos: Vector2 = (cargoNode as Node2D).global_position.move_toward(hookTargetPos, cargoPullSpeed * delta)
@@ -265,7 +300,7 @@ func _release_all_hooks() -> void:
 	_hooks.clear()
 
 
-## 右键：优先交互（占位）> 物体 > 锚放置/回收。
+## 右键：优先交互 > 丢弃 > 拾取 > 放锚/回收放置锚。
 ## @return void
 func _handle_right_click() -> void:
 	_debug_log('right click trigger: hooks=%d carried=%d deployed=%d' % [_hooks.size(), _carriedCargo.size(), _deployedCabinPaths.size()])
@@ -273,17 +308,17 @@ func _handle_right_click() -> void:
 	if interactResult == INTERACT_SUCCESS or interactResult == INTERACT_REJECTED:
 		_debug_log('right click end by interact, result=%d' % interactResult)
 		return
-	if _try_pickup_nearby_cargo():
-		_debug_log('right click end by pickup')
-		return
 	if not _carriedCargo.is_empty():
 		var cargo: Node = _carriedCargo.pop_back()
 		if cargo.has_method('drop_to_world'):
 			cargo.call('drop_to_world')
-		if _player is Node2D and cargo is Node2D:
-			(cargo as Node2D).global_position = (_player as Node2D).global_position + Vector2(18.0, 0.0)
+		if cargo is Node2D:
+			(cargo as Node2D).global_position = _resolve_drop_position(cargo as Node2D)
 		_refresh_carried_offsets()
 		_debug_log('right click drop carried cargo=%s' % cargo.name)
+		return
+	if _try_pickup_nearby_cargo():
+		_debug_log('right click end by pickup')
 		return
 	if _try_retrieve_deployed_anchor_at_mouse():
 		_debug_log('right click end by retrieve deployed anchor')
@@ -298,38 +333,56 @@ func _try_interact() -> int:
 	if _player == null or not (_player is Node2D):
 		_debug_log('interact skip: player invalid')
 		return INTERACT_NO_TARGET
-	var origin: Vector2 = (_player as Node2D).global_position
 	var bestTarget: Node2D
-	var bestDist: float = INF
 	for node in get_tree().get_nodes_in_group('Interactable'):
 		if not (node is Node2D):
 			continue
 		var interactive: Node2D = node as Node2D
-		var dist: float = interactive.global_position.distance_to(origin)
-		if dist > max(interactRadius, 0.0):
+		if not interactive.has_method('is_player_in_interact_range'):
 			continue
-		if dist < bestDist:
-			bestDist = dist
-			bestTarget = interactive
+		if not bool(interactive.call('is_player_in_interact_range', _player)):
+			continue
+		bestTarget = interactive
+		break
 	if bestTarget == null:
-		_debug_log('interact no target in radius=%.1f' % interactRadius)
+		_debug_log('interact no target in range area')
 		return INTERACT_NO_TARGET
 
 	var carriedItem: Node = null
 	if not _carriedCargo.is_empty():
 		carriedItem = _carriedCargo[_carriedCargo.size() - 1]
 
-	if bestTarget.has_method('try_interact'):
-		var accepted: bool = bool(bestTarget.call('try_interact', _player, carriedItem))
-		if accepted:
-			if carriedItem != null:
-				_carriedCargo.erase(carriedItem)
-			_debug_log('interact accepted by %s' % bestTarget.name)
-			return INTERACT_SUCCESS
-		_debug_log('interact rejected by %s' % bestTarget.name)
+	if not bestTarget.has_method('try_interact_ex'):
+		_debug_log('interact target has no try_interact_ex: %s' % bestTarget.name)
 		return INTERACT_REJECTED
-	_debug_log('interact target has no try_interact: %s' % bestTarget.name)
+	var interactResult: Variant = bestTarget.call('try_interact_ex', _player, carriedItem, self)
+	var parsed: Dictionary = _parse_interact_result(interactResult)
+	var accepted: bool = bool(parsed.get('accepted', false))
+	var consumeCarried: bool = bool(parsed.get('consume_carried', false))
+	if accepted:
+		if consumeCarried and carriedItem != null:
+			_carriedCargo.erase(carriedItem)
+		_debug_log('interact accepted by %s consume=%s' % [bestTarget.name, str(consumeCarried)])
+		return INTERACT_SUCCESS
+	_debug_log('interact rejected by %s' % bestTarget.name)
 	return INTERACT_REJECTED
+
+
+## 解析交互返回值（仅接受 Dictionary 协议）。
+## @param interactResult 交互函数返回值
+## @return Dictionary
+func _parse_interact_result(interactResult: Variant) -> Dictionary:
+	if typeof(interactResult) == TYPE_DICTIONARY:
+		var resultDict: Dictionary = interactResult as Dictionary
+		var acceptedDict: bool = bool(resultDict.get('accepted', false))
+		return {
+			'accepted': acceptedDict,
+			'consume_carried': bool(resultDict.get('consume_carried', acceptedDict))
+		}
+	return {
+		'accepted': false,
+		'consume_carried': false
+	}
 
 
 ## 右键拾取附近可勾取物体（优先于放锚）。
@@ -345,6 +398,9 @@ func _try_pickup_nearby_cargo() -> bool:
 		_debug_log('pickup blocked: anchor capacity full carried=%d available=%d' % [_carriedCargo.size(), _available_anchor_capacity()])
 		return false
 	var origin: Vector2 = (_player as Node2D).global_position
+	var mousePos: Vector2 = get_global_mouse_position()
+	var clickRadius: float = max(rightClickPickupClickRadius, 1.0)
+	var maxDistance: float = max(rightClickPickupMaxDistance, 1.0)
 	var bestNode: Node2D
 	var bestDist: float = INF
 	for node in get_tree().get_nodes_in_group('Hitable'):
@@ -352,15 +408,21 @@ func _try_pickup_nearby_cargo() -> bool:
 			continue
 		if not (node is Node2D):
 			continue
-		var body: Node2D = node as Node2D
-		var dist: float = body.global_position.distance_to(origin)
-		if dist > max(pickupRadius, 0.0):
+		if node.has_method('can_be_hooked') and not bool(node.call('can_be_hooked')):
 			continue
-		if dist < bestDist:
-			bestDist = dist
+		var body: Node2D = node as Node2D
+		var distToPlayer: float = body.global_position.distance_to(origin)
+		var distToMouse: float = body.global_position.distance_to(mousePos)
+		var byMousePick: bool = distToMouse <= clickRadius and distToPlayer <= maxDistance
+		var byNearbyPick: bool = distToPlayer <= max(pickupRadius, 0.0)
+		if not byMousePick and not byNearbyPick:
+			continue
+		var score: float = distToMouse if byMousePick else distToPlayer
+		if score < bestDist:
+			bestDist = score
 			bestNode = body
 	if bestNode == null:
-		_debug_log('pickup no cargo in radius=%.1f' % pickupRadius)
+		_debug_log('pickup no cargo: near=%.1f click=%.1f max=%.1f' % [pickupRadius, clickRadius, maxDistance])
 		return false
 	if bestNode.has_method('set_carried'):
 		bestNode.call('set_carried', _player, _carry_offset_for_slot(_carriedCargo.size(), _carriedCargo.size() + 1))
@@ -432,6 +494,91 @@ func _refresh_carried_offsets() -> void:
 func _can_carry_more() -> bool:
 	var carryLimit: int = max(maxCarryCount, 1)
 	return _carriedCargo.size() < carryLimit
+
+
+## 判断是否存在“已勾中货物等待回收”的锚。
+## @return bool
+func _has_hooked_cargo() -> bool:
+	for hook in _hooks:
+		if String(hook.get('state', '')) == 'hooked_cargo':
+			return true
+	return false
+
+
+## 计算丢弃目标点：优先鼠标，受船体边界与墙体阻挡约束。
+## @param cargoNode 被丢弃物体
+## @return Vector2
+func _resolve_drop_position(cargoNode: Node2D) -> Vector2:
+	if _player == null or not (_player is Node2D):
+		return cargoNode.global_position
+	var origin: Vector2 = (_player as Node2D).global_position
+	var mousePos: Vector2 = get_global_mouse_position()
+	var toMouse: Vector2 = mousePos - origin
+	if is_zero_approx(toMouse.length()):
+		toMouse = Vector2.RIGHT * 16.0
+	var target: Vector2 = origin + toMouse.normalized() * min(toMouse.length(), max(dropMaxDistance, 1.0))
+	target = _clamp_point_to_ship_bounds(target)
+	target = _resolve_blocked_drop_position(origin, target, cargoNode)
+	target = _clamp_point_to_ship_bounds(target)
+	return target
+
+
+## 处理墙体阻挡：若射线命中阻挡，则回退到墙前。
+## @param origin 玩家起点
+## @param target 初始目标
+## @param cargoNode 被丢弃物体
+## @return Vector2
+func _resolve_blocked_drop_position(origin: Vector2, target: Vector2, cargoNode: Node2D) -> Vector2:
+	var space := get_world_2d().direct_space_state
+	var query := PhysicsRayQueryParameters2D.create(origin, target)
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+	var excludes: Array[RID] = []
+	if _player is CollisionObject2D:
+		excludes.append((_player as CollisionObject2D).get_rid())
+	if cargoNode is CollisionObject2D:
+		excludes.append((cargoNode as CollisionObject2D).get_rid())
+	query.exclude = excludes
+	var result: Dictionary = space.intersect_ray(query)
+	if result.is_empty():
+		return target
+	var hitPos: Vector2 = result.get('position', target)
+	var dir: Vector2 = target - origin
+	if is_zero_approx(dir.length()):
+		return target
+	return hitPos - dir.normalized() * max(dropWallPadding, 0.0)
+
+
+## 将点限制在整艘船舱的包围边界内。
+## @param pointGlobal 全局点
+## @return Vector2
+func _clamp_point_to_ship_bounds(pointGlobal: Vector2) -> Vector2:
+	var minX: float = INF
+	var maxX: float = -INF
+	var minY: float = INF
+	var maxY: float = -INF
+	var foundAny: bool = false
+	for node in get_tree().get_nodes_in_group('Cabin'):
+		if not (node is Cabin):
+			continue
+		var cabin: Cabin = node as Cabin
+		var width: float = float(cabin.get('cabin_width')) * absf(cabin.scale.x)
+		var height: float = float(cabin.get('cabin_height')) * absf(cabin.scale.y)
+		var halfW: float = width * 0.5
+		var halfH: float = height * 0.5
+		var center: Vector2 = cabin.global_position
+		minX = min(minX, center.x - halfW)
+		maxX = max(maxX, center.x + halfW)
+		minY = min(minY, center.y - halfH)
+		maxY = max(maxY, center.y + halfH)
+		foundAny = true
+	if not foundAny:
+		return pointGlobal
+	var margin: float = max(dropShipBoundsMargin, 0.0)
+	return Vector2(
+		clampf(pointGlobal.x, minX + margin, maxX - margin),
+		clampf(pointGlobal.y, minY + margin, maxY - margin)
+	)
 
 
 ## 根据玩家当前位置解析所在舱室路径，避免依赖外部状态更新时间。

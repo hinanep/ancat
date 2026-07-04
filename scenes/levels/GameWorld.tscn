@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://cqlyepngiwjuq" path="res://scenes/props/MovableCargo.tscn" id="7_fdut3"]
 [ext_resource type="Script" uid="uid://bbcbgceyjg16o" path="res://scripts/components/StormController.gd" id="7_hy2pk"]
 [ext_resource type="Script" uid="uid://cshkm83i4d55g" path="res://scripts/components/AnchorController.gd" id="8_ankcr"]
+[ext_resource type="PackedScene" uid="uid://b85mvrq0ews6p" path="res://scenes/props/IncineratorInteractable.tscn" id="9_incinerator"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_8ghft"]
 radius = 10.333334
@@ -166,6 +167,9 @@ position = Vector2(-452, -82)
 scale = Vector2(1, 0.9)
 right_door_open = true
 
+[node name="IncineratorInteractable" parent="Cabins/Cabin1-垃圾" unique_id=1466142704 instance=ExtResource("9_incinerator")]
+z_index = 1
+
 [node name="Cabin2-钓鱼" parent="Cabins" unique_id=188614053 instance=ExtResource("2_3sasu")]
 position = Vector2(-3, -82)
 scale = Vector2(1, 0.9)
@@ -258,6 +262,10 @@ z_index = 6
 position = Vector2(-197, -583)
 scale = Vector2(2, 2)
 debug_movable_log = true
+
+[node name="IncineratorInteractable" parent="Cabins" unique_id=562218545 instance=ExtResource("9_incinerator")]
+z_index = 6
+position = Vector2(282, -585)
 
 [node name="WaterSurface" parent="." unique_id=614244190 instance=ExtResource("4_a73yp")]
 z_index = -20

@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://bcxba7prm6ukx" path="res://assets/textures/livingroom_LRK.png" id="2_mhsch"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_pj8jm"]
-radius = 14.0
+radius = 9.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_vbnlq"]
 atlas = ExtResource("2_mhsch")

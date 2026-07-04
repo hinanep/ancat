@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://b85mvrq0ews6p"]
+
+[ext_resource type="Script" uid="uid://bfrh00okge1xo" path="res://scripts/components/IncineratorInteractable.gd" id="1_incinerator_script"]
+[ext_resource type="Texture2D" uid="uid://bcxba7prm6ukx" path="res://assets/textures/livingroom_LRK.png" id="2_ooywy"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vbnlq"]
+atlas = ExtResource("2_ooywy")
+region = Rect2(569.45105, 89.84615, 44.17334, 42.730965)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_interact"]
+size = Vector2(88, 86)
+
+[node name="IncineratorInteractable" type="Node2D" unique_id=1466142704]
+script = ExtResource("1_incinerator_script")
+acceptedTags = PackedStringArray("food")
+interactAreaPath = NodePath("InteractArea")
+
+[node name="InteractArea" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea"]
+shape = SubResource("RectangleShape2D_interact")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=174336907]
+scale = Vector2(2, 1.7)
+texture = SubResource("AtlasTexture_vbnlq")
