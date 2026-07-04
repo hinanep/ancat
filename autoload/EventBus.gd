@@ -33,6 +33,9 @@ enum EventType {
 	CUSTOMER_SERVED,
 	CUSTOMER_LEFT,
 	COIN_CHANGED,
+	STAGE_GOAL_REACHED,
+	STABILITY_GRANTED,
+	GAME_WON,
 }
 
 signal event_triggered(event_type: EventType, data: Dictionary)

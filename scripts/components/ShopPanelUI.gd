@@ -81,12 +81,24 @@ func _cache_upgrade_rows() -> void:
 func _register_upgrade_row(upgradeId: StringName, buyButton: Button, priceLabel: Label) -> void:
 	if buyButton == null or priceLabel == null:
 		return
+	buyButton.focus_mode = Control.FOCUS_NONE
 	buyButton.set_meta('upgrade_id', upgradeId)
 	buyButton.pressed.connect(_on_buy_button_pressed.bind(buyButton))
+	buyButton.mouse_exited.connect(_on_buy_button_mouse_exited.bind(buyButton))
 	_rowDataByUpgradeId[upgradeId] = {
 		'buy_button': buyButton,
 		'price_label': priceLabel,
 	}
+
+
+## 鼠标离开按钮时清理焦点，避免残留高亮。
+## @param buyButton 购买按钮
+## @return void
+func _on_buy_button_mouse_exited(buyButton: Button) -> void:
+	if buyButton == null:
+		return
+	if buyButton.has_focus():
+		buyButton.release_focus()
 
 
 ## 处理某个升级项购买按钮点击。

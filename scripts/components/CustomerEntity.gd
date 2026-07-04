@@ -31,8 +31,34 @@ var _waitElapsed: float = 0.0
 var _targetTable: Node
 var _isLeavingBySatisfied: bool = false
 var _totalDemandPrice: int = 0
+var _idleRng: RandomNumberGenerator = RandomNumberGenerator.new()
+
+const _AGENT_DEBUG_LOG_PATH: String = 'C:/Users/nep/Desktop/mao/debug-aaf6f7.log'
+const _AGENT_DEBUG_SESSION_ID: String = 'aaf6f7'
+const _AGENT_DEBUG_RUN_ID: String = 'run-1'
 
 @onready var _demandIcons: Node2D = $DemandIcons
+@onready var _customerSprite: AnimatedSprite2D = $AnimatedSprite2D
+
+
+## 初始化顾客外观随机源与 idle 贴图。
+## @return void
+func _ready() -> void:
+	_idleRng.randomize()
+	#region agent log
+	_agent_debug_emit(
+		'H2',
+		'CustomerEntity.gd:_ready',
+		'customer ready before random idle apply',
+		{
+			'customerId': get_instance_id(),
+			'state': int(_state),
+			'elapsedInState': _elapsedInState,
+			'modulateAlpha': modulate.a
+		}
+	)
+	#endregion
+	_apply_random_idle_texture()
 
 
 ## 初始化顾客需求与VIP标记。
@@ -46,6 +72,72 @@ func initialize_customer(demands: Array[int], isVip: bool) -> void:
 	for demandType in _demands:
 		_totalDemandPrice += FoodConfig.get_price(demandType)
 	_refresh_demand_icons()
+
+
+## 随机选择并应用一套顾客 idle 贴图帧。
+## @return void
+func _apply_random_idle_texture() -> void:
+	if _customerSprite == null:
+		return
+	if ResPath.CUSTOMER_IDLE_TEXTURES.is_empty():
+		return
+	var selectedPath: String = ResPath.CUSTOMER_IDLE_TEXTURES[_idleRng.randi_range(0, ResPath.CUSTOMER_IDLE_TEXTURES.size() - 1)]
+	if selectedPath == '':
+		return
+	var idleTexture: Texture2D = load(selectedPath) as Texture2D
+	if idleTexture == null:
+		return
+	var spriteFrames: SpriteFrames = _customerSprite.sprite_frames
+	if spriteFrames == null:
+		return
+	spriteFrames = spriteFrames.duplicate(true) as SpriteFrames
+	if spriteFrames == null:
+		return
+	_customerSprite.sprite_frames = spriteFrames
+	var animName: StringName = _customerSprite.animation
+	if animName == &'':
+		var names: PackedStringArray = spriteFrames.get_animation_names()
+		if names.is_empty():
+			return
+		animName = StringName(names[0])
+	var texWidth: int = idleTexture.get_width()
+	if texWidth <= 0:
+		return
+	var frameCount: int = max(int(floor(float(texWidth) / 32.0)), 1)
+	#region agent log
+	_agent_debug_emit(
+		'H1',
+		'CustomerEntity.gd:_apply_random_idle_texture',
+		'before mutating sprite frames',
+		{
+			'customerId': get_instance_id(),
+			'spriteFramesId': spriteFrames.get_instance_id(),
+			'animName': String(animName),
+			'oldFrameCount': spriteFrames.get_frame_count(animName),
+			'selectedPath': selectedPath
+		}
+	)
+	#endregion
+	while spriteFrames.get_frame_count(animName) > 0:
+		spriteFrames.remove_frame(animName, 0)
+	for i in range(frameCount):
+		var atlasTexture: AtlasTexture = AtlasTexture.new()
+		atlasTexture.atlas = idleTexture
+		atlasTexture.region = Rect2(float(i * 32), 0.0, 32.0, 32.0)
+		spriteFrames.add_frame(animName, atlasTexture)
+	#region agent log
+	_agent_debug_emit(
+		'H1',
+		'CustomerEntity.gd:_apply_random_idle_texture',
+		'after mutating sprite frames',
+		{
+			'customerId': get_instance_id(),
+			'spriteFramesId': spriteFrames.get_instance_id(),
+			'newFrameCount': spriteFrames.get_frame_count(animName)
+		}
+	)
+	#endregion
+	_customerSprite.play(animName)
 
 
 ## 每帧推进顾客状态机。
@@ -110,6 +202,19 @@ func _process_fade_in() -> void:
 	var alpha: float = clampf(_elapsedInState / duration, 0.0, 1.0)
 	modulate.a = alpha
 	if alpha >= 1.0 and _elapsedInState >= duration + max(spawnPauseSec, 0.0):
+		#region agent log
+		_agent_debug_emit(
+			'H2',
+			'CustomerEntity.gd:_process_fade_in',
+			'fade_in completed and entering seeking',
+			{
+				'customerId': get_instance_id(),
+				'elapsedInState': _elapsedInState,
+				'duration': duration,
+				'spawnPauseSec': spawnPauseSec
+			}
+		)
+		#endregion
 		_enter_state(CustomerState.SEEKING)
 
 
@@ -117,6 +222,19 @@ func _process_fade_in() -> void:
 func _process_seeking() -> void:
 	var table: Node = _find_free_table_in_current_cabin()
 	if table != null:
+		#region agent log
+		_agent_debug_emit(
+			'H3',
+			'CustomerEntity.gd:_process_seeking',
+			'found table and entering walk_to_seat',
+			{
+				'customerId': get_instance_id(),
+				'customerPos': global_position,
+				'tablePath': String(table.get_path()),
+				'tablePos': (table as Node2D).global_position if table is Node2D else Vector2.ZERO
+			}
+		)
+		#endregion
 		_targetTable = table
 		_enter_state(CustomerState.WALK_TO_SEAT)
 		return
@@ -151,6 +269,21 @@ func _process_walk_to_seat(delta: float) -> void:
 	global_position = global_position.move_toward(targetPos, speed * delta)
 	if global_position.distance_to(targetPos) > 2.0:
 		return
+	#region agent log
+	_agent_debug_emit(
+		'H3',
+		'CustomerEntity.gd:_process_walk_to_seat',
+		'reached seat threshold, attempting seat_customer',
+		{
+			'customerId': get_instance_id(),
+			'targetPos': targetPos,
+			'currentPos': global_position,
+			'distance': global_position.distance_to(targetPos),
+			'delta': delta,
+			'speed': speed
+		}
+	)
+	#endregion
 	if _targetTable.has_method('seat_customer'):
 		var seated: bool = bool(_targetTable.call('seat_customer', self))
 		if seated:
@@ -255,3 +388,30 @@ func _start_leave(bySatisfied: bool) -> void:
 	_targetTable = null
 	_enter_state(CustomerState.FADE_OUT)
 	EventBus.emit(EventBus.EventType.CUSTOMER_LEFT, {'satisfied': _isLeavingBySatisfied})
+
+
+## 调试日志写入。
+## @param hypothesisId 假设编号
+## @param location 位置
+## @param message 消息
+## @param data 数据
+## @return void
+func _agent_debug_emit(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
+	var payload: Dictionary = {
+		'sessionId': _AGENT_DEBUG_SESSION_ID,
+		'runId': _AGENT_DEBUG_RUN_ID,
+		'hypothesisId': hypothesisId,
+		'location': location,
+		'message': message,
+		'data': data,
+		'timestamp': Time.get_unix_time_from_system() * 1000.0
+	}
+	var file: FileAccess = null
+	if FileAccess.file_exists(_AGENT_DEBUG_LOG_PATH):
+		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.READ_WRITE)
+	else:
+		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.WRITE_READ)
+	if file == null:
+		return
+	file.seek_end()
+	file.store_line(JSON.stringify(payload))

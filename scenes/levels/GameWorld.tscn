@@ -20,7 +20,7 @@
 [ext_resource type="PackedScene" uid="uid://bilqy4usaryy7" path="res://scenes/props/Interactable/FruitTreeInteractable.tscn" id="9_6ecue"]
 [ext_resource type="PackedScene" uid="uid://b85mvrq0ews6p" path="res://scenes/props/Interactable/IncineratorInteractable.tscn" id="9_incinerator"]
 [ext_resource type="FontFile" uid="uid://dgbvi4ssteyx8" path="res://assets/fonts/PixelOperator8.ttf" id="9_smoeg"]
-[ext_resource type="PackedScene" path="res://scenes/props/FishingZone.tscn" id="13_46q1d"]
+[ext_resource type="PackedScene" uid="uid://n2mg1824gmoq" path="res://scenes/props/FishingZone.tscn" id="13_46q1d"]
 [ext_resource type="PackedScene" uid="uid://5v62jfn1esl4" path="res://scenes/props/Interactable/StoveInteractable.tscn" id="14_stove"]
 [ext_resource type="PackedScene" uid="uid://c7lx2qlu08jmm" path="res://scenes/props/Interactable/PotCargo.tscn" id="15_pot"]
 [ext_resource type="PackedScene" uid="uid://bhjyu1jxf3jny" path="res://scenes/props/Interactable/DiningTableInteractable.tscn" id="17_dining_table"]
@@ -32,6 +32,7 @@
 [ext_resource type="Script" uid="uid://bjkt27vdgr04t" path="res://scripts/components/CoinHudUI.gd" id="22_coin_hud"]
 [ext_resource type="PackedScene" uid="uid://v2o8ndm3yu4e" path="res://scenes/props/Interactable/PlateDispenserInteractable.tscn" id="24_plate_dispenser"]
 [ext_resource type="PackedScene" uid="uid://cvwh7w0os4co7" path="res://scenes/ui/components/ShopPanelUI.tscn" id="25_shop_panel_ui"]
+[ext_resource type="Script" uid="uid://dyidexn85lnc2" path="res://scripts/components/StageGoalManager.gd" id="26_stage_goal"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_4ta1d"]
 atlas = ExtResource("5_dhq8s")
@@ -74,8 +75,8 @@ atlas = ExtResource("21_cvyl1")
 region = Rect2(336, 96, 32, 32)
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_8ghft"]
-radius = 10.333334
-height = 22.0
+radius = 7.3333282
+height = 21.333336
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ihn80"]
 atlas = ExtResource("3_8ghft")
@@ -232,6 +233,7 @@ texture = ExtResource("6_3qubl")
 follow_viewport_enabled = true
 
 [node name="MarginContainer" type="MarginContainer" parent="CanvasLayer" unique_id=1780763661]
+visible = false
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -246,8 +248,16 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="ShopPanelUI" parent="CanvasLayer/MarginContainer" unique_id=1853541254 instance=ExtResource("25_shop_panel_ui")]
-layout_mode = 2
+[node name="ShopPanelUI" parent="CanvasLayer" unique_id=1853541254 instance=ExtResource("25_shop_panel_ui")]
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 575.0
+offset_top = 563.0
+offset_right = 1020.0
+offset_bottom = 692.0
+grow_horizontal = 1
+grow_vertical = 1
 
 [node name="StormWarningUI" parent="CanvasLayer" unique_id=868499573 instance=ExtResource("2_dhmek")]
 offset_left = -1209.0
@@ -268,7 +278,6 @@ theme_override_fonts/font = ExtResource("9_smoeg")
 theme_override_font_sizes/font_size = 48
 text = "0"
 script = ExtResource("22_coin_hud")
-prefix = ""
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CanvasLayer/CoinHud" unique_id=151212311]
 position = Vector2(-45, 21)
@@ -321,40 +330,18 @@ ceiling_hole_size = 120.0
 z_index = 6
 position = Vector2(-157, 76.66667)
 scale = Vector2(2, 2)
-fruitType = null
-fruitScene = null
-cooldownSec = null
-interactableGroupName = null
-debugInteractLog = null
-debugRangeLog = null
-rangeRectSize = null
-rangeOffset = null
 
 [node name="FruitTreeInteractable2" parent="Cabins/Cabin3-水果" unique_id=2012134646 instance=ExtResource("9_6ecue")]
 z_index = 6
 position = Vector2(158, 81.111115)
 scale = Vector2(2, 2)
 fruitType = 5
-fruitScene = null
-cooldownSec = null
-interactableGroupName = null
-debugInteractLog = null
-debugRangeLog = null
-rangeRectSize = null
-rangeOffset = null
 
 [node name="FruitTreeInteractable3" parent="Cabins/Cabin3-水果" unique_id=1801752209 instance=ExtResource("9_6ecue")]
 z_index = 6
 position = Vector2(5, 82.22223)
 scale = Vector2(2, 2)
 fruitType = 6
-fruitScene = null
-cooldownSec = null
-interactableGroupName = null
-debugInteractLog = null
-debugRangeLog = null
-rangeRectSize = null
-rangeOffset = null
 
 [node name="Cabin4-果酱" parent="Cabins" unique_id=891480747 instance=ExtResource("2_3sasu")]
 position = Vector2(446, -384)
@@ -365,12 +352,17 @@ floor_hole_size = 120.0
 
 [node name="JuicerInteractable" parent="Cabins/Cabin4-果酱" unique_id=328487474 instance=ExtResource("20_juicer")]
 z_index = 4
-position = Vector2(117, 124.44444)
+position = Vector2(131, 122.22223)
 scale = Vector2(2, 2)
 
 [node name="JuicerInteractable2" parent="Cabins/Cabin4-果酱" unique_id=519975888 instance=ExtResource("20_juicer")]
 z_index = 4
-position = Vector2(-97, 110)
+position = Vector2(-94, 122.22222)
+scale = Vector2(2, 2)
+
+[node name="JuicerInteractable3" parent="Cabins/Cabin4-果酱" unique_id=792532204 instance=ExtResource("20_juicer")]
+z_index = 4
+position = Vector2(-174, 132.22223)
 scale = Vector2(2, 2)
 
 [node name="Cabin5-厨房" parent="Cabins" unique_id=1346611279 instance=ExtResource("2_3sasu")]
@@ -450,11 +442,9 @@ z_index = 20
 position = Vector2(7.6293945e-06, -312)
 scale = Vector2(3, 3)
 script = ExtResource("3_0x6r3")
-anchorCount = 3
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Cabins/TestPlayer" unique_id=654084598]
 position = Vector2(-0.6666641, 4)
-rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_8ghft")
 
 [node name="Sprite" type="AnimatedSprite2D" parent="Cabins/TestPlayer" unique_id=1430410072]
@@ -467,7 +457,7 @@ autoplay = &"idle"
 
 [node name="AnchorController" type="Node2D" parent="Cabins/TestPlayer" unique_id=496589560]
 script = ExtResource("8_ankcr")
-fallbackAnchorCount = 3
+maxAnchorLength = 375.0
 
 [node name="PotCargo" parent="Cabins" unique_id=1171608071 instance=ExtResource("15_pot")]
 z_index = 6
@@ -513,12 +503,12 @@ tiltMaxDeg = 20.0
 recoverDurationSec = 10.0
 debugStormLog = true
 
+[node name="StageGoalManager" type="Node" parent="." unique_id=1625764532]
+script = ExtResource("26_stage_goal")
+
 [node name="FishingZone" parent="." unique_id=1196822258 instance=ExtResource("13_46q1d")]
 position = Vector2(-65, 569)
-fishScene = null
-targetFishCount = null
 spawnIntervalSec = 5.0
-debugFishingZoneLog = null
 
 [node name="CustomerSpawner" type="Node" parent="." unique_id=252203174]
 script = ExtResource("21_customer_spawner")

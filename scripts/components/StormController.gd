@@ -39,12 +39,19 @@ var _recoverStartTiltDeg: float = 0.0
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 
-## 初始化状态机。
+## 初始化状态机并订阅稳定事件。
 ## @return void
 func _ready() -> void:
 	_rng.randomize()
 	_enter_idle()
+	EventBus.subscribe(_on_event)
 	_debug_log('ready')
+
+
+## 退出时取消订阅。
+## @return void
+func _exit_tree() -> void:
+	EventBus.unsubscribe(_on_event)
 
 
 ## 每帧推进风暴时序。
@@ -167,6 +174,32 @@ func _update_recover(delta: float) -> void:
 
 	EventBus.emit(EventBus.EventType.STORM_ENDED, {})
 	_enter_idle()
+
+
+## 接收事件总线消息，处理稳定时间授予。
+## @param eventType 事件类型
+## @param data 事件数据
+## @return void
+func _on_event(eventType: EventBus.EventType, data: Dictionary) -> void:
+	if eventType != EventBus.EventType.STABILITY_GRANTED:
+		return
+	var durationSec: float = float(data.get('duration_seconds', 0.0))
+	if durationSec <= 0.0:
+		return
+	_grant_stability(durationSec)
+
+
+## 授予船体稳定时间：强制回到 IDLE 并设置倒计时。
+## @param durationSec 稳定时长（秒）
+## @return void
+func _grant_stability(durationSec: float) -> void:
+	if _state == StormState.STORM or _state == StormState.RECOVER:
+		EventBus.emit(EventBus.EventType.STORM_ENDED, {})
+	elif _state == StormState.WARNING:
+		EventBus.emit(EventBus.EventType.STORM_ENDED, {})
+	_state = StormState.IDLE
+	_stateTimer = max(_stateTimer, durationSec)
+	_debug_log('stability granted duration=%s timer=%s' % [durationSec, _stateTimer])
 
 
 ## 打印调试日志。

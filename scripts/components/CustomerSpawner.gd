@@ -19,18 +19,45 @@ extends Node
 @export var lateStageStartServedCount: int = 8
 @export var debugSpawnerLog: bool = true
 
+const _DEFAULT_DINING_CABIN_NAMES: Array[String] = ['Cabin6', 'Cabin8', 'Cabin9']
+const _DEFAULT_VIP_CABIN_NAME: StringName = 'Cabin8'
+
 var _spawnTimer: float = 0.0
 var _currentIntervalSec: float = 60.0
 var _servedCustomerCount: int = 0
 var _activeCustomers: Array[Node] = []
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
+const _AGENT_DEBUG_LOG_PATH: String = 'C:/Users/nep/Desktop/mao/debug-aaf6f7.log'
+const _AGENT_DEBUG_SESSION_ID: String = 'aaf6f7'
+const _AGENT_DEBUG_RUN_ID: String = 'run-1'
 
 
 ## 初始化刷新器。
 func _ready() -> void:
 	_rng.randomize()
+	if customerScene == null:
+		customerScene = ResPath.PROP_SCENES.CUSTOMER_ENTITY
+	if diningCabinNames.is_empty():
+		diningCabinNames = PackedStringArray(_DEFAULT_DINING_CABIN_NAMES)
+	if String(vipCabinName).is_empty():
+		vipCabinName = _DEFAULT_VIP_CABIN_NAME
 	_currentIntervalSec = max(spawnIntervalSec, 1.0)
 	EventBus.subscribe(_on_event)
+	#region agent log
+	_agent_debug_emit(
+		'H5',
+		'CustomerSpawner.gd:_ready',
+		'spawner initialized',
+		{
+			'spawnIntervalSec': spawnIntervalSec,
+			'minSpawnIntervalSec': minSpawnIntervalSec,
+			'maxCustomers': maxCustomers,
+			'customerSceneNull': customerScene == null,
+			'diningCabinNames': diningCabinNames,
+			'vipCabinName': String(vipCabinName)
+		}
+	)
+	#endregion
 
 
 ## 退出时取消订阅。
@@ -54,14 +81,35 @@ func _process(delta: float) -> void:
 
 ## 尝试生成顾客。
 func _try_spawn_customer() -> void:
+	#region agent log
+	_agent_debug_emit(
+		'H5',
+		'CustomerSpawner.gd:_try_spawn_customer',
+		'try spawn start',
+		{
+			'activeCustomers': _activeCustomers.size(),
+			'servedCount': _servedCustomerCount,
+			'customerSceneNull': customerScene == null
+		}
+	)
+	#endregion
 	if customerScene == null:
+		#region agent log
+		_agent_debug_emit('H5', 'CustomerSpawner.gd:_try_spawn_customer', 'spawn blocked customerScene null', {})
+		#endregion
 		return
 	var cabins: Array[Cabin] = _resolve_dining_cabins()
 	if cabins.is_empty():
+		#region agent log
+		_agent_debug_emit('H6', 'CustomerSpawner.gd:_try_spawn_customer', 'spawn blocked no dining cabins', {})
+		#endregion
 		return
 	var targetCabin: Cabin = cabins[_rng.randi_range(0, cabins.size() - 1)]
 	var customer: Node2D = customerScene.instantiate() as Node2D
 	if customer == null:
+		#region agent log
+		_agent_debug_emit('H5', 'CustomerSpawner.gd:_try_spawn_customer', 'spawn blocked instantiate null', {})
+		#endregion
 		return
 	targetCabin.add_child(customer)
 	customer.global_position = targetCabin.global_position + Vector2(_rng.randf_range(-120.0, 120.0), 20.0)
@@ -78,6 +126,18 @@ func _try_spawn_customer() -> void:
 	})
 	AudioManager.play_sfx_random(ResPath.AUDIO.CAT_MEOW)
 	_debug_log('spawn customer in %s, vip=%s, interval=%.2f' % [targetCabin.name, str(isVip), _currentIntervalSec])
+	#region agent log
+	_agent_debug_emit(
+		'H5',
+		'CustomerSpawner.gd:_try_spawn_customer',
+		'spawn success',
+		{
+			'cabin': targetCabin.name,
+			'isVip': isVip,
+			'activeAfterSpawn': _activeCustomers.size()
+		}
+	)
+	#endregion
 
 
 ## 根据已服务顾客数挑选需求模板。
@@ -107,6 +167,17 @@ func _resolve_dining_cabins() -> Array[Cabin]:
 		var cabin: Cabin = node as Cabin
 		if diningCabinNames.has(_to_base_cabin_name(cabin.name)):
 			result.append(cabin)
+	#region agent log
+	_agent_debug_emit(
+		'H6',
+		'CustomerSpawner.gd:_resolve_dining_cabins',
+		'resolved dining cabins',
+		{
+			'configuredCabins': diningCabinNames,
+			'resolvedCount': result.size()
+		}
+	)
+	#endregion
 	return result
 
 
@@ -144,3 +215,30 @@ func _debug_log(message: String) -> void:
 	if not debugSpawnerLog:
 		return
 	print('[CustomerSpawner] %s' % message)
+
+
+## 调试日志写入。
+## @param hypothesisId 假设编号
+## @param location 位置
+## @param message 消息
+## @param data 数据
+## @return void
+func _agent_debug_emit(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
+	var payload: Dictionary = {
+		'sessionId': _AGENT_DEBUG_SESSION_ID,
+		'runId': _AGENT_DEBUG_RUN_ID,
+		'hypothesisId': hypothesisId,
+		'location': location,
+		'message': message,
+		'data': data,
+		'timestamp': Time.get_unix_time_from_system() * 1000.0
+	}
+	var file: FileAccess = null
+	if FileAccess.file_exists(_AGENT_DEBUG_LOG_PATH):
+		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.READ_WRITE)
+	else:
+		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.WRITE_READ)
+	if file == null:
+		return
+	file.seek_end()
+	file.store_line(JSON.stringify(payload))

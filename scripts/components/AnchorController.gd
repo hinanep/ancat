@@ -16,7 +16,7 @@ signal slot_state_changed(totalSlots: int, consumedSlots: int)
 ## 后备锚数量（当玩家未提供 anchorCount 属性时使用）。
 @export var fallbackAnchorCount: int = 1
 ## 右键交互检测半径（像素）。
-@export var interactRadius: float = 40.0
+@export var interactRadius: float = 200.0
 ## 右键拾取物体检测半径（像素）。
 @export var pickupRadius: float = 52.0
 ## 右键点选拾取命中半径（鼠标到物体中心，像素）。
@@ -30,7 +30,9 @@ signal slot_state_changed(totalSlots: int, consumedSlots: int)
 ## 丢弃点船体边界安全边距（像素）。
 @export var dropShipBoundsMargin: float = 12.0
 ## 丢弃物品时投掷初速度（像素/秒）。
-@export_range(0.0, 2000.0, 10.0) var dropThrowSpeed: float = 320.0
+@export_range(0.0, 2000.0, 10.0) var dropThrowSpeed: float = 520.0
+## 丢弃时将物体沿投掷方向前推的距离（像素），用于避免卡在角色身上。
+@export_range(0.0, 200.0, 1.0) var dropThrowForwardOffset: float = 28.0
 ## 地板命中允许的最高 Y 偏移（只允许同层或更高层）。
 @export var floorHookMaxYOffset: float = 4.0
 ## 钩中地板后，玩家终点向上偏移（像素）。
@@ -74,6 +76,9 @@ var _leftHoldAtRelease: float = 0.0
 var _lastAvailableAnchorCapacity: int = 1
 var _lastSlotTotal: int = -1
 var _lastSlotConsumed: int = -1
+const _AGENT_DEBUG_LOG_PATH: String = 'C:/Users/nep/Desktop/mao/debug-6da914.log'
+const _AGENT_DEBUG_SESSION_ID: String = '6da914'
+const _AGENT_DEBUG_RUN_ID: String = 'run-1'
 
 const INTERACT_NO_TARGET: int = 0
 const INTERACT_SUCCESS: int = 1
@@ -290,7 +295,10 @@ func _update_single_hook(hookIndex: int, delta: float) -> void:
 						_debug_log('hook cargo %s' % cargo.name)
 						return
 			elif hitType == 'floor':
-				var targetPos: Vector2 = hit.get('position', nextPos) - Vector2(0.0, max(floorPullUpOffset, 0.0))
+				var hitPos: Vector2 = hit.get('position', nextPos)
+				var pullOffset: float = max(floorPullUpOffset, 0.0)
+				var targetPos: Vector2 = hitPos - Vector2(0.0, pullOffset)
+				targetPos = _clamp_point_to_ship_bounds(targetPos, _hook_pull_bounds_margin())
 				_start_player_pull(targetPos)
 				_hooks.remove_at(hookIndex)
 				EventBus.emit(EventBus.EventType.ANCHOR_HIT_FLOOR, {'target': targetPos})
@@ -368,15 +376,90 @@ func _try_cancel_hooked_cargo() -> bool:
 ## @return void
 func _handle_right_click() -> void:
 	_debug_log('right click trigger: hooks=%d carried=%d deployed=%d' % [_hooks.size(), _carriedCargo.size(), _deployedCabinPaths.size()])
+	#region agent log
+	_agent_debug_emit(
+		'H7',
+		'AnchorController.gd:_handle_right_click',
+		'right click begin',
+		{
+			'deployedCount': _deployedCabinPaths.size(),
+			'carriedCount': _carriedCargo.size()
+		}
+	)
+	#endregion
+	if _try_retrieve_deployed_anchor_at_mouse():
+		#region agent log
+		_agent_debug_emit('H7', 'AnchorController.gd:_handle_right_click', 'end by retrieve deployed anchor first', {})
+		#endregion
+		_debug_log('right click end by retrieve deployed anchor')
+		return
 	var interactResult: int = _try_interact()
-	if interactResult == INTERACT_SUCCESS or interactResult == INTERACT_REJECTED:
+	#region agent log
+	_agent_debug_emit(
+		'H9',
+		'AnchorController.gd:_handle_right_click',
+		'interact attempt result',
+		{
+			'result': interactResult
+		}
+	)
+	#endregion
+	if interactResult == INTERACT_SUCCESS:
 		_debug_log('right click end by interact, result=%d' % interactResult)
 		return
 	if _try_cancel_hooked_cargo():
+		#region agent log
+		_agent_debug_emit('H9', 'AnchorController.gd:_handle_right_click', 'end by cancel hooked cargo', {})
+		#endregion
 		_debug_log('right click end by cancel hooked cargo')
 		return
 	if not _carriedCargo.is_empty():
 		var cargo: Node = _carriedCargo.pop_back()
+		#region agent log
+		var carriedWasPlate: bool = cargo != null and cargo.is_in_group('Plate')
+		var carriedPlateFoodType: int = -999
+		if carriedWasPlate and cargo.has_method('get_food_type'):
+			var plateFoodTypeRaw: Variant = cargo.call('get_food_type')
+			if typeof(plateFoodTypeRaw) == TYPE_INT:
+				carriedPlateFoodType = int(plateFoodTypeRaw)
+		var mousePosForFish: Vector2 = get_global_mouse_position()
+		var playerPosForFish: Vector2 = (_player as Node2D).global_position if _player is Node2D else Vector2.ZERO
+		var nearestFishDistToMouse: float = INF
+		var nearestFishDistToPlayer: float = INF
+		var nearestFishHookable: bool = false
+		var nearestFishStateFoodType: int = -999
+		for node in get_tree().get_nodes_in_group('Fish'):
+			if not (node is Node2D):
+				continue
+			var fishNode: Node2D = node as Node2D
+			var distToMouse: float = fishNode.global_position.distance_to(mousePosForFish)
+			if distToMouse >= nearestFishDistToMouse:
+				continue
+			nearestFishDistToMouse = distToMouse
+			nearestFishDistToPlayer = fishNode.global_position.distance_to(playerPosForFish)
+			if fishNode.has_method('can_be_hooked'):
+				nearestFishHookable = bool(fishNode.call('can_be_hooked'))
+			if fishNode.has_method('get_food_type'):
+				var fishFoodTypeRaw: Variant = fishNode.call('get_food_type')
+				if typeof(fishFoodTypeRaw) == TYPE_INT:
+					nearestFishStateFoodType = int(fishFoodTypeRaw)
+		_agent_debug_emit(
+			'H15',
+			'AnchorController.gd:_handle_right_click',
+			'enter drop-carried branch',
+			{
+				'carriedName': cargo.name if cargo != null else '',
+				'carriedWasPlate': carriedWasPlate,
+				'carriedPlateFoodType': carriedPlateFoodType,
+				'nearestFishDistToMouse': nearestFishDistToMouse,
+				'nearestFishDistToPlayer': nearestFishDistToPlayer,
+				'nearestFishHookable': nearestFishHookable,
+				'nearestFishStateFoodType': nearestFishStateFoodType,
+				'pickupClickRadius': rightClickPickupClickRadius,
+				'pickupMaxDistance': rightClickPickupMaxDistance
+			}
+		)
+		#endregion
 		if cargo.has_method('drop_to_world'):
 			cargo.call('drop_to_world')
 		if cargo is Node2D and _player is Node2D:
@@ -385,19 +468,38 @@ func _handle_right_click() -> void:
 			if throwDir.is_zero_approx():
 				throwDir = Vector2.RIGHT
 			if not throwDir.is_zero_approx() and cargo.has_method('apply_throw'):
-				cargo.call('apply_throw', throwDir.normalized() * max(dropThrowSpeed, 0.0))
+				var throwDirNormalized: Vector2 = throwDir.normalized()
+				(cargo as Node2D).global_position += throwDirNormalized * max(dropThrowForwardOffset, 0.0)
+				cargo.call('apply_throw', throwDirNormalized * max(dropThrowSpeed, 0.0))
 		_refresh_carried_offsets()
 		AudioManager.play_sfx_random(ResPath.AUDIO.PUT_DOWN_ITEM)
+		#region agent log
+		_agent_debug_emit('H9', 'AnchorController.gd:_handle_right_click', 'end by drop carried', {'cargo': cargo.name})
+		#endregion
 		_debug_log('right click drop carried cargo=%s' % cargo.name)
 		return
 	if _try_pickup_nearby_cargo():
+		#region agent log
+		_agent_debug_emit('H9', 'AnchorController.gd:_handle_right_click', 'end by pickup nearby cargo', {})
+		#endregion
 		_debug_log('right click end by pickup')
 		return
-	if _try_retrieve_deployed_anchor_at_mouse():
-		_debug_log('right click end by retrieve deployed anchor')
-		return
+	#region agent log
+	_agent_debug_emit(
+		'H18',
+		'AnchorController.gd:_handle_right_click',
+		'pickup branch not taken',
+		{
+			'carriedCount': _carriedCargo.size(),
+			'hooksCount': _hooks.size()
+		}
+	)
+	#endregion
 	_debug_log('right click enter deploy toggle')
 	_toggle_anchor_deploy()
+	#region agent log
+	_agent_debug_emit('H9', 'AnchorController.gd:_handle_right_click', 'end by deploy toggle (all attempts exhausted)', {})
+	#endregion
 
 
 ## 交互优先逻辑：有交互物时仅处理交互分支。
@@ -407,11 +509,28 @@ func _try_interact() -> int:
 		_debug_log('interact skip: player invalid')
 		return INTERACT_NO_TARGET
 	var clickPos: Vector2 = get_global_mouse_position()
+	#region agent log
+	_agent_debug_emit(
+		'H4',
+		'AnchorController.gd:_try_interact',
+		'interact start',
+		{
+			'clickPos': {'x': clickPos.x, 'y': clickPos.y},
+			'carriedCount': _carriedCargo.size()
+		}
+	)
+	#endregion
 	var bestTarget: Node2D
+	var carriedItem: Node = null
+	if not _carriedCargo.is_empty():
+		carriedItem = _carriedCargo[_carriedCargo.size() - 1]
 	for node in get_tree().get_nodes_in_group('Interactable'):
 		if not (node is Node2D):
 			continue
 		var interactive: Node2D = node as Node2D
+		var distToPlayer: float = interactive.global_position.distance_to((_player as Node2D).global_position)
+		if distToPlayer > max(interactRadius, 1.0):
+			continue
 		if not interactive.has_method('is_click_in_interact_range'):
 			continue
 		if not bool(interactive.call('is_click_in_interact_range', clickPos)):
@@ -420,11 +539,25 @@ func _try_interact() -> int:
 		break
 	if bestTarget == null:
 		_debug_log('interact no target at click point')
+		#region agent log
+		var carriedIsPlateAtNoTarget: bool = carriedItem != null and carriedItem.is_in_group('Plate')
+		var carriedPlateFoodAtNoTarget: int = -999
+		if carriedIsPlateAtNoTarget and carriedItem.has_method('get_food_type'):
+			var carriedFoodRawAtNoTarget: Variant = carriedItem.call('get_food_type')
+			if typeof(carriedFoodRawAtNoTarget) == TYPE_INT:
+				carriedPlateFoodAtNoTarget = int(carriedFoodRawAtNoTarget)
+		_agent_debug_emit(
+			'H16',
+			'AnchorController.gd:_try_interact',
+			'no interact target',
+			{
+				'carriedIsPlate': carriedIsPlateAtNoTarget,
+				'carriedPlateFoodType': carriedPlateFoodAtNoTarget,
+				'interactRadius': interactRadius
+			}
+		)
+		#endregion
 		return INTERACT_NO_TARGET
-
-	var carriedItem: Node = null
-	if not _carriedCargo.is_empty():
-		carriedItem = _carriedCargo[_carriedCargo.size() - 1]
 
 	if not bestTarget.has_method('try_interact_ex'):
 		_debug_log('interact target has no try_interact_ex: %s' % bestTarget.name)
@@ -436,8 +569,29 @@ func _try_interact() -> int:
 	if accepted:
 		if consumeCarried and carriedItem != null:
 			_carriedCargo.erase(carriedItem)
+		#region agent log
+		_agent_debug_emit(
+			'H4',
+			'AnchorController.gd:_try_interact',
+			'interact accepted',
+			{
+				'target': bestTarget.name,
+				'consumeCarried': consumeCarried
+			}
+		)
+		#endregion
 		_debug_log('interact accepted by %s consume=%s' % [bestTarget.name, str(consumeCarried)])
 		return INTERACT_SUCCESS
+	#region agent log
+	_agent_debug_emit(
+		'H4',
+		'AnchorController.gd:_try_interact',
+		'interact rejected',
+		{
+			'target': bestTarget.name
+		}
+	)
+	#endregion
 	_debug_log('interact rejected by %s' % bestTarget.name)
 	return INTERACT_REJECTED
 
@@ -513,6 +667,38 @@ func _try_pickup_nearby_cargo() -> bool:
 ## @return void
 func _toggle_anchor_deploy() -> void:
 	var totalCapacity: int = _current_anchor_capacity()
+	var mousePos: Vector2 = get_global_mouse_position()
+	var playerPos: Vector2 = (_player as Node2D).global_position if _player is Node2D else Vector2.ZERO
+	var clickDistToPlayer: float = playerPos.distance_to(mousePos) if _player is Node2D else -1.0
+	var deployMaxDistance: float = max(dropMaxDistance, 1.0)
+	#region agent log
+	_agent_debug_emit(
+		'H13',
+		'AnchorController.gd:_toggle_anchor_deploy',
+		'deploy toggle requested',
+		{
+			'clickDistToPlayer': clickDistToPlayer,
+			'dropMaxDistance': dropMaxDistance,
+			'deployMaxDistance': deployMaxDistance,
+			'interactRadius': interactRadius,
+			'totalCapacity': totalCapacity
+		}
+	)
+	#endregion
+	if _player is Node2D and clickDistToPlayer > deployMaxDistance:
+		#region agent log
+		_agent_debug_emit(
+			'H13',
+			'AnchorController.gd:_toggle_anchor_deploy',
+			'deploy blocked by distance',
+			{
+				'clickDistToPlayer': clickDistToPlayer,
+				'deployMaxDistance': deployMaxDistance
+			}
+		)
+		#endregion
+		_debug_log('deploy blocked: click too far dist=%.2f max=%.2f' % [clickDistToPlayer, deployMaxDistance])
+		return
 	var cabinPath: NodePath = _resolve_player_cabin_path()
 	if cabinPath == NodePath(''):
 		_debug_log('deploy blocked: player not in cabin')
@@ -585,6 +771,14 @@ func try_add_carried_cargo(cargo: Node) -> bool:
 	return true
 
 
+## 是否还能新增一个携带物体（不修改状态）。
+## @return bool
+func can_add_carried_cargo() -> bool:
+	if not _can_carry_more():
+		return false
+	return _carriedCargo.size() < _available_anchor_capacity()
+
+
 ## 判断是否还能继续携带物体。
 ## @return bool
 func _can_carry_more() -> bool:
@@ -647,8 +841,9 @@ func _resolve_blocked_drop_position(origin: Vector2, target: Vector2, cargoNode:
 
 ## 将点限制在整艘船舱的包围边界内。
 ## @param pointGlobal 全局点
+## @param customMargin 自定义边界留白；<0 时使用默认 dropShipBoundsMargin
 ## @return Vector2
-func _clamp_point_to_ship_bounds(pointGlobal: Vector2) -> Vector2:
+func _clamp_point_to_ship_bounds(pointGlobal: Vector2, customMargin: float = -1.0) -> Vector2:
 	var minX: float = INF
 	var maxX: float = -INF
 	var minY: float = INF
@@ -670,11 +865,22 @@ func _clamp_point_to_ship_bounds(pointGlobal: Vector2) -> Vector2:
 		foundAny = true
 	if not foundAny:
 		return pointGlobal
-	var margin: float = max(dropShipBoundsMargin, 0.0)
+	var marginBase: float = customMargin if customMargin >= 0.0 else dropShipBoundsMargin
+	var margin: float = max(marginBase, 0.0)
 	return Vector2(
 		clampf(pointGlobal.x, minX + margin, maxX - margin),
 		clampf(pointGlobal.y, minY + margin, maxY - margin)
 	)
+
+
+## 读取锚拉拽终点的边界留白，优先玩家 hookMoveBoundsMargin。
+## @return float
+func _hook_pull_bounds_margin() -> float:
+	if _player != null:
+		var value: Variant = _player.get('hookMoveBoundsMargin')
+		if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
+			return float(value)
+	return dropShipBoundsMargin
 
 
 ## 根据玩家当前位置解析所在舱室路径，避免依赖外部状态更新时间。
@@ -876,6 +1082,33 @@ func _debug_log(message: String) -> void:
 	if not debug_anchor_log:
 		return
 	print('[AnchorController] %s' % message)
+
+
+## 调试日志写入。
+## @param hypothesisId 假设编号
+## @param location 位置
+## @param message 消息
+## @param data 数据
+## @return void
+func _agent_debug_emit(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
+	var payload: Dictionary = {
+		'sessionId': _AGENT_DEBUG_SESSION_ID,
+		'runId': _AGENT_DEBUG_RUN_ID,
+		'hypothesisId': hypothesisId,
+		'location': location,
+		'message': message,
+		'data': data,
+		'timestamp': Time.get_unix_time_from_system() * 1000.0
+	}
+	var file: FileAccess = null
+	if FileAccess.file_exists(_AGENT_DEBUG_LOG_PATH):
+		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.READ_WRITE)
+	else:
+		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.WRITE_READ)
+	if file == null:
+		return
+	file.seek_end()
+	file.store_line(JSON.stringify(payload))
 
 
 ## 判断鼠标当前是否悬停在可交互UI上（用于屏蔽右键玩法操作）。

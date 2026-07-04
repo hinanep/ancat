@@ -28,70 +28,70 @@ const FOOD_ATLAS_JAM: Texture2D = ResPath.TEXTURES.JAM_ATLAS
 ## @kind 食物大类（fish/fruit/jam）
 const FOOD_DATA: Dictionary = {
 	FoodType.RAW_FISH: {
-		'price': 60,
+		'price': 600,
 		'atlas': FOOD_ATLAS_DISH,
 		'region': Rect2(0.0, 0.0, 32.0, 29.0),
 		'tag': 'raw_fish',
 		'kind': 'fish'
 	},
 	FoodType.FRIED_FISH: {
-		'price': 120,
+		'price': 1200,
 		'atlas': FOOD_ATLAS_DISH,
 		'region': Rect2(32.0, 0.0, 32.0, 29.0),
 		'tag': 'fried_fish',
 		'kind': 'fish'
 	},
 	FoodType.BOILED_FISH: {
-		'price': 120,
+		'price': 1200,
 		'atlas': FOOD_ATLAS_DISH,
 		'region': Rect2(0.0, 29.0, 32.0, 29.0),
 		'tag': 'boiled_fish',
 		'kind': 'fish'
 	},
 	FoodType.SASHIMI: {
-		'price': 120,
+		'price': 1200,
 		'atlas': FOOD_ATLAS_DISH,
 		'region': Rect2(32.0, 29.0, 32.0, 29.0),
 		'tag': 'sashimi',
 		'kind': 'fish'
 	},
 	FoodType.APPLE: {
-		'price': 40,
+		'price': 400,
 		'atlas': FOOD_ATLAS_FRUIT,
 		'region': Rect2(0.0, 0.0, 32.0, 32.0),
 		'tag': 'apple',
 		'kind': 'fruit'
 	},
 	FoodType.PEACH: {
-		'price': 40,
+		'price': 400,
 		'atlas': FOOD_ATLAS_FRUIT,
 		'region': Rect2(32.0, 0.0, 32.0, 32.0),
 		'tag': 'peach',
 		'kind': 'fruit'
 	},
 	FoodType.PEAR: {
-		'price': 40,
+		'price': 400,
 		'atlas': FOOD_ATLAS_FRUIT,
 		'region': Rect2(64.0, 0.0, 32.0, 32.0),
 		'tag': 'pear',
 		'kind': 'fruit'
 	},
 	FoodType.APPLE_JAM: {
-		'price': 60,
+		'price': 600,
 		'atlas': FOOD_ATLAS_JAM,
 		'region': Rect2(0.0, 0.0, 32.0, 32.0),
 		'tag': 'apple_jam',
 		'kind': 'jam'
 	},
 	FoodType.PEACH_JAM: {
-		'price': 60,
+		'price': 600,
 		'atlas': FOOD_ATLAS_JAM,
 		'region': Rect2(32.0, 0.0, 32.0, 32.0),
 		'tag': 'peach_jam',
 		'kind': 'jam'
 	},
 	FoodType.PEAR_JAM: {
-		'price': 60,
+		'price': 600,
 		'atlas': FOOD_ATLAS_JAM,
 		'region': Rect2(64.0, 0.0, 32.0, 32.0),
 		'tag': 'pear_jam',

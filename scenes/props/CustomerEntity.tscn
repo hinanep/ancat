@@ -66,6 +66,7 @@ scale = Vector2(2, 2)
 script = ExtResource("1_customer_script")
 
 [node name="DemandIcons" type="Node2D" parent="." unique_id=836177353]
+z_index = 50
 position = Vector2(0, -24)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=765454042]

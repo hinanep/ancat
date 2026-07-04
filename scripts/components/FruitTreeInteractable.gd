@@ -9,9 +9,6 @@ extends InteractableBase
 @export var cooldownSec: float = 4.0
 
 var _cooldownRemaining: float = 0.0
-const _AGENT_DEBUG_LOG_PATH: String = 'C:/Users/nep/Desktop/mao/debug-8fbd84.log'
-const _AGENT_DEBUG_SESSION_ID: String = '8fbd84'
-const _AGENT_DEBUG_RUN_ID: String = 'post-fix-v2'
 
 @onready var _treeAnim: AnimatedSprite2D = get_node_or_null('TreeAnim') as AnimatedSprite2D
 @onready var _fruitMarkLeft: Sprite2D = get_node_or_null('FruitMarkLeft') as Sprite2D
@@ -44,6 +41,19 @@ func _process(delta: float) -> void:
 func _can_interact_now(player: Node, item: Node, anchorController: Node) -> bool:
 	var _unusedPlayer: Node = player
 	var _unusedItem: Node = item
+	#region agent log
+	_agent_debug_emit(
+		'H1',
+		'FruitTreeInteractable.gd:_can_interact_now',
+		'enter can_interact',
+		{
+			'cooldownRemaining': _cooldownRemaining,
+			'hasAnchorController': anchorController != null,
+			'hasTryAddMethod': anchorController != null and anchorController.has_method('try_add_carried_cargo'),
+			'hasCarriedItem': item != null
+		}
+	)
+	#endregion
 	if anchorController == null:
 		return false
 	if _cooldownRemaining > 0.0:
@@ -57,6 +67,17 @@ func _can_interact_now(player: Node, item: Node, anchorController: Node) -> bool
 ## @param item 候选物品
 ## @return bool
 func _is_item_valid(item: Node) -> bool:
+	#region agent log
+	_agent_debug_emit(
+		'H2',
+		'FruitTreeInteractable.gd:_is_item_valid',
+		'item valid check',
+		{
+			'itemIsNull': item == null,
+			'itemName': item.name if item != null else ''
+		}
+	)
+	#endregion
 	return item == null
 
 
@@ -99,6 +120,17 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 	)
 	#endregion
 	var added: bool = bool(anchorController.call('try_add_carried_cargo', fruitNode))
+	#region agent log
+	_agent_debug_emit(
+		'H3',
+		'FruitTreeInteractable.gd:_on_item_valid',
+		'try_add_carried_cargo result',
+		{
+			'added': added,
+			'cooldownBeforeSet': _cooldownRemaining
+		}
+	)
+	#endregion
 	if not added:
 		fruitNode.queue_free()
 		return
@@ -137,30 +169,3 @@ func _on_tree_animation_finished() -> void:
 		return
 	if _treeAnim.animation == 'cut':
 		_treeAnim.play('default')
-
-
-## 调试日志写入。
-## @param hypothesisId 假设编号
-## @param location 位置
-## @param message 消息
-## @param data 数据
-## @return void
-func _agent_debug_emit(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
-	var payload: Dictionary = {
-		'sessionId': _AGENT_DEBUG_SESSION_ID,
-		'runId': _AGENT_DEBUG_RUN_ID,
-		'hypothesisId': hypothesisId,
-		'location': location,
-		'message': message,
-		'data': data,
-		'timestamp': Time.get_unix_time_from_system() * 1000.0
-	}
-	var file: FileAccess = null
-	if FileAccess.file_exists(_AGENT_DEBUG_LOG_PATH):
-		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.READ_WRITE)
-	else:
-		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.WRITE_READ)
-	if file == null:
-		return
-	file.seek_end()
-	file.store_line(JSON.stringify(payload))

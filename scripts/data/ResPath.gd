@@ -32,6 +32,21 @@ const TEXTURES := {
 	ANCHOR_HEAD = preload('res://assets/textures/锚.png'),
 }
 
+const CUSTOMER_IDLE_TEXTURES: Array[String] = [
+	'res://assets/textures/猫/BlackCat/IdleCatb.png',
+	'res://assets/textures/猫/Brown/IdleCattt.png',
+	'res://assets/textures/猫/Siamese/IdleCattt.png',
+	'res://assets/textures/猫/White/IdleCatttt.png',
+	'res://assets/textures/猫/Xmas/Idle2Cattt.png',
+	'res://assets/textures/猫/Classical/IdleCat.png',
+	'res://assets/textures/猫/TigerCatFree/IdleCatt.png',
+	'res://assets/textures/猫/ThreeColorFree/IdleCatt.png',
+	'res://assets/textures/猫/EgyptCatFree/IdleCatb.png',
+	'res://assets/textures/猫/DemonicFree/IdleCatd.png',
+	'res://assets/textures/猫/BatmanCatFree/IdleCatt.png',
+	'res://assets/textures/猫/BatmanCatFree/IdleCatt 2.png',
+]
+
 const DATA := {
 	# 示例：SWORD_IRON = "res://resources/data/sword_iron.tres",
 }
@@ -65,11 +80,11 @@ const AUDIO := {
 	INCINERATOR_BURN = "res://assets/audio/sfx/ImpactAudio（一些碰撞音效，脚步声）/impactGeneric_light_000.ogg",
 	STORM_WARNING = "res://assets/audio/sfx/风暴警告.mp3",
 	CAT_MEOW = [
-		"res://assets/audio/sfx/猫叫（顾客出现时，顾客吃饱时，顾客或顾客的桌子被锚击中，顾客或顾客桌子摔落一层）/猫叫1.wav",
-		"res://assets/audio/sfx/猫叫（顾客出现时，顾客吃饱时，顾客或顾客的桌子被锚击中，顾客或顾客桌子摔落一层）/猫叫2.wav",
-		"res://assets/audio/sfx/猫叫（顾客出现时，顾客吃饱时，顾客或顾客的桌子被锚击中，顾客或顾客桌子摔落一层）/猫叫3.wav",
-		"res://assets/audio/sfx/猫叫（顾客出现时，顾客吃饱时，顾客或顾客的桌子被锚击中，顾客或顾客桌子摔落一层）/猫叫4.wav",
-		"res://assets/audio/sfx/猫叫（顾客出现时，顾客吃饱时，顾客或顾客的桌子被锚击中，顾客或顾客桌子摔落一层）/猫叫5.wav",
+		"res://assets/audio/sfx/猫叫（顾客出现时，顾客吃饱时，顾客或顾客的桌子被锚击中，顾客或顾客桌子摔落一层）/猫叫1.mp3",
+		"res://assets/audio/sfx/猫叫（顾客出现时，顾客吃饱时，顾客或顾客的桌子被锚击中，顾客或顾客桌子摔落一层）/猫叫2.mp3",
+		"res://assets/audio/sfx/猫叫（顾客出现时，顾客吃饱时，顾客或顾客的桌子被锚击中，顾客或顾客桌子摔落一层）/猫叫3.mp3",
+		"res://assets/audio/sfx/猫叫（顾客出现时，顾客吃饱时，顾客或顾客的桌子被锚击中，顾客或顾客桌子摔落一层）/猫叫4.mp3",
+		"res://assets/audio/sfx/猫叫（顾客出现时，顾客吃饱时，顾客或顾客的桌子被锚击中，顾客或顾客桌子摔落一层）/猫叫5.mp3",
 	],
 
 	# 碰撞与脚步声

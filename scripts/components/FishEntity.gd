@@ -68,10 +68,13 @@ var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _spriteFrames: SpriteFrames
 var _spawnFadeRemaining: float = 0.0
 var _spillStartPos: Vector2 = Vector2.ZERO
+var _spillEdgePos: Vector2 = Vector2.ZERO
 var _spillTargetPos: Vector2 = Vector2.ZERO
-var _spillDuration: float = 0.0
+var _spillToEdgeDuration: float = 0.0
+var _spillOutDuration: float = 0.0
 var _spillElapsed: float = 0.0
 var _spillArcHeight: float = 0.0
+var _spillPhase: int = 0
 var _throwNoCollisionRemaining: float = 0.0
 var _throwCollisionBypassActive: bool = false
 
@@ -245,12 +248,32 @@ func mark_out_of_tank(dropPos: Vector2) -> void:
 ## @param arcHeight 抛物线峰值高度
 ## @return void
 func start_spill_from_tank(dropPos: Vector2, durationSec: float, arcHeight: float) -> void:
+	start_spill_from_tank_with_edge(global_position, dropPos, 0.0, durationSec, arcHeight)
+
+
+## 从鱼缸开始两段溢出动画：先到边缘点，再飞出到落点。
+## @param edgePos 第一段终点（鱼缸上沿角点）
+## @param dropPos 第二段落地目标点
+## @param toEdgeDurationSec 第一段时长
+## @param outDurationSec 第二段时长
+## @param arcHeight 第二段抛物线峰值高度
+## @return void
+func start_spill_from_tank_with_edge(
+	edgePos: Vector2,
+	dropPos: Vector2,
+	toEdgeDurationSec: float,
+	outDurationSec: float,
+	arcHeight: float
+) -> void:
 	_state = FishState.SPILLING
 	_spillStartPos = global_position
+	_spillEdgePos = edgePos
 	_spillTargetPos = dropPos
-	_spillDuration = max(durationSec, 0.05)
+	_spillToEdgeDuration = max(toEdgeDurationSec, 0.0)
+	_spillOutDuration = max(outDurationSec, 0.05)
 	_spillElapsed = 0.0
 	_spillArcHeight = max(arcHeight, 0.0)
+	_spillPhase = 0
 	visible = true
 	_freeMoveEnabled = false
 	_set_collision_ignored(true)
@@ -345,12 +368,24 @@ func _update_tank_swimming(delta: float) -> void:
 ## @param delta 帧间隔（秒）
 ## @return void
 func _update_spill_animation(delta: float) -> void:
+	if _spillPhase == 0:
+		if _spillToEdgeDuration <= 0.0:
+			_spillPhase = 1
+			_spillElapsed = 0.0
+		else:
+			_spillElapsed += delta
+			var toEdgeT: float = clampf(_spillElapsed / _spillToEdgeDuration, 0.0, 1.0)
+			global_position = _spillStartPos.lerp(_spillEdgePos, toEdgeT)
+			if toEdgeT >= 1.0:
+				_spillPhase = 1
+				_spillElapsed = 0.0
+			return
 	_spillElapsed += delta
-	var t: float = clampf(_spillElapsed / max(_spillDuration, 0.05), 0.0, 1.0)
-	var basePos: Vector2 = _spillStartPos.lerp(_spillTargetPos, t)
-	var arc: float = 4.0 * _spillArcHeight * t * (1.0 - t)
+	var outT: float = clampf(_spillElapsed / max(_spillOutDuration, 0.05), 0.0, 1.0)
+	var basePos: Vector2 = _spillEdgePos.lerp(_spillTargetPos, outT)
+	var arc: float = 4.0 * _spillArcHeight * outT * (1.0 - outT)
 	global_position = basePos + Vector2(0.0, -arc)
-	if t >= 1.0:
+	if outT >= 1.0:
 		mark_out_of_tank(_spillTargetPos)
 
 
