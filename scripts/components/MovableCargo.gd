@@ -16,6 +16,8 @@ extends CharacterBody2D
 @export var cabin_group_name: StringName = 'Cabin'
 ## 可交付类型标签（由交互物决定是否接受）。
 @export var deliveryTag: String = 'food'
+## 投掷后无碰撞持续时间（秒）。
+@export var throwNoCollisionSec: float = 0.12
 ## 调试输出开关。
 @export var debug_movable_log: bool = false
 
@@ -34,6 +36,8 @@ var _collisionIgnored: bool = false
 var _savedCollisionLayer: int = 0
 var _savedCollisionMask: int = 0
 var _savedAutoMove: bool = true
+var _throwNoCollisionRemaining: float = 0.0
+var _throwCollisionBypassActive: bool = false
 
 
 ## 初始化并定位初始舱室归属。
@@ -55,6 +59,7 @@ func _exit_tree() -> void:
 ## @param delta 帧间隔（秒）
 ## @return void
 func _physics_process(delta: float) -> void:
+	_update_throw_no_collision(delta)
 	if _isCarried and _carrier != null:
 		global_position = _carrier.global_position + _carryOffset
 		velocity = Vector2.ZERO
@@ -91,6 +96,8 @@ func set_hooked(byAnchor: Node) -> void:
 	_isHooked = byAnchor != null
 	_isCarried = false
 	_carrier = null
+	_throwNoCollisionRemaining = 0.0
+	_throwCollisionBypassActive = false
 	_set_collision_ignored(_isHooked)
 
 
@@ -106,6 +113,8 @@ func set_carried(byPlayer: Node2D, carryOffset: Vector2) -> void:
 	_carrier = byPlayer
 	_carryOffset = carryOffset
 	velocity = Vector2.ZERO
+	_throwNoCollisionRemaining = 0.0
+	_throwCollisionBypassActive = false
 	_set_collision_ignored(_isCarried)
 
 
@@ -116,6 +125,8 @@ func drop_to_world() -> void:
 	_isCarried = false
 	_carrier = null
 	enable_auto_move = _savedAutoMove
+	_throwNoCollisionRemaining = 0.0
+	_throwCollisionBypassActive = false
 	_set_collision_ignored(false)
 
 
@@ -125,6 +136,10 @@ func drop_to_world() -> void:
 func apply_throw(throwVel: Vector2) -> void:
 	_slide_speed = throwVel.x
 	velocity = throwVel
+	_throwNoCollisionRemaining = max(throwNoCollisionSec, 0.0)
+	if _throwNoCollisionRemaining > 0.0:
+		_throwCollisionBypassActive = true
+		_set_collision_ignored(true)
 
 
 ## 是否可被新的锚勾取。
@@ -263,6 +278,21 @@ func _set_collision_ignored(ignored: bool) -> void:
 		collision_layer = _savedCollisionLayer
 		collision_mask = _savedCollisionMask
 		_collisionIgnored = false
+
+
+## 更新投掷后的短暂无碰撞窗口。
+## @param delta 帧间隔（秒）
+## @return void
+func _update_throw_no_collision(delta: float) -> void:
+	if not _throwCollisionBypassActive:
+		return
+	_throwNoCollisionRemaining = max(_throwNoCollisionRemaining - delta, 0.0)
+	if _throwNoCollisionRemaining > 0.0:
+		return
+	_throwCollisionBypassActive = false
+	if _isHooked or _isCarried:
+		return
+	_set_collision_ignored(false)
 
 
 ## 处理锚事件：仅冻结锚所在舱室中的可动物体。

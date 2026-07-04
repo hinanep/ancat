@@ -37,7 +37,7 @@ debugInteractLog = true
 interactLogPrefix = "PotInteractable"
 rangeShapeType = 1
 rangeRectSize = Vector2(28, 20)
-rangeCircleRadius = 30.0
+rangeCircleRadius = 15.0
 
 [node name="InteractArea" type="Area2D" parent="." unique_id=2041972615]
 collision_layer = 16

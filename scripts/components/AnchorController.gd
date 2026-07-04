@@ -30,7 +30,7 @@ signal slot_state_changed(totalSlots: int, consumedSlots: int)
 ## 丢弃点船体边界安全边距（像素）。
 @export var dropShipBoundsMargin: float = 12.0
 ## 丢弃物品时投掷初速度（像素/秒）。
-@export var dropThrowSpeed: float = 320.0
+@export_range(0.0, 2000.0, 10.0) var dropThrowSpeed: float = 320.0
 ## 地板命中允许的最高 Y 偏移（只允许同层或更高层）。
 @export var floorHookMaxYOffset: float = 4.0
 ## 钩中地板后，玩家终点向上偏移（像素）。
@@ -272,6 +272,8 @@ func _update_single_hook(hookIndex: int, delta: float) -> void:
 				var cargo: Node = hit.get('cargo', null)
 				if cargo != null and cargo.has_method('set_hooked'):
 					if cargo.has_method('can_be_hooked') and not bool(cargo.call('can_be_hooked')):
+						if cargo.has_method('on_anchor_struck'):
+							cargo.call('on_anchor_struck', self)
 						pass
 					else:
 						cargo.call('set_hooked', self)
@@ -372,7 +374,10 @@ func _handle_right_click() -> void:
 		if cargo.has_method('drop_to_world'):
 			cargo.call('drop_to_world')
 		if cargo is Node2D and _player is Node2D:
-			var throwDir: Vector2 = get_global_mouse_position() - (_player as Node2D).global_position
+			var throwOrigin: Vector2 = (cargo as Node2D).global_position
+			var throwDir: Vector2 = get_global_mouse_position() - throwOrigin
+			if throwDir.is_zero_approx():
+				throwDir = Vector2.RIGHT
 			if not throwDir.is_zero_approx() and cargo.has_method('apply_throw'):
 				cargo.call('apply_throw', throwDir.normalized() * max(dropThrowSpeed, 0.0))
 		_refresh_carried_offsets()

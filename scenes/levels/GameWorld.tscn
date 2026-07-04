@@ -8,22 +8,20 @@
 [ext_resource type="PackedScene" uid="uid://dd80avoqr4dl4" path="res://scenes/ui/components/anchor_slots_ui.tscn" id="3_fy6ti"]
 [ext_resource type="PackedScene" uid="uid://do27wnokmof2x" path="res://scenes/props/WaterSurface.tscn" id="4_a73yp"]
 [ext_resource type="Script" uid="uid://dmx576ws301qi" path="res://scripts/components/BoatFloatController.gd" id="5_3ar6b"]
-[ext_resource type="PackedScene" uid="uid://cqlyepngiwjuq" path="res://scenes/props/MovableCargo.tscn" id="7_fdut3"]
 [ext_resource type="Script" uid="uid://bbcbgceyjg16o" path="res://scripts/components/StormController.gd" id="7_hy2pk"]
 [ext_resource type="PackedScene" uid="uid://bj3xbh3bkitqi" path="res://scenes/props/FishTankInteractable.tscn" id="7_q4kc4"]
 [ext_resource type="Script" uid="uid://cshkm83i4d55g" path="res://scripts/components/AnchorController.gd" id="8_ankcr"]
+[ext_resource type="PackedScene" uid="uid://bilqy4usaryy7" path="res://scenes/props/FruitTreeInteractable.tscn" id="9_6ecue"]
 [ext_resource type="PackedScene" uid="uid://b85mvrq0ews6p" path="res://scenes/props/IncineratorInteractable.tscn" id="9_incinerator"]
 [ext_resource type="PackedScene" path="res://scenes/props/FishingZone.tscn" id="13_46q1d"]
 [ext_resource type="PackedScene" uid="uid://5v62jfn1esl4" path="res://scenes/props/StoveInteractable.tscn" id="14_stove"]
 [ext_resource type="PackedScene" uid="uid://c7lx2qlu08jmm" path="res://scenes/props/PotCargo.tscn" id="15_pot"]
-[ext_resource type="PackedScene" uid="uid://41sqlk7pbma5" path="res://scenes/props/PlateCargo.tscn" id="16_plate"]
-[ext_resource type="PackedScene" path="res://scenes/props/DiningTableInteractable.tscn" id="17_dining_table"]
+[ext_resource type="PackedScene" uid="uid://bhjyu1jxf3jny" path="res://scenes/props/DiningTableInteractable.tscn" id="17_dining_table"]
 [ext_resource type="PackedScene" path="res://scenes/props/FryingPanCargo.tscn" id="18_frying_pan"]
-[ext_resource type="PackedScene" path="res://scenes/props/CuttingBoardCargo.tscn" id="19_cutting_board"]
+[ext_resource type="PackedScene" uid="uid://daotoqyv4pigc" path="res://scenes/props/CuttingBoardCargo.tscn" id="19_cutting_board"]
 [ext_resource type="PackedScene" uid="uid://bjm2ehurbhosl" path="res://scenes/props/JuicerInteractable.tscn" id="20_juicer"]
 [ext_resource type="Script" uid="uid://bngtwf0cobb8g" path="res://scripts/components/CustomerSpawner.gd" id="21_customer_spawner"]
 [ext_resource type="Script" uid="uid://bjkt27vdgr04t" path="res://scripts/components/CoinHudUI.gd" id="22_coin_hud"]
-[ext_resource type="PackedScene" path="res://scenes/props/FruitCargo.tscn" id="23_fruit_cargo"]
 [ext_resource type="PackedScene" uid="uid://v2o8ndm3yu4e" path="res://scenes/props/PlateDispenserInteractable.tscn" id="24_plate_dispenser"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_8ghft"]
@@ -212,6 +210,23 @@ left_door_open = true
 ceiling_hole_position = 160.0
 ceiling_hole_size = 120.0
 
+[node name="FruitTreeInteractable" parent="Cabins/Cabin3-水果" unique_id=950768535 instance=ExtResource("9_6ecue")]
+z_index = 6
+position = Vector2(-157, 76.66667)
+scale = Vector2(2, 2)
+
+[node name="FruitTreeInteractable2" parent="Cabins/Cabin3-水果" unique_id=2012134646 instance=ExtResource("9_6ecue")]
+z_index = 6
+position = Vector2(158, 81.111115)
+scale = Vector2(2, 2)
+fruitType = 5
+
+[node name="FruitTreeInteractable3" parent="Cabins/Cabin3-水果" unique_id=1801752209 instance=ExtResource("9_6ecue")]
+z_index = 6
+position = Vector2(5, 82.22223)
+scale = Vector2(2, 2)
+fruitType = 6
+
 [node name="Cabin4-果酱" parent="Cabins" unique_id=891480747 instance=ExtResource("2_3sasu")]
 position = Vector2(446, -384)
 scale = Vector2(1, 0.9)
@@ -222,6 +237,11 @@ floor_hole_size = 120.0
 [node name="JuicerInteractable" parent="Cabins/Cabin4-果酱" unique_id=328487474 instance=ExtResource("20_juicer")]
 z_index = 4
 position = Vector2(117, 124.44444)
+scale = Vector2(2, 2)
+
+[node name="JuicerInteractable2" parent="Cabins/Cabin4-果酱" unique_id=519975888 instance=ExtResource("20_juicer")]
+z_index = 4
+position = Vector2(-97, 110)
 scale = Vector2(2, 2)
 
 [node name="Cabin5-厨房" parent="Cabins" unique_id=1346611279 instance=ExtResource("2_3sasu")]
@@ -315,24 +335,6 @@ autoplay = &"idle"
 script = ExtResource("8_ankcr")
 fallbackAnchorCount = 3
 
-[node name="MovableCargo" parent="Cabins" unique_id=602930434 instance=ExtResource("7_fdut3")]
-z_index = 6
-position = Vector2(95, -581)
-scale = Vector2(2, 2)
-debug_movable_log = true
-
-[node name="MovableCargo2" parent="Cabins" unique_id=1711991960 instance=ExtResource("7_fdut3")]
-z_index = 6
-position = Vector2(-71, -586)
-scale = Vector2(2, 2)
-debug_movable_log = true
-
-[node name="MovableCargo3" parent="Cabins" unique_id=465262206 instance=ExtResource("7_fdut3")]
-z_index = 6
-position = Vector2(-197, -583)
-scale = Vector2(2, 2)
-debug_movable_log = true
-
 [node name="PotCargo" parent="Cabins" unique_id=1171608071 instance=ExtResource("15_pot")]
 z_index = 6
 position = Vector2(-155, -469)
@@ -340,35 +342,13 @@ scale = Vector2(2, 2)
 
 [node name="FryingPanCargo" parent="Cabins" unique_id=1946618425 instance=ExtResource("18_frying_pan")]
 z_index = 6
-position = Vector2(-77, -470)
+position = Vector2(-26, -470)
 scale = Vector2(2, 2)
 
 [node name="CuttingBoardCargo" parent="Cabins" unique_id=107998297 instance=ExtResource("19_cutting_board")]
 z_index = 6
-position = Vector2(1, -469)
+position = Vector2(104, -469)
 scale = Vector2(2, 2)
-
-[node name="PlateCargo" parent="Cabins" unique_id=863683806 instance=ExtResource("16_plate")]
-z_index = 6
-position = Vector2(204, -464)
-scale = Vector2(2, 2)
-
-[node name="FruitCargoApple" parent="Cabins" unique_id=1650770416 instance=ExtResource("23_fruit_cargo")]
-z_index = 6
-position = Vector2(357, 10)
-scale = Vector2(2, 2)
-
-[node name="FruitCargoPeach" parent="Cabins" unique_id=1945133139 instance=ExtResource("23_fruit_cargo")]
-z_index = 6
-position = Vector2(408, 10)
-scale = Vector2(2, 2)
-fruitType = 5
-
-[node name="FruitCargoPear" parent="Cabins" unique_id=299880419 instance=ExtResource("23_fruit_cargo")]
-z_index = 6
-position = Vector2(459, 10)
-scale = Vector2(2, 2)
-fruitType = 6
 
 [node name="WaterSurface" parent="." unique_id=614244190 instance=ExtResource("4_a73yp")]
 z_index = -20

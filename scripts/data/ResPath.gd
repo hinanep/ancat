@@ -40,6 +40,13 @@ const AUDIO := {
 	COIN_FEW = "res://assets/audio/sfx/金币少.mp3",
 	ANCHOR_HIT_ITEM = "res://assets/audio/sfx/锚碰到物品.mp3",
 	STORM_WARNING = "res://assets/audio/sfx/风暴警告.mp3",
+	CAT_MEOW = [
+		"res://assets/audio/sfx/猫叫（顾客出现时，顾客吃饱时，顾客或顾客的桌子被锚击中，顾客或顾客桌子摔落一层）/猫叫1.wav",
+		"res://assets/audio/sfx/猫叫（顾客出现时，顾客吃饱时，顾客或顾客的桌子被锚击中，顾客或顾客桌子摔落一层）/猫叫2.wav",
+		"res://assets/audio/sfx/猫叫（顾客出现时，顾客吃饱时，顾客或顾客的桌子被锚击中，顾客或顾客桌子摔落一层）/猫叫3.wav",
+		"res://assets/audio/sfx/猫叫（顾客出现时，顾客吃饱时，顾客或顾客的桌子被锚击中，顾客或顾客桌子摔落一层）/猫叫4.wav",
+		"res://assets/audio/sfx/猫叫（顾客出现时，顾客吃饱时，顾客或顾客的桌子被锚击中，顾客或顾客桌子摔落一层）/猫叫5.wav",
+	],
 
 	# 碰撞与脚步声
 	FOOTSTEP_CARPET = [

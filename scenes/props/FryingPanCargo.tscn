@@ -1,15 +1,15 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://deh8niwjmxmfs"]
 
-[ext_resource type="Script" path="res://scripts/components/FryingPanCargo.gd" id="1_pan_script"]
-[ext_resource type="Texture2D" path="res://assets/textures/烹饪/63. Pan.png" id="2_pan_texture"]
-[ext_resource type="Script" path="res://scripts/components/FryingPanInteractable.gd" id="3_pan_interact"]
-[ext_resource type="PackedScene" path="res://scenes/components/InteractRangeComponent.tscn" id="4_interact_range"]
+[ext_resource type="Script" uid="uid://bq2cg27nc8s63" path="res://scripts/components/FryingPanCargo.gd" id="1_pan_script"]
+[ext_resource type="Texture2D" uid="uid://bddl87f7w8ai6" path="res://assets/textures/烹饪/63. Pan.png" id="2_pan_texture"]
+[ext_resource type="Script" uid="uid://bi70ntdby8oma" path="res://scripts/components/FryingPanInteractable.gd" id="3_pan_interact"]
+[ext_resource type="PackedScene" uid="uid://cvlujgnml141e" path="res://scenes/components/InteractRangeComponent.tscn" id="4_interact_range"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_pan"]
-radius = 14.0
+radius = 13.0
 height = 26.0
 
-[node name="FryingPanCargo" type="CharacterBody2D"]
+[node name="FryingPanCargo" type="CharacterBody2D" unique_id=1779276350]
 collision_layer = 5
 collision_mask = 5
 script = ExtResource("1_pan_script")
@@ -18,31 +18,36 @@ slide_accel_scale = 580.0
 max_slide_speed = 120.0
 deliveryTag = "frying_pan"
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=364653749]
 texture = ExtResource("2_pan_texture")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=800129281]
 position = Vector2(0, -1)
 shape = SubResource("CapsuleShape2D_pan")
 
-[node name="FoodAnchor" type="Marker2D" parent="."]
+[node name="FoodAnchor" type="Marker2D" parent="." unique_id=214421927]
 position = Vector2(0, -8)
 
-[node name="InteractRangeComponent" parent="." instance=ExtResource("4_interact_range")]
+[node name="InteractRangeComponent" parent="." unique_id=1575787899 instance=ExtResource("4_interact_range")]
 script = ExtResource("3_pan_interact")
+cookableGroupName = &"Cookable"
+plateGroupName = &"Plate"
+interactableGroupName = &"Interactable"
+debugInteractLog = true
+interactLogPrefix = "InteractableBase"
 rangeShapeType = 1
 rangeRectSize = Vector2(28, 18)
-rangeCircleRadius = 30.0
+rangeCircleRadius = 15.0
 
-[node name="InteractArea" type="Area2D" parent="."]
+[node name="InteractArea" type="Area2D" parent="." unique_id=1648247689]
 collision_layer = 16
 collision_mask = 0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea" unique_id=402033793]
 position = Vector2(0, -1)
 shape = SubResource("CapsuleShape2D_pan")
 
-[node name="CookProgressBar" type="ProgressBar" parent="."]
+[node name="CookProgressBar" type="ProgressBar" parent="." unique_id=1015773564]
 offset_left = -15.0
 offset_top = -22.0
 offset_right = 15.0

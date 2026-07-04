@@ -4,9 +4,11 @@ extends InteractableBase
 ## @plateScene 盘子预制体
 ## @cooldownSec 产出冷却时长（秒）
 ## @maxPlateCount 全局盘子上限
+## @dispensedPlateScale 产出盘子缩放
 @export var plateScene: PackedScene = preload('res://scenes/props/PlateCargo.tscn')
 @export var cooldownSec: float = 10.0
 @export var maxPlateCount: int = 8
+@export var dispensedPlateScale: Vector2 = Vector2(2.3, 2.3)
 
 var _cooldownRemaining: float = 0.0
 
@@ -68,6 +70,7 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 	get_tree().current_scene.add_child(plateNode)
 	if plateNode is Node2D and player is Node2D:
 		(plateNode as Node2D).global_position = (player as Node2D).global_position
+		(plateNode as Node2D).scale = dispensedPlateScale
 	var added: bool = bool(anchorController.call('try_add_carried_cargo', plateNode))
 	if not added:
 		plateNode.queue_free()

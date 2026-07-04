@@ -26,7 +26,7 @@ extends Area2D
 		rangeOffset = value
 		_apply_range_shape()
 
-@onready var _shapeNode: CollisionShape2D = $CollisionShape2D
+var _shapeNode: CollisionShape2D = null
 
 
 ## 初始化交互区域参数到碰撞体。
@@ -55,6 +55,8 @@ func is_point_in_range(pointGlobal: Vector2) -> bool:
 ## 应用当前导出参数到交互碰撞体。
 ## @return void
 func _apply_range_shape() -> void:
+	if _shapeNode == null:
+		_shapeNode = get_node_or_null('CollisionShape2D') as CollisionShape2D
 	if _shapeNode == null:
 		return
 	_shapeNode.position = rangeOffset

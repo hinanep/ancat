@@ -61,6 +61,8 @@ animations = [{
 }]
 
 [node name="CustomerEntity" type="Node2D" unique_id=422639079]
+position = Vector2(0, -1)
+scale = Vector2(2, 2)
 script = ExtResource("1_customer_script")
 
 [node name="DemandIcons" type="Node2D" parent="." unique_id=836177353]
@@ -70,4 +72,4 @@ position = Vector2(0, -24)
 sprite_frames = SubResource("SpriteFrames_vbnlq")
 animation = &"cat1"
 autoplay = "cat1"
-frame_progress = 0.39627856
+frame_progress = 0.52945536

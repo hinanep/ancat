@@ -35,6 +35,8 @@ extends CharacterBody2D
 @export var freeMoveSlideAccelScale: float = 520.0
 ## 自由移动时的最大横向滑动速度（像素/秒）。
 @export var freeMoveMaxSlideSpeed: float = 140.0
+## 投掷后无碰撞持续时间（秒）。
+@export var throwNoCollisionSec: float = 0.12
 ## 调试日志开关。
 @export var debugFishLog: bool = false
 
@@ -70,6 +72,8 @@ var _spillTargetPos: Vector2 = Vector2.ZERO
 var _spillDuration: float = 0.0
 var _spillElapsed: float = 0.0
 var _spillArcHeight: float = 0.0
+var _throwNoCollisionRemaining: float = 0.0
+var _throwCollisionBypassActive: bool = false
 
 @onready var _sprite: AnimatedSprite2D = $AnimatedSprite2D
 
@@ -109,6 +113,7 @@ func _process(delta: float) -> void:
 ## @param delta 物理帧间隔（秒）
 ## @return void
 func _physics_process(delta: float) -> void:
+	_update_throw_no_collision(delta)
 	if _freeMoveEnabled and (_state == FishState.OUT_TANK or _state == FishState.DEAD):
 		_update_free_move_slide(delta)
 		velocity.y += max(gravityAccel, 0.0) * delta
@@ -140,6 +145,8 @@ func set_hooked(byAnchor: Node) -> void:
 	_state = FishState.HOOKED
 	_carrier = null
 	_freeMoveEnabled = false
+	_throwNoCollisionRemaining = 0.0
+	_throwCollisionBypassActive = false
 	_set_collision_ignored(true)
 
 
@@ -152,6 +159,8 @@ func set_carried(byPlayer: Node2D, carryOffset: Vector2) -> void:
 	_carrier = byPlayer
 	_carryOffset = carryOffset
 	_freeMoveEnabled = false
+	_throwNoCollisionRemaining = 0.0
+	_throwCollisionBypassActive = false
 	_set_collision_ignored(true)
 
 
@@ -166,6 +175,8 @@ func drop_to_world() -> void:
 	_set_collision_ignored(false)
 	_carrier = null
 	_freeMoveEnabled = true
+	_throwNoCollisionRemaining = 0.0
+	_throwCollisionBypassActive = false
 	velocity = Vector2.ZERO
 
 
@@ -175,6 +186,10 @@ func drop_to_world() -> void:
 func apply_throw(throwVel: Vector2) -> void:
 	_slideSpeed = throwVel.x
 	velocity = throwVel
+	_throwNoCollisionRemaining = max(throwNoCollisionSec, 0.0)
+	if _throwNoCollisionRemaining > 0.0:
+		_throwCollisionBypassActive = true
+		_set_collision_ignored(true)
 
 
 ## 标记进入鱼缸（停更新、隐藏、不可交互）。
@@ -184,6 +199,8 @@ func mark_in_tank() -> void:
 	_deadTimerRemaining = 0.0
 	_carrier = null
 	_freeMoveEnabled = false
+	_throwNoCollisionRemaining = 0.0
+	_throwCollisionBypassActive = false
 	_set_collision_ignored(true)
 	visible = true
 	velocity = Vector2.ZERO
@@ -217,6 +234,8 @@ func mark_out_of_tank(dropPos: Vector2) -> void:
 	_set_collision_ignored(false)
 	_carrier = null
 	_freeMoveEnabled = true
+	_throwNoCollisionRemaining = 0.0
+	_throwCollisionBypassActive = false
 	velocity = Vector2.ZERO
 
 
@@ -499,6 +518,21 @@ func _set_collision_ignored(ignored: bool) -> void:
 		collision_layer = _savedCollisionLayer
 		collision_mask = _savedCollisionMask
 		_collisionIgnored = false
+
+
+## 更新投掷后的短暂无碰撞窗口。
+## @param delta 帧间隔（秒）
+## @return void
+func _update_throw_no_collision(delta: float) -> void:
+	if not _throwCollisionBypassActive:
+		return
+	_throwNoCollisionRemaining = max(_throwNoCollisionRemaining - delta, 0.0)
+	if _throwNoCollisionRemaining > 0.0:
+		return
+	_throwCollisionBypassActive = false
+	if _state == FishState.HOOKED or _state == FishState.CARRIED or _state == FishState.IN_TANK:
+		return
+	_set_collision_ignored(false)
 
 
 ## 输出调试日志。

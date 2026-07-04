@@ -1,0 +1,83 @@
+[gd_scene format=3 uid="uid://bilqy4usaryy7"]
+
+[ext_resource type="Script" uid="uid://beic5jy7uc44c" path="res://scripts/components/FruitTreeInteractable.gd" id="1_fruit_tree_script"]
+[ext_resource type="Texture2D" uid="uid://gltfvy5m02" path="res://assets/textures/Pixel Tree Animated Pack - Helm3t/Sheets/With Shadow/Tree1_anim_sheet_s.png" id="2_tree_sheet"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_interact"]
+radius = 30.066593
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yycqe"]
+atlas = ExtResource("2_tree_sheet")
+region = Rect2(0, 64, 48, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ex4cj"]
+atlas = ExtResource("2_tree_sheet")
+region = Rect2(48, 64, 48, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_avwkr"]
+atlas = ExtResource("2_tree_sheet")
+region = Rect2(96, 64, 48, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_680a7"]
+atlas = ExtResource("2_tree_sheet")
+region = Rect2(144, 64, 48, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_avkxy"]
+atlas = ExtResource("2_tree_sheet")
+region = Rect2(192, 64, 48, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xalnm"]
+atlas = ExtResource("2_tree_sheet")
+region = Rect2(0, 0, 48, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_vbnlq"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yycqe")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ex4cj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_avwkr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_680a7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_avkxy")
+}],
+"loop": 0,
+"name": &"cut",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xalnm")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="FruitTreeInteractable" type="Area2D" unique_id=1882097784]
+collision_layer = 16
+script = ExtResource("1_fruit_tree_script")
+interactLogPrefix = "FruitTree"
+rangeShapeType = 1
+rangeCircleRadius = 26.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1198993318]
+shape = SubResource("CircleShape2D_interact")
+
+[node name="TreeAnim" type="AnimatedSprite2D" parent="." unique_id=171379666]
+sprite_frames = SubResource("SpriteFrames_vbnlq")
+
+[node name="FruitMarkLeft" type="Sprite2D" parent="." unique_id=1861214245]
+position = Vector2(-12, -6)
+scale = Vector2(0.5, 0.5)
+
+[node name="FruitMarkRight" type="Sprite2D" parent="." unique_id=1336242585]
+position = Vector2(10, -14)
+scale = Vector2(0.5, 0.5)

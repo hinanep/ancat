@@ -25,8 +25,7 @@ shakeDurationSec = 0.12
 interactableGroupName = &"Interactable"
 debugInteractLog = true
 interactLogPrefix = "InteractableBase"
-rangeShapeType = 1
-rangeRectSize = Vector2(48, 40)
+rangeRectSize = Vector2(30, 30)
 rangeCircleRadius = 45.0
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1113261455]

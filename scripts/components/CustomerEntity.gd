@@ -14,10 +14,12 @@ enum CustomerState {
 ## @walkSpeed 行走速度（像素/秒）
 ## @waitTimeoutSec 等待超时（秒）
 ## @fadeInSec 渐入时长（秒）
+## @spawnPauseSec 渐入完成后原地停顿时长（秒）
 ## @fadeOutSec 渐出时长（秒）
 @export var walkSpeed: float = 80.0
 @export var waitTimeoutSec: float = 60.0
 @export var fadeInSec: float = 0.5
+@export var spawnPauseSec: float = 2.0
 @export var fadeOutSec: float = 0.5
 @export var debugCustomerLog: bool = true
 
@@ -107,7 +109,7 @@ func _process_fade_in() -> void:
 	var duration: float = max(fadeInSec, 0.01)
 	var alpha: float = clampf(_elapsedInState / duration, 0.0, 1.0)
 	modulate.a = alpha
-	if alpha >= 1.0:
+	if alpha >= 1.0 and _elapsedInState >= duration + max(spawnPauseSec, 0.0):
 		_enter_state(CustomerState.SEEKING)
 
 

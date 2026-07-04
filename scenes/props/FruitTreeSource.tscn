@@ -1,0 +1,75 @@
+[gd_scene format=3 uid="uid://bvxmv2j0ekp6p"]
+
+[ext_resource type="Script" path="res://scripts/components/FruitTreeSource.gd" id="1_tree_script"]
+[ext_resource type="Texture2D" uid="uid://gltfvy5m02" path="res://assets/textures/Pixel Tree Animated Pack - Helm3t/Sheets/With Shadow/Tree1_anim_sheet_s.png" id="2_kskoq"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_tree_body"]
+radius = 14.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yycqe"]
+atlas = ExtResource("2_kskoq")
+region = Rect2(0, 64, 48, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ex4cj"]
+atlas = ExtResource("2_kskoq")
+region = Rect2(48, 64, 48, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_avwkr"]
+atlas = ExtResource("2_kskoq")
+region = Rect2(96, 64, 48, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_680a7"]
+atlas = ExtResource("2_kskoq")
+region = Rect2(144, 64, 48, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_avkxy"]
+atlas = ExtResource("2_kskoq")
+region = Rect2(192, 64, 48, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xalnm"]
+atlas = ExtResource("2_kskoq")
+region = Rect2(0, 0, 48, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_vbnlq"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yycqe")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ex4cj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_avwkr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_680a7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_avkxy")
+}],
+"loop": 0,
+"name": &"cut",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xalnm")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="FruitTreeSource" type="CharacterBody2D" unique_id=1397072400]
+script = ExtResource("1_tree_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1281836028]
+position = Vector2(0, -4)
+shape = SubResource("CircleShape2D_tree_body")
+
+[node name="tree" type="AnimatedSprite2D" parent="." unique_id=835602385]
+sprite_frames = SubResource("SpriteFrames_vbnlq")
+animation = &"cut"
+frame = 4
+frame_progress = 1.0

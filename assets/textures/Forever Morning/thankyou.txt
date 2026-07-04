@@ -1,0 +1,26 @@
+Thank you for downloading Forever Morning by Misoshiru Studio!
+
+-- Features --
+- 1 infinitely scrollable background with 5 layers
+- 3 flattened images
+
+Combinations:
+- 1_stars.png + 1_stars_trail.png (the purpose of keeping them separate is to allow for adding a flickering animation to the stars)
+- 1_spaceship.png
+
+
+-- License --
+You may use this assets in personal or commercial projects, and modify it to suit your needs
+Credits are not required but would be much appreciated :-)
+
+
+-- Details --
+Size: 252px by 108px for layers, 1512px by 648px for flattened images
+Format: PNG
+Aspect ratio: 21:9
+
+
+-- About --
+Check out my other stuff:
+Itch.io: https://misoshiru-studio.itch.io/
+Youtube: https://www.youtube.com/channel/UClN4nr634s_1245_9g0vVuA
