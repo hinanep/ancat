@@ -80,6 +80,12 @@ func _ready() -> void:
 	_debug_log('ready: player=%s capacity=%d' % [_player.name if _player != null else 'null', _lastAvailableAnchorCapacity])
 
 
+## 退出时取消事件订阅。
+## @return void
+func _exit_tree() -> void:
+	pass
+
+
 ## 每帧处理输入与回收逻辑。
 ## @param delta 帧间隔（秒）
 ## @return void
