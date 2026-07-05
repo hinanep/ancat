@@ -14,10 +14,7 @@ extends InteractRangeComponent
 @export var cookPreviewOffset: Vector2 = Vector2(0.0, -28.0)
 
 var _cookPreviewBubble: CookPreviewBubble
-var _cookPreviewWasVisible: bool = false
 var _rightClickPromptBubble: Node2D
-
-const _AGENT_DEBUG_LOG_PATH: String = 'C:/Users/nep/Desktop/mao/debug-d44187.log'
 
 
 ## 初始化：加入可交互组。
@@ -88,80 +85,61 @@ func _update_cook_preview_bubble() -> void:
 		radius = float(anchorController.call('get_interact_radius'))
 	if global_position.distance_to(playerNode.global_position) > radius:
 		_cookPreviewBubble.hide_preview()
-		_log_cook_preview_state(false, null, 'out_of_range')
 		return
 	var carriedItem: Node = null
 	if anchorController.has_method('get_top_carried_item'):
 		carriedItem = anchorController.call('get_top_carried_item') as Node
-	if carriedItem == null or not carriedItem.is_in_group('Cookable'):
+	if carriedItem == null:
 		_cookPreviewBubble.hide_preview()
-		_log_cook_preview_state(false, carriedItem, 'not_cookable')
 		return
-	if not _is_item_valid(carriedItem):
+	var canPreview: bool = false
+	if carriedItem.is_in_group('Cookable') or carriedItem.is_in_group('Plate'):
+		canPreview = _is_item_valid(carriedItem)
+	if not canPreview:
 		_cookPreviewBubble.hide_preview()
-		_log_cook_preview_state(false, carriedItem, 'item_invalid')
 		return
 	_cookPreviewBubble.show_preview(cookPreviewFoodType)
-	_log_cook_preview_state(true, carriedItem, 'shown')
 
 
-## 记录烹饪预览状态变化（调试）。
-## @param visible 是否显示
-## @param carriedItem 携带物
-## @param reason 原因
-## @return void
-func _log_cook_preview_state(visible: bool, carriedItem: Node, reason: String) -> void:
-	if visible == _cookPreviewWasVisible and visible:
-		return
-	_cookPreviewWasVisible = visible
-	#region agent log
-	var previewRegion: Dictionary = {}
-	var foodData: Dictionary = FoodConfig.FOOD_DATA.get(cookPreviewFoodType, {})
-	if foodData.has('region'):
-		var region: Rect2 = foodData.get('region', Rect2())
-		previewRegion = {'x': region.position.x, 'y': region.position.y, 'w': region.size.x, 'h': region.size.y}
-	_agent_debug_emit(
-		'H1',
-		'InteractableBase.gd:_log_cook_preview_state',
-		'cook preview state changed',
-		{
-			'visible': visible,
-			'reason': reason,
-			'interactable': name,
-			'parentName': get_parent().name if get_parent() != null else '',
-			'cookPreviewFoodType': cookPreviewFoodType,
-			'previewRegion': previewRegion,
-			'carriedName': carriedItem.name if carriedItem != null else '',
-			'carriedGroups': carriedItem.get_groups() if carriedItem != null else []
-		}
-	)
-	#endregion
-
-
-## 写入调试日志。
-## @param hypothesisId 假设编号
-## @param location 位置
-## @param message 消息
-## @param data 数据
-## @return void
-func _agent_debug_emit(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
-	var payload: Dictionary = {
-		'sessionId': 'd44187',
-		'hypothesisId': hypothesisId,
-		'location': location,
-		'message': message,
-		'data': data,
-		'timestamp': Time.get_unix_time_from_system() * 1000.0
-	}
-	var file: FileAccess = null
-	if FileAccess.file_exists(_AGENT_DEBUG_LOG_PATH):
-		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.READ_WRITE)
-	else:
-		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.WRITE_READ)
-	if file == null:
-		return
-	file.seek_end()
-	file.store_line(JSON.stringify(payload))
+## 判断当前状态下是否应显示右键交互提示。
+## @param anchorController 锚控制器
+## @param blockEmptyHandInteract 空手时是否存在可拾取物（拾取优先时传 true）
+## @return bool
+func should_show_right_click_prompt(anchorController: Node, blockEmptyHandInteract: bool) -> bool:
+	if anchorController == null:
+		return false
+	var playerNode: Node2D = null
+	if anchorController.has_method('get_player_node'):
+		playerNode = anchorController.call('get_player_node') as Node2D
+	if playerNode == null:
+		return false
+	var radius: float = 200.0
+	if anchorController.has_method('get_interact_radius'):
+		radius = float(anchorController.call('get_interact_radius'))
+	if global_position.distance_to(playerNode.global_position) > radius:
+		return false
+	var promptRadius: float = 96.0
+	if anchorController.has_method('get_prompt_radius'):
+		promptRadius = float(anchorController.call('get_prompt_radius'))
+	var promptCenter: Vector2 = global_position
+	var parentNode: Node = get_parent()
+	if parentNode is CharacterBody2D:
+		promptCenter = (parentNode as Node2D).global_position
+	var promptDistance: float = promptCenter.distance_to(playerNode.global_position)
+	if promptDistance > max(promptRadius, 0.0):
+		return false
+	var carriedItem: Node = null
+	if anchorController.has_method('get_top_carried_item'):
+		carriedItem = anchorController.call('get_top_carried_item') as Node
+	if not _can_interact_now(playerNode, carriedItem, anchorController):
+		return false
+	var itemValid: bool = _is_item_valid(carriedItem)
+	var anchorValid: bool = _is_anchor_valid(anchorController)
+	if not itemValid and not anchorValid:
+		return false
+	if carriedItem == null and blockEmptyHandInteract:
+		return false
+	return true
 
 
 ## 统一扩展交互协议：先判物品，再判锚；都不合法则失败。

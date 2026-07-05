@@ -56,7 +56,14 @@ func _process(delta: float) -> void:
 			shouldShow = _should_show_pickup_prompt(_targetNode, anchorController, playerNode)
 		PromptMode.INTERACT:
 			var cookPreviewVisible: bool = _cookPreviewBubble != null and _cookPreviewBubble.visible
-			shouldShow = _should_show_interact_prompt(_interactable, anchorController, playerNode, cookPreviewVisible)
+			var blockEmptyHandInteract: bool = _has_nearby_pickup_target(anchorController, playerNode)
+			shouldShow = _should_show_interact_prompt(
+				_interactable,
+				anchorController,
+				playerNode,
+				cookPreviewVisible,
+				blockEmptyHandInteract
+			)
 		_:
 			shouldShow = false
 	if shouldShow:
@@ -94,6 +101,30 @@ func _resolve_anchor_and_player(tree: SceneTree) -> Dictionary:
 	return {'anchor': anchorController, 'player': playerNode}
 
 
+## 判断附近是否存在可拾取物。
+## @param anchorController 锚控制器
+## @param playerNode 玩家节点
+## @return bool
+func _has_nearby_pickup_target(anchorController: Node, playerNode: Node2D) -> bool:
+	if anchorController == null or playerNode == null:
+		return false
+	var carriedItem: Node = null
+	if anchorController.has_method('get_top_carried_item'):
+		carriedItem = anchorController.call('get_top_carried_item') as Node
+	if carriedItem != null:
+		return false
+	var promptRadius: float = _resolve_prompt_radius(anchorController)
+	for node in get_tree().get_nodes_in_group('Hitable'):
+		if not (node is Node2D):
+			continue
+		if node.has_method('can_be_hooked') and not bool(node.call('can_be_hooked')):
+			continue
+		var body: Node2D = node as Node2D
+		if body.global_position.distance_to(playerNode.global_position) <= promptRadius:
+			return true
+	return false
+
+
 ## 判断是否应显示拾取提示。
 ## @param target 可拾取目标
 ## @param anchorController 锚控制器
@@ -104,11 +135,8 @@ func _should_show_pickup_prompt(target: Node2D, anchorController: Node, playerNo
 		return false
 	if target.has_method('can_be_hooked') and not bool(target.call('can_be_hooked')):
 		return false
-	var pickupRadius: float = 52.0
-	var pickupRadiusValue: Variant = anchorController.get('pickupRadius')
-	if typeof(pickupRadiusValue) == TYPE_FLOAT or typeof(pickupRadiusValue) == TYPE_INT:
-		pickupRadius = float(pickupRadiusValue)
-	return target.global_position.distance_to(playerNode.global_position) <= max(pickupRadius, 0.0)
+	var promptRadius: float = _resolve_prompt_radius(anchorController)
+	return target.global_position.distance_to(playerNode.global_position) <= promptRadius
 
 
 ## 判断是否应显示交互提示。
@@ -116,25 +144,37 @@ func _should_show_pickup_prompt(target: Node2D, anchorController: Node, playerNo
 ## @param anchorController 锚控制器
 ## @param playerNode 玩家节点
 ## @param cookPreviewVisible 烹饪预览是否正在显示
+## @param blockEmptyHandInteract 空手时是否存在可拾取物
 ## @return bool
 func _should_show_interact_prompt(
 	interactable: Node,
 	anchorController: Node,
 	playerNode: Node2D,
-	cookPreviewVisible: bool
+	cookPreviewVisible: bool,
+	blockEmptyHandInteract: bool
 ) -> bool:
 	if cookPreviewVisible:
 		return false
 	if interactable == null or anchorController == null or playerNode == null:
 		return false
-	if not (interactable is Node2D):
-		return false
-	var interactableNode: Node2D = interactable as Node2D
-	var radius: float = 200.0
-	if anchorController.has_method('get_interact_radius'):
-		radius = float(anchorController.call('get_interact_radius'))
-	if interactableNode.global_position.distance_to(playerNode.global_position) > radius:
-		return false
-	if not interactable.has_method('is_point_in_range'):
-		return false
-	return bool(interactable.call('is_point_in_range', playerNode.global_position))
+	if interactable.has_method('should_show_right_click_prompt'):
+		return bool(interactable.call('should_show_right_click_prompt', anchorController, blockEmptyHandInteract))
+	return false
+
+
+## 解析拾取提示显示半径。
+## @param anchorController 锚控制器
+## @return float
+func _resolve_prompt_radius(anchorController: Node) -> float:
+	if anchorController == null:
+		return 96.0
+	if anchorController.has_method('get_prompt_radius'):
+		return max(float(anchorController.call('get_prompt_radius')), 0.0)
+	var promptRadiusValue: Variant = anchorController.get('promptRadius')
+	if typeof(promptRadiusValue) == TYPE_FLOAT or typeof(promptRadiusValue) == TYPE_INT:
+		return max(float(promptRadiusValue), 0.0)
+	var pickupRadius: float = 52.0
+	var pickupRadiusValue: Variant = anchorController.get('pickupRadius')
+	if typeof(pickupRadiusValue) == TYPE_FLOAT or typeof(pickupRadiusValue) == TYPE_INT:
+		pickupRadius = float(pickupRadiusValue)
+	return max(pickupRadius, 0.0)

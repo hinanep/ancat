@@ -37,6 +37,11 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 		item.call('drop_to_world')
 	if item is Node2D:
 		(item as Node2D).global_position = global_position + potPlacementOffset
+	if item is Node2D and _is_stove_cookware(item):
+		if _currentPot == null or not is_instance_valid(_currentPot):
+			_currentPot = item as Node2D
+			if item.has_method('set_on_stove'):
+				item.call('set_on_stove', true)
 	_log_interact('pot placed on stove')
 
 

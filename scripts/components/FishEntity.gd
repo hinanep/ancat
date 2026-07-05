@@ -447,33 +447,29 @@ func _update_out_of_tank_timer(delta: float) -> void:
 
 
 ## 烹饪完成回调：切换为装盘贴图，移除 Cookable 分组。
-func set_cooked() -> void:
+## @param foodType 成品食物类型，决定图集区域
+func set_cooked(foodType: int = FoodConfig.FoodType.RAW_FISH) -> void:
 	if is_in_group('Cookable'):
 		remove_from_group('Cookable')
 	if _sprite == null or _spriteFrames == null:
 		return
+	var cookedRegion: Rect2 = cookedAtlasRegion
+	var foodData: Dictionary = FoodConfig.FOOD_DATA.get(foodType, {})
+	if foodData.has('region'):
+		cookedRegion = foodData.get('region', cookedAtlasRegion)
 	if not _spriteFrames.has_animation('cooked'):
 		_spriteFrames.add_animation('cooked')
 		_spriteFrames.set_animation_speed('cooked', 1.0)
 		if cookedTexture != null:
 			var atlas := AtlasTexture.new()
 			atlas.atlas = cookedTexture
-			atlas.region = cookedAtlasRegion
+			atlas.region = cookedRegion
 			_spriteFrames.add_frame('cooked', atlas)
+	else:
+		var cookedFrame: Texture2D = _spriteFrames.get_frame_texture('cooked', 0)
+		if cookedFrame is AtlasTexture:
+			(cookedFrame as AtlasTexture).region = cookedRegion
 	_sprite.play('cooked')
-	#region agent log
-	_agent_debug_emit(
-		'H3',
-		'FishEntity.gd:set_cooked',
-		'fish cooked visual applied',
-		{
-			'regionX': cookedAtlasRegion.position.x,
-			'regionY': cookedAtlasRegion.position.y,
-			'regionW': cookedAtlasRegion.size.x,
-			'regionH': cookedAtlasRegion.size.y
-		}
-	)
-	#endregion
 	_debug_log('set cooked')
 
 
@@ -602,22 +598,3 @@ func _debug_log(message: String) -> void:
 	if not debugFishLog:
 		return
 	print('[FishEntity] %s' % message)
-
-
-const _AGENT_DEBUG_LOG_PATH: String = 'C:/Users/nep/Desktop/mao/debug-d44187.log'
-
-
-func _agent_debug_emit(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
-	var payload: Dictionary = {
-		'sessionId': 'd44187',
-		'hypothesisId': hypothesisId,
-		'location': location,
-		'message': message,
-		'data': data,
-		'timestamp': Time.get_unix_time_from_system() * 1000.0
-	}
-	var file: FileAccess = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.READ_WRITE if FileAccess.file_exists(_AGENT_DEBUG_LOG_PATH) else FileAccess.WRITE_READ)
-	if file == null:
-		return
-	file.seek_end()
-	file.store_line(JSON.stringify(payload))

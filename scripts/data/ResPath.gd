@@ -30,6 +30,7 @@ const TEXTURES := {
 	FISH_ALIVE = preload('res://assets/textures/烹饪/鱼.png'),
 	FISH_DEAD = preload('res://assets/textures/烹饪/骨鱼.png'),
 	DISH_ATLAS = preload('res://assets/textures/烹饪/料理.png'),
+	DISH_NO_PLATE_ATLAS = preload('res://assets/textures/烹饪/料理无盘子.png'),
 	FRUIT_ATLAS = preload('res://assets/textures/烹饪/水果.png'),
 	JAM_ATLAS = preload('res://assets/textures/烹饪/果酱.png'),
 	PLATE_EMPTY = preload('res://assets/textures/烹饪/46. Plate.png'),

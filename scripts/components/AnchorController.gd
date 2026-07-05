@@ -19,6 +19,8 @@ signal slot_state_changed(totalSlots: int, consumedSlots: int)
 @export var interactRadius: float = 200.0
 ## 右键拾取物体检测半径（像素）。
 @export var pickupRadius: float = 52.0
+## 拾取提示气泡显示半径（像素，仅影响提示显隐，不影响实际拾取判定）。
+@export var promptRadius: float = 96.0
 ## 右键点选拾取命中半径（鼠标到物体中心，像素）。
 @export var rightClickPickupClickRadius: float = 28.0
 ## 右键点选拾取最大距离（玩家到物体中心，像素）。
@@ -116,6 +118,12 @@ func get_player_node() -> Node2D:
 ## @return float
 func get_interact_radius() -> float:
 	return max(interactRadius, 1.0)
+
+
+## 获取拾取提示气泡显示半径。
+## @return float
+func get_prompt_radius() -> float:
+	return max(promptRadius, pickupRadius)
 
 
 ## 退出时取消事件订阅。
@@ -389,12 +397,16 @@ func _try_cancel_hooked_cargo() -> bool:
 	return false
 
 
-## 右键：优先交互 > 取消勾取 > 丢弃 > 拾取 > 放锚/回收放置锚。
+## 右键：空手时拾取优先；有携带物时交互优先 > 取消勾取 > 丢弃 > 拾取 > 放锚/回收放置锚。
 ## @return void
 func _handle_right_click() -> void:
 	_debug_log('right click trigger: hooks=%d carried=%d deployed=%d' % [_hooks.size(), _carriedCargo.size(), _deployedCabinPaths.size()])
 	if _try_retrieve_deployed_anchor_at_mouse():
 		_debug_log('right click end by retrieve deployed anchor')
+		return
+	var handsEmpty: bool = _carriedCargo.is_empty()
+	if handsEmpty and _try_pickup_nearby_cargo():
+		_debug_log('right click end by pickup (empty hands priority)')
 		return
 	var interactResult: int = _try_interact()
 	if interactResult == INTERACT_SUCCESS:

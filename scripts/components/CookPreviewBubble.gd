@@ -17,7 +17,7 @@ func show_preview(foodType: int) -> void:
 		return
 	if _visibleFoodType != foodType:
 		_visibleFoodType = foodType
-		var foodTexture: Texture2D = FoodConfig.get_atlas_texture(foodType)
+		var foodTexture: Texture2D = FoodConfig.get_preview_atlas_texture(foodType)
 		if foodTexture != null and _foodIcon != null:
 			_foodIcon.texture = foodTexture
 	visible = true

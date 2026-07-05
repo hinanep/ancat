@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://bmtjege46adf1" path="res://scripts/components/TestPlayerController.gd" id="3_0x6r3"]
 [ext_resource type="Texture2D" uid="uid://d048tv117giwp" path="res://assets/textures/猫/Siamese/IdleCattt.png" id="3_8ghft"]
 [ext_resource type="PackedScene" uid="uid://dd80avoqr4dl4" path="res://scenes/ui/components/anchor_slots_ui.tscn" id="3_fy6ti"]
+[ext_resource type="PackedScene" uid="uid://chccub0x0gmc3" path="res://scenes/components/StormRain.tscn" id="3_smoeg"]
 [ext_resource type="Texture2D" uid="uid://du874ewnbnanw" path="res://assets/textures/Forever Morning/3_city.png" id="4_7um7j"]
 [ext_resource type="PackedScene" uid="uid://do27wnokmof2x" path="res://scenes/props/WaterSurface.tscn" id="4_a73yp"]
 [ext_resource type="Script" uid="uid://dmx576ws301qi" path="res://scripts/components/BoatFloatController.gd" id="5_3ar6b"]
@@ -183,20 +184,32 @@ skyScrollSpeed = 10.0
 cloudScrollSpeed = 30.0
 cityScrollSpeed = 60.0
 
+[node name="StormRain" parent="back" unique_id=1760424729 instance=ExtResource("3_smoeg")]
+
 [node name="0Sky" type="Sprite2D" parent="back" unique_id=1101138054]
 position = Vector2(0, -2.5)
 scale = Vector2(9.547619, 12.435185)
 texture = ExtResource("2_4ta1d")
 
 [node name="2Clouds6" type="Sprite2D" parent="back" unique_id=1009292335]
-position = Vector2(-365.83334, -270.0001)
+position = Vector2(-365.83334, -250.00006)
 scale = Vector2(14, 14)
+texture = ExtResource("6_3qubl")
+
+[node name="2Clouds7" type="Sprite2D" parent="back/2Clouds6" unique_id=1869881582]
+position = Vector2(0, 5.6547623)
+scale = Vector2(0.99999994, 0.99999994)
 texture = ExtResource("6_3qubl")
 
 [node name="3City" type="Sprite2D" parent="back" unique_id=1015658376]
 texture_repeat = 2
-position = Vector2(341.66675, -289.9999)
+position = Vector2(341.66675, -290.83316)
 scale = Vector2(16, 16)
+texture = ExtResource("4_7um7j")
+
+[node name="3City2" type="Sprite2D" parent="back/3City" unique_id=515469338]
+texture_repeat = 2
+position = Vector2(0, 1.197916)
 texture = ExtResource("4_7um7j")
 
 [node name="WorldCamera" type="Camera2D" parent="." unique_id=945099590]
@@ -513,5 +526,6 @@ script = ExtResource("21_customer_spawner")
 diningCabinNames = PackedStringArray()
 minSpawnIntervalSec = 25.0
 
+[editable path="back/StormRain"]
 [editable path="Cabins/Cabin8/DiningTableInteractable"]
 [editable path="Cabins/Cabin8/DiningTableInteractable/InteractRangeComponent"]

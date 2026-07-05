@@ -17,6 +17,7 @@ enum FoodType {
 }
 
 const FOOD_ATLAS_DISH: Texture2D = ResPath.TEXTURES.DISH_ATLAS
+const FOOD_ATLAS_DISH_PREVIEW: Texture2D = ResPath.TEXTURES.DISH_NO_PLATE_ATLAS
 const FOOD_ATLAS_FRUIT: Texture2D = ResPath.TEXTURES.FRUIT_ATLAS
 const FOOD_ATLAS_JAM: Texture2D = ResPath.TEXTURES.JAM_ATLAS
 
@@ -160,6 +161,23 @@ static func get_atlas_texture(foodType: FoodType) -> Texture2D:
 	var region: Rect2 = data.get('region', Rect2())
 	if atlasTexture == null:
 		return null
+	var texture := AtlasTexture.new()
+	texture.atlas = atlasTexture
+	texture.region = region
+	return texture
+
+
+## 构建成品提示气泡用的图集纹理（鱼类使用无盘子图集）。
+## @param foodType 食物类型
+## @return Texture2D
+static func get_preview_atlas_texture(foodType: FoodType) -> Texture2D:
+	var data: Dictionary = FOOD_DATA.get(foodType, {})
+	var atlasTexture: Texture2D = data.get('atlas', null)
+	var region: Rect2 = data.get('region', Rect2())
+	if atlasTexture == null:
+		return null
+	if String(data.get('kind', '')) == 'fish':
+		atlasTexture = FOOD_ATLAS_DISH_PREVIEW
 	var texture := AtlasTexture.new()
 	texture.atlas = atlasTexture
 	texture.region = region

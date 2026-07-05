@@ -51,14 +51,6 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 		food.queue_free()
 		if item.has_method('set_food_type'):
 			item.call('set_food_type', FoodConfig.FoodType.FRIED_FISH)
-		#region agent log
-		_agent_debug_emit(
-			'H5',
-			'FryingPanInteractable.gd:_on_item_valid',
-			'served food to plate',
-			{'servedFoodType': FoodConfig.FoodType.FRIED_FISH, 'plateName': item.name}
-		)
-		#endregion
 		if item.has_method('apply_food_texture'):
 			item.call('apply_food_texture')
 		AudioManager.play_sfx(ResPath.AUDIO.PICK_UP_ITEM)

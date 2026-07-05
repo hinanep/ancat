@@ -121,7 +121,7 @@ func _setup_sashimi_prompt_bubble() -> void:
 	if _sashimiPromptBubble == null:
 		return
 	_sashimiPromptBubble.visible = false
-	_sashimiPromptBubble.texture = FoodConfig.get_atlas_texture(FoodConfig.FoodType.SASHIMI)
+	_sashimiPromptBubble.texture = FoodConfig.get_preview_atlas_texture(FoodConfig.FoodType.SASHIMI)
 
 
 ## 控制“用盘子收集”提示气泡显隐。
@@ -130,29 +130,3 @@ func _set_sashimi_prompt_visible(visible: bool) -> void:
 	if _sashimiPromptBubble == null:
 		return
 	_sashimiPromptBubble.visible = visible
-	if visible:
-		#region agent log
-		_debug_cook_preview_log(
-			'H5',
-			'CuttingBoardCargo.gd:_set_sashimi_prompt_visible',
-			'post-cook sashimi prompt shown',
-			{'foodType': FoodConfig.FoodType.SASHIMI}
-		)
-		#endregion
-
-
-func _debug_cook_preview_log(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
-	var log_path: String = 'C:/Users/nep/Desktop/mao/debug-d44187.log'
-	var payload: Dictionary = {
-		'sessionId': 'd44187',
-		'hypothesisId': hypothesisId,
-		'location': location,
-		'message': message,
-		'data': data,
-		'timestamp': Time.get_unix_time_from_system() * 1000.0
-	}
-	var file: FileAccess = FileAccess.open(log_path, FileAccess.READ_WRITE if FileAccess.file_exists(log_path) else FileAccess.WRITE_READ)
-	if file == null:
-		return
-	file.seek_end()
-	file.store_line(JSON.stringify(payload))

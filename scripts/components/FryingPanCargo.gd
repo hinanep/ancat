@@ -44,31 +44,37 @@ func _process(delta: float) -> void:
 		_isCooked = true
 		_cookProgressBar.visible = false
 		_stop_fry_loop()
-		#region agent log
-		_debug_cook_preview_log(
-			'H3',
-			'FryingPanCargo.gd:_process',
-			'frying pan cook finished',
-			{
-				'calledSetCooked': _foodNode != null and _foodNode.has_method('set_cooked'),
-				'foodName': _foodNode.name if _foodNode != null else ''
-			}
-		)
-		#endregion
-		AudioManager.play_sfx(ResPath.AUDIO.PROGRESS_COMPLETE)
-		_debug_log('fried food ready')
+		_on_cook_finished()
+		return
 
 
 ## 设置是否在炉子上。
 ## @param value 是否在炉子上
 func set_on_stove(value: bool) -> void:
 	_isOnStove = value
+	if value:
+		enable_auto_move = false
+		velocity = Vector2.ZERO
+		_slide_speed = 0.0
+	elif not _isCarried and not _isHooked:
+		enable_auto_move = true
 	if value and _foodNode != null and not _isCooked:
 		_cookProgressBar.visible = true
 		_update_progress_bar()
 	elif not value:
 		_cookProgressBar.visible = false
 		_stop_fry_loop()
+
+
+## 在炉上时冻结物理，避免与灶台碰撞弹开。
+## @param delta 帧间隔（秒）
+## @return void
+func _physics_process(delta: float) -> void:
+	if _isOnStove:
+		velocity = Vector2.ZERO
+		_slide_speed = 0.0
+		return
+	super._physics_process(delta)
 
 
 ## 是否有食材。
@@ -151,8 +157,7 @@ func apply_cook_total_sec(newTotalSec: float) -> void:
 			_isCooked = true
 			_cookProgressBar.visible = false
 			_stop_fry_loop()
-			AudioManager.play_sfx(ResPath.AUDIO.PROGRESS_COMPLETE)
-			_debug_log('fried food ready')
+			_on_cook_finished()
 			return
 	_update_progress_bar()
 
@@ -163,6 +168,17 @@ func _update_progress_bar() -> void:
 		_cookProgressBar.value = 1.0
 		return
 	_cookProgressBar.value = 1.0 - (_cookRemainingSec / totalCookSec)
+
+
+## 烹饪完成回调：切换食材熟食贴图。
+## @return void
+func _on_cook_finished() -> void:
+	if _foodNode == null:
+		return
+	if _foodNode.has_method('set_cooked'):
+		_foodNode.call('set_cooked', FoodConfig.FoodType.FRIED_FISH)
+	AudioManager.play_sfx(ResPath.AUDIO.PROGRESS_COMPLETE)
+	_debug_log('fried food ready')
 
 
 ## 启动煎锅持续音效。
@@ -187,20 +203,3 @@ func _stop_fry_loop() -> void:
 ## @return String
 func _fry_loop_key() -> String:
 	return 'fry_pan_%s' % get_instance_id()
-
-
-func _debug_cook_preview_log(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
-	var log_path: String = 'C:/Users/nep/Desktop/mao/debug-d44187.log'
-	var payload: Dictionary = {
-		'sessionId': 'd44187',
-		'hypothesisId': hypothesisId,
-		'location': location,
-		'message': message,
-		'data': data,
-		'timestamp': Time.get_unix_time_from_system() * 1000.0
-	}
-	var file: FileAccess = FileAccess.open(log_path, FileAccess.READ_WRITE if FileAccess.file_exists(log_path) else FileAccess.WRITE_READ)
-	if file == null:
-		return
-	file.seek_end()
-	file.store_line(JSON.stringify(payload))
