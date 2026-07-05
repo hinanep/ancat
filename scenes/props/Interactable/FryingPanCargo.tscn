@@ -6,8 +6,8 @@
 [ext_resource type="PackedScene" uid="uid://cvlujgnml141e" path="res://scenes/components/InteractRangeComponent.tscn" id="4_interact_range"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_pan"]
-radius = 17.0
-height = 34.0
+radius = 14.0
+height = 28.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ivo45"]
 size = Vector2(35, 27)
@@ -22,6 +22,7 @@ max_slide_speed = 120.0
 deliveryTag = "frying_pan"
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=364653749]
+scale = Vector2(1.1, 1.1)
 texture = ExtResource("2_ivo45")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=800129281]
