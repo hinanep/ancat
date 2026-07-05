@@ -11,7 +11,6 @@ var _dropTracking: bool = false
 var _dropStartY: float = 0.0
 var _isBroken: bool = false
 var _airborneTracking: bool = false
-var _agentDebugLastDropSampleMs: int = 0
 
 const MAX_PLATE_COUNT: int = 8
 const FISH_SCENE: PackedScene = ResPath.PROP_SCENES.FISH_ENTITY
@@ -76,22 +75,6 @@ func drop_to_world() -> void:
 	_dropTracking = true
 	_airborneTracking = false
 	_dropStartY = global_position.y
-	#region agent log
-	_agent_debug_emit(
-		'H3',
-		'PlateCargo.gd:drop_to_world',
-		'plate drop tracking started',
-		{
-			'dropStartY': _dropStartY,
-			'airborneTracking': _airborneTracking,
-			'currentCabin': current_cabin_name,
-			'visible': visible,
-			'zIndex': z_index,
-			'zAsRelative': z_as_relative,
-			'parentPath': String(get_parent().get_path()) if get_parent() != null else ''
-		}
-	)
-	#endregion
 
 
 ## 每物理帧检查是否触发跨层摔碎。
@@ -106,69 +89,14 @@ func _physics_process(delta: float) -> void:
 			return
 		_airborneTracking = true
 		_dropStartY = global_position.y
-		#region agent log
-		_agent_debug_emit(
-			'H3',
-			'PlateCargo.gd:_physics_process',
-			'plate airborne tracking started',
-			{
-				'startY': _dropStartY,
-				'threshold': threshold,
-				'currentCabin': current_cabin_name
-			}
-		)
-		#endregion
-		return
+			return
 	if not is_on_floor():
-		#region agent log
-		if _agent_debug_should_drop_sample():
-			_agent_debug_emit(
-				'H3',
-				'PlateCargo.gd:_physics_process',
-				'plate airborne sample',
-				{
-					'globalY': global_position.y,
-					'dropStartY': _dropStartY,
-					'deltaY': global_position.y - _dropStartY,
-					'threshold': threshold,
-					'currentCabin': current_cabin_name
-				}
-			)
-		#endregion
-		return
+			return
 	var dropDy: float = global_position.y - _dropStartY
 	_airborneTracking = false
 	_dropTracking = false
 	if dropDy < threshold:
-		#region agent log
-		_agent_debug_emit(
-			'H3',
-			'PlateCargo.gd:_physics_process',
-			'plate landed without break',
-			{
-				'landY': global_position.y,
-				'dropStartY': _dropStartY,
-				'deltaY': dropDy,
-				'threshold': threshold,
-				'currentCabin': current_cabin_name
-			}
-		)
-		#endregion
-		return
-	#region agent log
-	_agent_debug_emit(
-		'H3',
-		'PlateCargo.gd:_physics_process',
-		'plate landed and break triggered',
-		{
-			'globalY': global_position.y,
-			'dropStartY': _dropStartY,
-			'deltaY': dropDy,
-			'threshold': threshold,
-			'currentCabin': current_cabin_name
-		}
-	)
-	#endregion
+			return
 	_break_plate()
 
 
@@ -244,13 +172,3 @@ func _play_jam_disappear_vfx() -> void:
 	tween.tween_property(vfx, 'global_position', vfx.global_position + Vector2(0.0, -18.0), 0.16)
 	tween.parallel().tween_property(vfx, 'modulate:a', 0.0, 0.16)
 	tween.finished.connect(vfx.queue_free)
-
-
-## 调试日志：下落采样节流。
-## @return bool
-func _agent_debug_should_drop_sample() -> bool:
-	var nowMs: int = Time.get_ticks_msec()
-	if nowMs - _agentDebugLastDropSampleMs < 450:
-		return false
-	_agentDebugLastDropSampleMs = nowMs
-	return true

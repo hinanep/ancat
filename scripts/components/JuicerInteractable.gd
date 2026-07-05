@@ -6,7 +6,7 @@ extends InteractableBase
 ## @machineAtlas 榨汁机图集
 ## @atlasCellSize 图集单格尺寸
 @export var plateGroupName: StringName = 'Plate'
-@export var maxStoredJams: int = 3
+@export var maxStoredJams: int = 1
 @export var machineAtlas: Texture2D = ResPath.TEXTURES.JUICER_ATLAS
 @export var atlasCellSize: Vector2 = Vector2(32.0, 32.0)
 ## 空机器贴图区域（左上角）。

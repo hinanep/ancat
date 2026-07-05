@@ -38,11 +38,7 @@ var _savedCollisionMask: int = 0
 var _savedAutoMove: bool = true
 var _throwNoCollisionRemaining: float = 0.0
 var _throwCollisionBypassActive: bool = false
-var _agentDebugLastHookSampleMs: int = 0
 
-const _AGENT_DEBUG_LOG_PATH: String = 'C:/Users/nep/Desktop/mao/debug-8fbd84.log'
-const _AGENT_DEBUG_SESSION_ID: String = '8fbd84'
-const _AGENT_DEBUG_RUN_ID: String = 'post-fix-v3'
 
 
 ## 初始化并定位初始舱室归属。
@@ -73,21 +69,6 @@ func _physics_process(delta: float) -> void:
 
 	_refresh_cabins_if_needed()
 	_update_current_cabin_by_position()
-	#region agent log
-	if _isHooked and _agent_debug_is_target_cargo() and _agent_debug_should_hook_sample():
-		var cabinsNode: Node2D = _agent_debug_cabins_node()
-		_agent_debug_emit(
-			'H2',
-			'MovableCargo.gd:_physics_process',
-			'hooked cargo follow snapshot',
-			{
-				'name': name,
-				'script': _agent_debug_script_name(),
-				'cargoPos': global_position,
-				'cabinsPos': cabinsNode.global_position if cabinsNode != null else Vector2.ZERO
-			}
-		)
-	#endregion
 	if _is_frozen_by_anchor():
 		_slide_speed = 0.0
 		velocity = Vector2.ZERO
@@ -120,21 +101,6 @@ func set_hooked(byAnchor: Node) -> void:
 	_throwNoCollisionRemaining = 0.0
 	_throwCollisionBypassActive = false
 	_set_collision_ignored(_isHooked)
-	#region agent log
-	if _agent_debug_is_target_cargo():
-		_agent_debug_emit(
-			'H2',
-			'MovableCargo.gd:set_hooked',
-			'cargo set_hooked state',
-			{
-				'name': name,
-				'script': _agent_debug_script_name(),
-				'isHooked': _isHooked,
-				'isCarried': _isCarried,
-				'enableAutoMove': enable_auto_move
-			}
-		)
-	#endregion
 
 
 ## 标记为被玩家携带状态。
@@ -241,7 +207,7 @@ func _update_current_cabin_by_position() -> void:
 	var candidate: Cabin = _find_cabin_containing(global_position)
 	if candidate != null:
 		_set_current_cabin(candidate)
-		return
+			return
 	_current_cabin = null
 	current_cabin_name = ''
 	current_cabin_path = NodePath('')
@@ -259,17 +225,12 @@ func _set_current_cabin(cabin: Cabin) -> void:
 	_debug_log('switch_cabin => %s' % current_cabin_name)
 
 
-## 检查点是否位于指定舱室内部。
+## 判断点是否位于指定舱室内部。
 ## @param cabin 舱室节点
 ## @param pointGlobal 全局坐标
 ## @return bool
 func _is_point_inside_cabin(cabin: Cabin, pointGlobal: Vector2) -> bool:
-	var localPos: Vector2 = cabin.to_local(pointGlobal)
-	var width: float = _as_float(cabin.get('cabin_width'), 320.0)
-	var height: float = _as_float(cabin.get('cabin_height'), 240.0)
-	var halfW: float = width * 0.5 - 1.0
-	var halfH: float = height * 0.5 - 1.0
-	return localPos.x >= -halfW and localPos.x <= halfW and localPos.y >= -halfH and localPos.y <= halfH
+	return cabin.contains_bounds_point(pointGlobal)
 
 
 ## 根据全局点查找所在舱室。
@@ -347,22 +308,7 @@ func _on_event(eventType: EventBus.EventType, data: Dictionary) -> void:
 			var cabinPath: NodePath = NodePath(cabinPathText)
 			if not _anchor_deployed_cabin_paths.has(cabinPath):
 				_anchor_deployed_cabin_paths.append(cabinPath)
-			#region agent log
-			if _agent_debug_is_target_cargo() and _agent_debug_should_hook_sample():
-				_agent_debug_emit(
-					'H2',
-					'MovableCargo.gd:_on_event',
-					'anchor deployed event received',
-					{
-						'name': name,
-						'script': _agent_debug_script_name(),
-						'eventCabinPath': cabinPathText,
-						'cargoCabinPath': String(current_cabin_path),
-						'parentPath': String(get_parent().get_path()) if get_parent() != null else ''
-					}
-				)
-			#endregion
-		EventBus.EventType.ANCHOR_RETRIEVED:
+				EventBus.EventType.ANCHOR_RETRIEVED:
 			var retrievePathText: String = String(data.get('cabin_path', ''))
 			if retrievePathText == '':
 				_anchor_deployed_cabin_paths.clear()
@@ -378,45 +324,27 @@ func _on_event(eventType: EventBus.EventType, data: Dictionary) -> void:
 func _is_frozen_by_anchor() -> bool:
 	if _anchor_deployed_cabin_paths.is_empty():
 		return false
-	if current_cabin_path == NodePath(''):
-		return false
 	for cabinPath in _anchor_deployed_cabin_paths:
-		if String(current_cabin_path) == String(cabinPath):
-			#region agent log
-			if _agent_debug_is_target_cargo() and _agent_debug_should_hook_sample():
-				var cabinsNode: Node2D = _agent_debug_cabins_node()
-				_agent_debug_emit(
-					'H2',
-					'MovableCargo.gd:_is_frozen_by_anchor',
-					'cargo frozen by anchor match',
-					{
-						'name': name,
-						'script': _agent_debug_script_name(),
-						'cargoCabinPath': String(current_cabin_path),
-						'anchorCabinPath': String(cabinPath),
-						'cargoPos': global_position,
-						'cabinsPos': cabinsNode.global_position if cabinsNode != null else Vector2.ZERO,
-						'parentPath': String(get_parent().get_path()) if get_parent() != null else ''
-					}
-				)
-			#endregion
-			return true
-	#region agent log
-	if _agent_debug_is_target_cargo() and _agent_debug_should_hook_sample():
-		_agent_debug_emit(
-			'H2',
-			'MovableCargo.gd:_is_frozen_by_anchor',
-			'anchor active but cabin unmatched',
-			{
-				'name': name,
-				'script': _agent_debug_script_name(),
-				'cargoCabinPath': String(current_cabin_path),
-				'anchorCabinPathFirst': String(_anchor_deployed_cabin_paths[0]),
-				'parentPath': String(get_parent().get_path()) if get_parent() != null else ''
-			}
-		)
-	#endregion
+		var cabinNode: Node = get_node_or_null(cabinPath)
+		if not (cabinNode is Cabin):
+			continue
+		var cabin: Cabin = cabinNode as Cabin
+		if not cabin.contains_bounds_point(global_position):
+			continue
+		return true
 	return false
+
+
+## 获取 Cabins 节点。
+## @return Node2D
+func _get_cabins_node() -> Node2D:
+	var nodes: Array[Node] = get_tree().get_nodes_in_group('Cabin')
+	if nodes.is_empty():
+		return null
+	var firstCabin: Node = nodes[0]
+	if firstCabin.get_parent() is Node2D:
+		return firstCabin.get_parent() as Node2D
+	return null
 
 
 ## 输出调试日志。
@@ -431,97 +359,11 @@ func _debug_log(message: String) -> void:
 ## 将货物重挂到 Cabins 下，保证随船体整体运动。
 ## @return void
 func _reparent_to_cabins_if_needed() -> void:
-	var cabinsNode: Node2D = _agent_debug_cabins_node()
+	var cabinsNode: Node2D = _get_cabins_node()
 	if cabinsNode == null:
 		return
 	if get_parent() == cabinsNode:
 		return
-	var oldZAsRelative: bool = z_as_relative
-	var oldZIndex: int = z_index
 	reparent(cabinsNode, true)
 	# 货物切到 Cabins(-10) 下后改为绝对 Z，避免相对层级导致“看起来消失”。
 	z_as_relative = false
-	#region agent log
-	if _agent_debug_is_target_cargo():
-		_agent_debug_emit(
-			'H2',
-			'MovableCargo.gd:_reparent_to_cabins_if_needed',
-			'cargo reparented to cabins',
-			{
-				'name': name,
-				'script': _agent_debug_script_name(),
-				'newParentPath': String(get_parent().get_path()),
-				'visible': visible,
-				'oldZIndex': oldZIndex,
-				'oldZAsRelative': oldZAsRelative,
-				'newZIndex': z_index,
-				'newZAsRelative': z_as_relative,
-				'parentZIndex': cabinsNode.z_index
-			}
-		)
-	#endregion
-
-
-## 调试日志：仅关注水果与盘子货物。
-## @return bool
-func _agent_debug_is_target_cargo() -> bool:
-	var scriptName: String = _agent_debug_script_name()
-	return scriptName == 'FruitCargo.gd' or scriptName == 'PlateCargo.gd'
-
-
-## 调试日志：获取脚本名。
-## @return String
-func _agent_debug_script_name() -> String:
-	var scriptObj: Script = get_script() as Script
-	if scriptObj == null:
-		return ''
-	return scriptObj.resource_path.get_file()
-
-
-## 调试日志：锚态采样节流。
-## @return bool
-func _agent_debug_should_hook_sample() -> bool:
-	var nowMs: int = Time.get_ticks_msec()
-	if nowMs - _agentDebugLastHookSampleMs < 500:
-		return false
-	_agentDebugLastHookSampleMs = nowMs
-	return true
-
-
-## 调试日志：获取 Cabins 节点。
-## @return Node2D
-func _agent_debug_cabins_node() -> Node2D:
-	var nodes: Array[Node] = get_tree().get_nodes_in_group('Cabin')
-	if nodes.is_empty():
-		return null
-	var firstCabin: Node = nodes[0]
-	if firstCabin.get_parent() is Node2D:
-		return firstCabin.get_parent() as Node2D
-	return null
-
-
-## 调试日志写入。
-## @param hypothesisId 假设编号
-## @param location 位置
-## @param message 消息
-## @param data 数据
-## @return void
-func _agent_debug_emit(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
-	var payload: Dictionary = {
-		'sessionId': _AGENT_DEBUG_SESSION_ID,
-		'runId': _AGENT_DEBUG_RUN_ID,
-		'hypothesisId': hypothesisId,
-		'location': location,
-		'message': message,
-		'data': data,
-		'timestamp': Time.get_unix_time_from_system() * 1000.0
-	}
-	var file: FileAccess = null
-	if FileAccess.file_exists(_AGENT_DEBUG_LOG_PATH):
-		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.READ_WRITE)
-	else:
-		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.WRITE_READ)
-	if file == null:
-		return
-	file.seek_end()
-	file.store_line(JSON.stringify(payload))

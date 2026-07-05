@@ -126,7 +126,8 @@ extends Node2D
 
 signal door_state_changed(side: String, isOpen: bool)
 
-const WORLD_LAYER: int = 1
+const INTERIOR_DECOR_WIDTH: float = 320.0
+const INTERIOR_DECOR_HEIGHT: float = 240.0
 const SOURCE_ID: int = 0
 const COLLISION_LAYER_ID: int = 0
 const MASK_N: int = 1
@@ -202,6 +203,74 @@ func close_right_door() -> void:
 	_rightDoorOpen = false
 	door_state_changed.emit('right', false)
 	_rebuild_all()
+
+
+## 判断全局坐标是否位于舱室内部可活动区域（地板内区）。
+## @param pointGlobal 全局坐标
+## @return bool
+func contains_interior_point(pointGlobal: Vector2) -> bool:
+	var localPos: Vector2 = to_local(pointGlobal)
+	var widthPixels: float = float(_grid_cols() * tile_size)
+	var heightPixels: float = float(_grid_rows() * tile_size)
+	var visualAnchor: Vector2 = Vector2(-widthPixels * 0.5, -heightPixels * 0.5)
+	var decorOffset: Vector2 = Vector2(
+		(widthPixels - INTERIOR_DECOR_WIDTH) * 0.5,
+		(heightPixels - INTERIOR_DECOR_HEIGHT) * 0.5
+	)
+	var decorAnchor: Vector2 = visualAnchor + decorOffset
+	var interiorRect: Rect2 = Rect2(decorAnchor, Vector2(INTERIOR_DECOR_WIDTH, INTERIOR_DECOR_HEIGHT))
+	return interiorRect.has_point(localPos)
+
+
+## 获取舱室地板内区矩形（舱室本地坐标）。
+## @return Rect2
+func get_interior_rect_local() -> Rect2:
+	var widthPixels: float = float(_grid_cols() * tile_size)
+	var heightPixels: float = float(_grid_rows() * tile_size)
+	var visualAnchor: Vector2 = Vector2(-widthPixels * 0.5, -heightPixels * 0.5)
+	var decorOffset: Vector2 = Vector2(
+		(widthPixels - INTERIOR_DECOR_WIDTH) * 0.5,
+		(heightPixels - INTERIOR_DECOR_HEIGHT) * 0.5
+	)
+	var decorAnchor: Vector2 = visualAnchor + decorOffset
+	return Rect2(decorAnchor, Vector2(INTERIOR_DECOR_WIDTH, INTERIOR_DECOR_HEIGHT))
+
+
+## 将全局坐标限制在本舱地板内区。
+## @param pointGlobal 全局坐标
+## @param margin 内区边距（像素）
+## @return Vector2
+func clamp_global_to_interior(pointGlobal: Vector2, margin: float = 0.0) -> Vector2:
+	var interiorRect: Rect2 = get_interior_rect_local()
+	var localPos: Vector2 = to_local(pointGlobal)
+	var edge: float = max(margin, 0.0)
+	localPos.x = clampf(localPos.x, interiorRect.position.x + edge, interiorRect.position.x + interiorRect.size.x - edge)
+	localPos.y = clampf(localPos.y, interiorRect.position.y + edge, interiorRect.position.y + interiorRect.size.y - edge)
+	return to_global(localPos)
+
+
+## 将全局坐标限制在本舱外壳包围范围内。
+## @param pointGlobal 全局坐标
+## @param margin 边距（像素）
+## @return Vector2
+func clamp_global_to_bounds(pointGlobal: Vector2, margin: float = 0.0) -> Vector2:
+	var halfW: float = _cabinWidth * 0.5
+	var halfH: float = _cabinHeight * 0.5
+	var localPos: Vector2 = to_local(pointGlobal)
+	var edge: float = max(margin, 0.0)
+	localPos.x = clampf(localPos.x, -halfW + edge, halfW - edge)
+	localPos.y = clampf(localPos.y, -halfH + edge, halfH - edge)
+	return to_global(localPos)
+
+
+## 判断全局坐标是否位于舱室外壳包围范围内（用于玩家放锚等）。
+## @param pointGlobal 全局坐标
+## @return bool
+func contains_bounds_point(pointGlobal: Vector2) -> bool:
+	var localPos: Vector2 = to_local(pointGlobal)
+	var halfW: float = _cabinWidth * 0.5
+	var halfH: float = _cabinHeight * 0.5
+	return localPos.x >= -halfW and localPos.x <= halfW and localPos.y >= -halfH and localPos.y <= halfH
 
 
 ## 更新尺寸并触发重建。
@@ -296,7 +365,30 @@ func _update_layer_anchor_to_center() -> void:
 		return
 	var widthPixels: float = float(_grid_cols() * tile_size)
 	var heightPixels: float = float(_grid_rows() * tile_size)
-	_visualLayer.position = Vector2(-widthPixels * 0.5, -heightPixels * 0.5)
+	var visualAnchor: Vector2 = Vector2(-widthPixels * 0.5, -heightPixels * 0.5)
+	_visualLayer.position = visualAnchor
+
+	var decorOffset: Vector2 = Vector2(
+		(widthPixels - INTERIOR_DECOR_WIDTH) * 0.5,
+		(heightPixels - INTERIOR_DECOR_HEIGHT) * 0.5
+	)
+	var decorAnchor: Vector2 = visualAnchor + decorOffset
+	var blockAnchor: Vector2 = visualAnchor + Vector2(0.0, float(tile_size))
+	_set_layer_position('Visuals/floor', decorAnchor)
+	_set_layer_position('Visuals/back', decorAnchor)
+	_set_layer_position('Visuals/back_wall', decorAnchor)
+	_set_layer_position('Visuals/block', blockAnchor)
+
+
+
+## 设置指定子层位置（存在时才更新）。
+## @param nodePath 节点路径
+## @param anchor 锚点坐标
+## @return void
+func _set_layer_position(nodePath: String, anchor: Vector2) -> void:
+	var layer: Node = get_node_or_null(nodePath)
+	if layer is Node2D:
+		(layer as Node2D).position = anchor
 
 
 ## 生成基础边界单元（四边框），默认全是实体。

@@ -16,7 +16,7 @@ region = Rect2(0, 0, 32, 32)
 [node name="InteractRangeComponent" parent="." unique_id=709276546 instance=ExtResource("3_interact_range")]
 script = ExtResource("1_juicer_script")
 plateGroupName = &"Plate"
-maxStoredJams = 3
+maxStoredJams = 1
 machineAtlas = ExtResource("2_juicer_texture")
 atlasCellSize = Vector2(32, 32)
 emptyRegion = Rect2(0, 0, 32, 32)

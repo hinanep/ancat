@@ -11,18 +11,6 @@ func _ready() -> void:
 	add_to_group('Fruit')
 	deliveryTag = FoodConfig.get_tag(fruitType)
 	_apply_food_texture()
-	#region agent log
-	_agent_debug_emit(
-		'H1',
-		'FruitCargo.gd:_ready',
-		'fruit cargo ready snapshot',
-		{
-			'name': name,
-			'fruitType': fruitType,
-			'deliveryTag': deliveryTag
-		}
-	)
-	#endregion
 
 
 ## 获取水果食物类型。

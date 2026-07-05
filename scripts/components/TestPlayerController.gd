@@ -113,18 +113,16 @@ func _process_anchor_pull(delta: float) -> void:
 	var stepLen: float = _anchorPullSpeed * delta
 	if toTarget.length() <= max(stepLen, 0.001):
 		global_position = _anchorPullTarget
-		_clamp_to_ship_bounds()
+		_recover_anchor_pull_if_outside_ship()
 		end_anchor_pull()
 		return
 	var moveVec: Vector2 = toTarget.normalized() * stepLen
 	if _anchorCollisionDisabled:
 		global_position += moveVec
-		_clamp_to_ship_bounds()
 		velocity = Vector2.ZERO
 		return
 	velocity = moveVec / max(delta, 0.0001)
 	move_and_slide()
-	_clamp_to_ship_bounds()
 
 
 ## 刷新玩家当前所属舱室信息。
@@ -166,6 +164,8 @@ func _ship_tilt_rad() -> float:
 ## 将玩家位置限制在船舱整体范围内（主要用于锚拉拽阶段防出界）。
 ## @return void
 func _clamp_to_ship_bounds() -> void:
+	if _anchorPullActive:
+		return
 	if not (get_parent() is Node2D):
 		return
 	var parentNode: Node2D = get_parent() as Node2D
@@ -200,6 +200,53 @@ func _clamp_to_ship_bounds() -> void:
 	var margin: float = max(hookMoveBoundsMargin, 0.0)
 	position.x = clampf(position.x, minX + margin, maxX - margin)
 	position.y = clampf(position.y, minY + margin, maxY - margin)
+
+
+## 锚拉拽结束时，仅当玩家落在船外才拉回舱内。
+## @return void
+func _recover_anchor_pull_if_outside_ship() -> void:
+	if _find_cabin_for_interior_clamp(global_position, false) != null:
+		return
+	var margin: float = max(hookMoveBoundsMargin, 0.0)
+	var targetCabin: Cabin = _find_nearest_cabin_for_clamp(global_position)
+	if targetCabin == null:
+		return
+	global_position = targetCabin.clamp_global_to_interior(global_position, margin)
+
+
+## 查找用于内区 clamp 的舱室。
+## @param pointGlobal 全局坐标
+## @param requireInterior 是否要求点在地板内区
+## @return Cabin
+func _find_cabin_for_interior_clamp(pointGlobal: Vector2, requireInterior: bool) -> Cabin:
+	for node in get_tree().get_nodes_in_group('Cabin'):
+		if not (node is Cabin):
+			continue
+		var cabin: Cabin = node as Cabin
+		if requireInterior:
+			if cabin.contains_interior_point(pointGlobal):
+				return cabin
+		elif cabin.contains_bounds_point(pointGlobal):
+			return cabin
+	return null
+
+
+## 查找距指定点最近的舱室（按 clamp 到内区后的距离）。
+## @param pointGlobal 全局坐标
+## @return Cabin
+func _find_nearest_cabin_for_clamp(pointGlobal: Vector2) -> Cabin:
+	var bestCabin: Cabin = null
+	var bestDistSq: float = INF
+	for node in get_tree().get_nodes_in_group('Cabin'):
+		if not (node is Cabin):
+			continue
+		var cabin: Cabin = node as Cabin
+		var clamped: Vector2 = cabin.clamp_global_to_interior(pointGlobal, 0.0)
+		var distSq: float = pointGlobal.distance_squared_to(clamped)
+		if distSq < bestDistSq:
+			bestDistSq = distSq
+			bestCabin = cabin
+	return bestCabin
 
 
 ## 按移动状态与地面状态播放脚步声。

@@ -8,9 +8,6 @@ extends InteractRangeComponent
 @export var debugInteractLog: bool = true
 ## 日志前缀。
 @export var interactLogPrefix: String = 'InteractableBase'
-const _AGENT_DEBUG_LOG_PATH: String = 'C:/Users/nep/Desktop/mao/debug-6da914.log'
-const _AGENT_DEBUG_SESSION_ID: String = '6da914'
-const _AGENT_DEBUG_RUN_ID: String = 'run-2'
 
 
 ## 初始化：加入可交互组。
@@ -25,37 +22,10 @@ func _ready() -> void:
 ## @param anchorController 锚控制器
 ## @return Dictionary
 func try_interact_ex(player: Node, item: Node, anchorController: Node) -> Dictionary:
-	#region agent log
-	_agent_debug_emit(
-		'H10',
-		'InteractableBase.gd:try_interact_ex',
-		'enter try_interact_ex',
-		{
-			'node': name,
-			'script': get_script().resource_path if get_script() != null else '',
-			'itemNull': item == null,
-			'itemValid': item != null and is_instance_valid(item),
-			'anchorControllerNull': anchorController == null
-		}
-	)
-	#endregion
 	if not _can_interact_now(player, item, anchorController):
 		return _reject_interact()
 	if _is_item_valid(item):
-		#region agent log
-		_agent_debug_emit(
-			'H10',
-			'InteractableBase.gd:try_interact_ex',
-			'before _on_item_valid',
-			{
-				'node': name,
-				'script': get_script().resource_path if get_script() != null else '',
-				'itemNull': item == null,
-				'itemValid': item != null and is_instance_valid(item)
-			}
-		)
-		#endregion
-		_on_item_valid(player, item, anchorController)
+			_on_item_valid(player, item, anchorController)
 		return _accept_interact(_consume_carried_on_item_valid(item))
 	if _is_anchor_valid(anchorController):
 		_on_anchor_valid(player, item, anchorController)
@@ -196,29 +166,5 @@ func _log_interact(message: String) -> void:
 ## @param message 消息
 ## @param data 数据
 ## @return void
-func _agent_debug_emit(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
-	var payload: Dictionary = {
-		'sessionId': _AGENT_DEBUG_SESSION_ID,
-		'runId': _AGENT_DEBUG_RUN_ID,
-		'hypothesisId': hypothesisId,
-		'location': location,
-		'message': message,
-		'data': data,
-		'timestamp': Time.get_unix_time_from_system() * 1000.0
-	}
-	var file: FileAccess = null
-	if FileAccess.file_exists(_AGENT_DEBUG_LOG_PATH):
-		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.READ_WRITE)
-	else:
-		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.WRITE_READ)
-	if file == null:
-		return
-	file.seek_end()
-	file.store_line(JSON.stringify(payload))
-
-
-## 判断点击点是否进入交互范围（基于组件 Area2D）。
-## @param clickGlobal 点击全局坐标
-## @return bool
 func is_click_in_interact_range(clickGlobal: Vector2) -> bool:
 	return is_point_in_range(clickGlobal)

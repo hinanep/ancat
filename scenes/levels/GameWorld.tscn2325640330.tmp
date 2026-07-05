@@ -449,33 +449,6 @@ autoplay = &"idle"
 [node name="AnchorController" type="Node2D" parent="Cabins/TestPlayer" unique_id=496589560]
 script = ExtResource("8_ankcr")
 maxAnchorLength = 375.0
-anchorLaunchSpeed = null
-retractSpeed = null
-playerPullSpeed = null
-cargoPullSpeed = null
-fallbackAnchorCount = null
-interactRadius = null
-pickupRadius = null
-rightClickPickupClickRadius = null
-rightClickPickupMaxDistance = null
-dropMaxDistance = null
-dropWallPadding = null
-dropShipBoundsMargin = null
-dropThrowSpeed = null
-dropThrowForwardOffset = null
-floorHookMaxYOffset = null
-floorPullUpOffset = null
-carryOffset = null
-carrySpacingX = null
-maxCarryCount = null
-deployedAnchorScene = null
-anchorChainTexture = null
-anchorHeadTexture = null
-retrieveAnchorClickRadius = null
-retrieveAnchorPlayerRange = null
-holdToRetrieveSec = null
-anchorFireMaxHoldSec = null
-debug_anchor_log = null
 
 [node name="PotCargo" parent="Cabins" unique_id=1171608071 instance=ExtResource("15_pot")]
 z_index = 6
