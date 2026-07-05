@@ -86,6 +86,10 @@ const _ANCHOR_DEPLOY_ACTION: String = 'anchor_deploy'
 const _AGENT_DEBUG_LOG_PATH: String = 'C:/Users/nep/Desktop/mao/debug-9bf2e4.log'
 const _AGENT_DEBUG_SESSION_ID: String = '9bf2e4'
 const _AGENT_DEBUG_RUN_ID: String = 'right-click-slide-pre'
+const _AGENT_CLICK_DEBUG_LOG_PATH: String = 'C:/Users/nep/Desktop/mao/debug-dcfdb3.log'
+const _AGENT_CLICK_DEBUG_SESSION_ID: String = 'dcfdb3'
+
+var _last_ui_block_log_ms: int = 0
 
 
 ## 初始化缓存与可视链条。
@@ -1334,4 +1338,44 @@ func _is_mouse_over_ui() -> bool:
 	var hoveredControl: Control = get_viewport().gui_get_hovered_control()
 	if hoveredControl == null:
 		return false
-	return hoveredControl.mouse_filter != Control.MOUSE_FILTER_IGNORE
+	var blocks: bool = hoveredControl.mouse_filter != Control.MOUSE_FILTER_IGNORE
+	#region agent log
+	var mouse_pos: Vector2 = get_viewport().get_mouse_position()
+	if blocks and mouse_pos.x >= 960.0 and mouse_pos.y >= 540.0:
+		_agent_debug_ui_block(mouse_pos, hoveredControl)
+	#endregion
+	return blocks
+
+
+## 记录右下角 UI 拦截锚操作时的命中控件。
+## @param mouse_pos 屏幕坐标
+## @param hoveredControl 当前悬停控件
+## @return void
+func _agent_debug_ui_block(mouse_pos: Vector2, hoveredControl: Control) -> void:
+	var now_ms: int = int(Time.get_unix_time_from_system() * 1000.0)
+	if now_ms - _last_ui_block_log_ms < 400:
+		return
+	_last_ui_block_log_ms = now_ms
+	var payload: Dictionary = {
+		'sessionId': _AGENT_CLICK_DEBUG_SESSION_ID,
+		'hypothesisId': 'H2',
+		'location': 'AnchorController.gd:_agent_debug_ui_block',
+		'message': 'anchor blocked by ui hover',
+		'data': {
+			'mouse_pos': [mouse_pos.x, mouse_pos.y],
+			'hovered_name': hoveredControl.name,
+			'hovered_path': str(hoveredControl.get_path()),
+			'mouse_filter': hoveredControl.mouse_filter,
+			'visible': hoveredControl.visible,
+			'global_rect': str(hoveredControl.get_global_rect()),
+		},
+		'timestamp': now_ms,
+	}
+	var file: FileAccess = FileAccess.open(_AGENT_CLICK_DEBUG_LOG_PATH, FileAccess.READ_WRITE)
+	if file == null:
+		file = FileAccess.open(_AGENT_CLICK_DEBUG_LOG_PATH, FileAccess.WRITE)
+	if file == null:
+		return
+	file.seek_end()
+	file.store_line(JSON.stringify(payload))
+	file.close()

@@ -33,6 +33,8 @@
 [ext_resource type="Script" uid="uid://dyidexn85lnc2" path="res://scripts/components/StageGoalManager.gd" id="26_stage_goal"]
 [ext_resource type="TileSet" uid="uid://nns17a4ei8l7" path="res://resources/tilesets/walls.tres" id="27_cvyl1"]
 [ext_resource type="Script" uid="uid://1scobltp4mto" path="res://scripts/components/BackgroundParallaxController.gd" id="28_parallax"]
+[ext_resource type="PackedScene" uid="uid://b48u1mshneft5" path="res://scenes/ui/screens/MainMenu.tscn" id="29_main_menu"]
+[ext_resource type="Script" uid="uid://csnqv43aj5cps" path="res://scripts/components/GameWorldIntroController.gd" id="30_intro"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_4ta1d"]
 atlas = ExtResource("5_dhq8s")
@@ -186,6 +188,17 @@ position = Vector2(0, -2.5)
 scale = Vector2(9.547619, 12.435185)
 texture = ExtResource("2_4ta1d")
 
+[node name="0Sky2" type="Sprite2D" parent="back" unique_id=481067814]
+position = Vector2(2.5, -1344.9999)
+scale = Vector2(9.547619, 12.435185)
+texture = ExtResource("2_4ta1d")
+flip_v = true
+
+[node name="2Clouds8" type="Sprite2D" parent="back/0Sky2" unique_id=159441116]
+position = Vector2(-175.52368, -13.670891)
+scale = Vector2(1.4663342, 1.1258377)
+texture = ExtResource("6_3qubl")
+
 [node name="2Clouds6" type="Sprite2D" parent="back" unique_id=1009292335]
 position = Vector2(-365.83334, -250.00006)
 scale = Vector2(14, 14)
@@ -212,22 +225,6 @@ zoom = Vector2(0.7, 0.7)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=538021173]
 follow_viewport_enabled = true
-
-[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer" unique_id=1780763661]
-visible = false
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -576.0
-offset_top = -324.0
-offset_right = -576.0
-offset_bottom = -324.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 20
 
 [node name="ShopPanelUI" parent="CanvasLayer" unique_id=1853541254 instance=ExtResource("25_shop_panel_ui")]
 anchors_preset = 0
@@ -518,6 +515,15 @@ spawnIntervalSec = 5.0
 script = ExtResource("21_customer_spawner")
 diningCabinNames = PackedStringArray()
 minSpawnIntervalSec = 25.0
+
+[node name="MenuLayer" type="CanvasLayer" parent="." unique_id=502613021]
+layer = 10
+
+[node name="MainMenu" parent="MenuLayer" unique_id=1477908678 instance=ExtResource("29_main_menu")]
+visible = false
+
+[node name="GameWorldIntroController" type="Node" parent="." unique_id=1799229966]
+script = ExtResource("30_intro")
 
 [editable path="back/StormRain"]
 [editable path="Cabins/Cabin8/DiningTableInteractable"]
