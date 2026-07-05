@@ -12,6 +12,7 @@ var _foodNode: Node2D
 var _isOnStove: bool = false
 var _cookRemainingSec: float = 0.0
 var _isCooked: bool = false
+var _debugSlideLogElapsed: float = 0.0
 
 @onready var _cookProgressBar: ProgressBar = $CookProgressBar
 @onready var _collectPrompt: CookPlateCollectPrompt = get_node_or_null('CookPlateCollectPrompt') as CookPlateCollectPrompt
@@ -50,12 +51,9 @@ func _process(delta: float) -> void:
 ## @param value 是否在锅炉上
 func set_on_stove(value: bool) -> void:
 	_isOnStove = value
-	if value:
-		enable_auto_move = false
-		velocity = Vector2.ZERO
-		_slide_speed = 0.0
-	elif not _isCarried and not _isHooked:
-		enable_auto_move = true
+	#region agent log
+	_pot_debug_emit('H-F', 'PotCargo.gd:set_on_stove', 'stove state changed', {'isOnStove': value, 'name': name})
+	#endregion
 	if value and _foodNode != null and not _isCooked:
 		_cookProgressBar.visible = true
 		_update_progress_bar()
@@ -63,15 +61,33 @@ func set_on_stove(value: bool) -> void:
 		_cookProgressBar.visible = false
 
 
-## 在炉上时冻结物理，避免与灶台碰撞弹开。
+## 物理帧更新（沿用 MovableCargo 滑动逻辑）。
 ## @param delta 帧间隔（秒）
 ## @return void
 func _physics_process(delta: float) -> void:
-	if _isOnStove:
-		velocity = Vector2.ZERO
-		_slide_speed = 0.0
-		return
 	super._physics_process(delta)
+	_debugSlideLogElapsed += delta
+	if _debugSlideLogElapsed < 2.0:
+		return
+	_debugSlideLogElapsed = 0.0
+	#region agent log
+	_pot_debug_emit(
+		'H-G',
+		'PotCargo.gd:_physics_process',
+		'slide state sample',
+		{
+			'name': name,
+			'isOnStove': _isOnStove,
+			'enableAutoMove': enable_auto_move,
+			'slideSpeed': _slide_speed,
+			'velocityX': velocity.x,
+			'isCarried': _isCarried,
+			'isHooked': _isHooked,
+			'frozenByAnchor': _is_frozen_by_anchor(),
+			'shipTiltRad': _ship_tilt_rad()
+		}
+	)
+	#endregion
 
 
 ## 锅中是否有食材。
@@ -218,3 +234,31 @@ func _hide_finished_result() -> void:
 ## @return void
 func _stop_stove_loop() -> void:
 	AudioManager.stop_sfx_loop('stove_%s' % get_instance_id())
+
+
+## 写入调试 NDJSON 日志。
+## @param hypothesisId 假设编号
+## @param location 位置
+## @param message 消息
+## @param data 数据
+## @return void
+func _pot_debug_emit(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
+	var payload: Dictionary = {
+		'sessionId': '9bf2e4',
+		'runId': 'right-click-slide-pre',
+		'hypothesisId': hypothesisId,
+		'location': location,
+		'message': message,
+		'data': data,
+		'timestamp': Time.get_unix_time_from_system() * 1000.0
+	}
+	var logPath: String = 'C:/Users/nep/Desktop/mao/debug-9bf2e4.log'
+	var file: FileAccess = null
+	if FileAccess.file_exists(logPath):
+		file = FileAccess.open(logPath, FileAccess.READ_WRITE)
+	else:
+		file = FileAccess.open(logPath, FileAccess.WRITE_READ)
+	if file == null:
+		return
+	file.seek_end()
+	file.store_line(JSON.stringify(payload))

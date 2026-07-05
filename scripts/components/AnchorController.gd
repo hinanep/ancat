@@ -83,9 +83,9 @@ const INTERACT_NO_TARGET: int = 0
 const INTERACT_SUCCESS: int = 1
 const INTERACT_REJECTED: int = 2
 const _ANCHOR_DEPLOY_ACTION: String = 'anchor_deploy'
-const _AGENT_DEBUG_LOG_PATH: String = 'C:/Users/nep/Desktop/mao/debug-43bc79.log'
-const _AGENT_DEBUG_SESSION_ID: String = '43bc79'
-const _AGENT_DEBUG_RUN_ID: String = 'wall-gap-pre'
+const _AGENT_DEBUG_LOG_PATH: String = 'C:/Users/nep/Desktop/mao/debug-9bf2e4.log'
+const _AGENT_DEBUG_SESSION_ID: String = '9bf2e4'
+const _AGENT_DEBUG_RUN_ID: String = 'right-click-slide-pre'
 
 
 ## 初始化缓存与可视链条。
@@ -406,14 +406,38 @@ func _try_cancel_hooked_cargo() -> bool:
 func _handle_right_click() -> void:
 	_debug_log('right click trigger: hooks=%d carried=%d deployed=%d' % [_hooks.size(), _carriedCargo.size(), _deployedCabinPaths.size()])
 	var handsEmpty: bool = _carriedCargo.is_empty()
+	var isMouseOverUi: bool = _is_mouse_over_ui()
+	#region agent log
+	_agent_debug_emit(
+		'H-E',
+		'AnchorController.gd:_handle_right_click',
+		'right click start',
+		{
+			'handsEmpty': handsEmpty,
+			'isMouseOverUi': isMouseOverUi,
+			'carriedCount': _carriedCargo.size(),
+			'hooksCount': _hooks.size(),
+			'mousePos': str(get_global_mouse_position())
+		}
+	)
+	#endregion
 	if handsEmpty and _try_pickup_nearby_cargo():
+		#region agent log
+		_agent_debug_emit('H-A', 'AnchorController.gd:_handle_right_click', 'ended by empty-hand pickup', {})
+		#endregion
 		_debug_log('right click end by pickup (empty hands priority)')
 		return
 	var interactResult: int = _try_interact()
 	if interactResult == INTERACT_SUCCESS:
+		#region agent log
+		_agent_debug_emit('H-B', 'AnchorController.gd:_handle_right_click', 'ended by interact success', {'interactResult': interactResult})
+		#endregion
 		_debug_log('right click end by interact, result=%d' % interactResult)
 		return
 	if _try_plate_serve_fish_at_mouse():
+		#region agent log
+		_agent_debug_emit('H-B', 'AnchorController.gd:_handle_right_click', 'ended by plate serve fish', {})
+		#endregion
 		_debug_log('right click end by plate serve fish')
 		return
 	if _try_cancel_hooked_cargo():
@@ -439,6 +463,9 @@ func _handle_right_click() -> void:
 	if _try_pickup_nearby_cargo():
 		_debug_log('right click end by pickup')
 		return
+	#region agent log
+	_agent_debug_emit('H-B', 'AnchorController.gd:_handle_right_click', 'right click no action matched', {'interactResult': interactResult})
+	#endregion
 
 
 ## Q 键：回收角色附近的放置锚，否则在当前舱室放置锚。
@@ -482,6 +509,9 @@ func _try_interact() -> int:
 		bestTarget = interactive
 	if bestTarget == null:
 		_debug_log('interact no target at click point')
+		#region agent log
+		_agent_debug_emit('H-D', 'AnchorController.gd:_try_interact', 'no interactable at click', {'clickPos': str(clickPos), 'candidateCount': 0})
+		#endregion
 		return INTERACT_NO_TARGET
 
 	if not bestTarget.has_method('try_interact_ex'):
@@ -491,6 +521,21 @@ func _try_interact() -> int:
 	var parsed: Dictionary = _parse_interact_result(interactResult)
 	var accepted: bool = bool(parsed.get('accepted', false))
 	var consumeCarried: bool = bool(parsed.get('consume_carried', false))
+	#region agent log
+	_agent_debug_emit(
+		'H-B',
+		'AnchorController.gd:_try_interact',
+		'interact attempt',
+		{
+			'targetName': bestTarget.name,
+			'targetPath': String(bestTarget.get_path()),
+			'accepted': accepted,
+			'consumeCarried': consumeCarried,
+			'carriedItem': carriedItem.name if carriedItem != null else '',
+			'clickPos': str(clickPos)
+		}
+	)
+	#endregion
 	if accepted:
 		if consumeCarried and carriedItem != null:
 			_carriedCargo.erase(carriedItem)
@@ -559,6 +604,14 @@ func _try_pickup_nearby_cargo() -> bool:
 		_refresh_carried_offsets()
 		AudioManager.play_sfx(ResPath.AUDIO.PICK_UP_ITEM)
 		_debug_log('pickup success: %s' % bestNode.name)
+		#region agent log
+		_agent_debug_emit(
+			'H-A',
+			'AnchorController.gd:_try_pickup_nearby_cargo',
+			'pickup success',
+			{'targetName': bestNode.name, 'targetPath': String(bestNode.get_path()), 'score': bestDist}
+		)
+		#endregion
 		return true
 	_debug_log('pickup failed: target has no set_carried %s' % bestNode.name)
 	return false

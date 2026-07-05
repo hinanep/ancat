@@ -38,12 +38,25 @@ func _can_interact_now(player: Node, item: Node, anchorController: Node) -> bool
 	var _unusedPlayer: Node = player
 	var _unusedItem: Node = item
 	if anchorController == null:
+		#region agent log
+		_plate_debug_emit('H-C', 'PlateDispenserInteractable.gd:_can_interact_now', 'deny: no anchorController', {})
+		#endregion
 		return false
 	if _cooldownRemaining > 0.0:
+		#region agent log
+		_plate_debug_emit('H-C', 'PlateDispenserInteractable.gd:_can_interact_now', 'deny: cooldown', {'cooldownRemaining': _cooldownRemaining})
+		#endregion
 		return false
-	if _current_plate_count() >= max(maxPlateCount, 1):
+	var plateCount: int = _current_plate_count()
+	if plateCount >= max(maxPlateCount, 1):
+		#region agent log
+		_plate_debug_emit('H-C', 'PlateDispenserInteractable.gd:_can_interact_now', 'deny: plate cap', {'plateCount': plateCount, 'maxPlateCount': maxPlateCount})
+		#endregion
 		return false
 	if not anchorController.has_method('try_add_carried_cargo'):
+		#region agent log
+		_plate_debug_emit('H-C', 'PlateDispenserInteractable.gd:_can_interact_now', 'deny: no try_add_carried_cargo', {})
+		#endregion
 		return false
 	return true
 
@@ -113,3 +126,31 @@ func _update_progress_ui() -> void:
 ## @return int
 func _current_plate_count() -> int:
 	return get_tree().get_nodes_in_group('Plate').size()
+
+
+## 写入调试 NDJSON 日志。
+## @param hypothesisId 假设编号
+## @param location 位置
+## @param message 消息
+## @param data 数据
+## @return void
+func _plate_debug_emit(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
+	var payload: Dictionary = {
+		'sessionId': '9bf2e4',
+		'runId': 'right-click-slide-pre',
+		'hypothesisId': hypothesisId,
+		'location': location,
+		'message': message,
+		'data': data,
+		'timestamp': Time.get_unix_time_from_system() * 1000.0
+	}
+	var logPath: String = 'C:/Users/nep/Desktop/mao/debug-9bf2e4.log'
+	var file: FileAccess = null
+	if FileAccess.file_exists(logPath):
+		file = FileAccess.open(logPath, FileAccess.READ_WRITE)
+	else:
+		file = FileAccess.open(logPath, FileAccess.WRITE_READ)
+	if file == null:
+		return
+	file.seek_end()
+	file.store_line(JSON.stringify(payload))

@@ -56,29 +56,12 @@ func _process(delta: float) -> void:
 ## @param value 是否在炉子上
 func set_on_stove(value: bool) -> void:
 	_isOnStove = value
-	if value:
-		enable_auto_move = false
-		velocity = Vector2.ZERO
-		_slide_speed = 0.0
-	elif not _isCarried and not _isHooked:
-		enable_auto_move = true
 	if value and _foodNode != null and not _isCooked:
 		_cookProgressBar.visible = true
 		_update_progress_bar()
 	elif not value:
 		_cookProgressBar.visible = false
 		_stop_fry_loop()
-
-
-## 在炉上时冻结物理，避免与灶台碰撞弹开。
-## @param delta 帧间隔（秒）
-## @return void
-func _physics_process(delta: float) -> void:
-	if _isOnStove:
-		velocity = Vector2.ZERO
-		_slide_speed = 0.0
-		return
-	super._physics_process(delta)
 
 
 ## 是否有食材。
