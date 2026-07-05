@@ -12,6 +12,7 @@ var _foodNode: Node2D
 var _isProcessed: bool = false
 var _processRemainingSec: float = 0.0
 
+@onready var _processProgressBar: ProgressBar = $ProcessProgressBar
 @onready var _collectPrompt: CookPlateCollectPrompt = get_node_or_null('CookPlateCollectPrompt') as CookPlateCollectPrompt
 
 
@@ -19,6 +20,10 @@ var _processRemainingSec: float = 0.0
 func _ready() -> void:
 	super._ready()
 	add_to_group('CuttingBoard')
+	_processProgressBar.visible = false
+	_processProgressBar.min_value = 0.0
+	_processProgressBar.max_value = 1.0
+	_processProgressBar.value = 0.0
 
 
 ## 每帧推进菜板处理计时。
@@ -29,13 +34,16 @@ func _process(delta: float) -> void:
 		_foodNode = null
 		_isProcessed = false
 		_processRemainingSec = 0.0
+		_processProgressBar.visible = false
 		_hide_finished_result()
 		return
 	if _isProcessed:
 		return
 	_processRemainingSec = max(_processRemainingSec - delta, 0.0)
+	_update_progress_bar()
 	if _processRemainingSec <= 0.0:
 		_isProcessed = true
+		_processProgressBar.visible = false
 		_on_process_finished()
 
 
@@ -88,6 +96,8 @@ func add_food(food: Node2D) -> void:
 	if _isProcessed:
 		_on_process_finished()
 	else:
+		_processProgressBar.visible = true
+		_update_progress_bar()
 		_hide_finished_result()
 
 
@@ -100,6 +110,7 @@ func take_food() -> Node2D:
 	_foodNode = null
 	_isProcessed = false
 	_processRemainingSec = 0.0
+	_processProgressBar.visible = false
 	_hide_finished_result()
 	return food
 
@@ -112,6 +123,8 @@ func clear_internal_storage() -> void:
 	_foodNode = null
 	_isProcessed = false
 	_processRemainingSec = 0.0
+	_processProgressBar.visible = false
+	_processProgressBar.value = 0.0
 	_hide_finished_result()
 
 
@@ -132,7 +145,19 @@ func apply_process_total_sec(newTotalSec: float) -> void:
 		if _processRemainingSec <= 0.0:
 			_processRemainingSec = 0.0
 			_isProcessed = true
+			_processProgressBar.visible = false
 			_on_process_finished()
+			return
+	_update_progress_bar()
+
+
+## 更新处理进度条数值。
+## @return void
+func _update_progress_bar() -> void:
+	if totalProcessSec <= 0.0:
+		_processProgressBar.value = 1.0
+		return
+	_processProgressBar.value = 1.0 - (_processRemainingSec / totalProcessSec)
 
 
 ## 处理完成：隐藏生鱼并展示无盘成品与盘子浮标。

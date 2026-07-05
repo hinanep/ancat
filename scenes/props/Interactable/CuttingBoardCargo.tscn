@@ -5,7 +5,7 @@
 [ext_resource type="Script" uid="uid://bk7vm37q45ogq" path="res://scripts/components/CuttingBoardInteractable.gd" id="3_board_interact"]
 [ext_resource type="PackedScene" uid="uid://cvlujgnml141e" path="res://scenes/components/InteractRangeComponent.tscn" id="4_interact_range"]
 [ext_resource type="PackedScene" uid="uid://cxxhps2gqrp7a" path="res://scenes/components/RightClickPromptBubble.tscn" id="5_bubble"]
-[ext_resource type="PackedScene" uid="uid://b8kcpplatecollect" path="res://scenes/components/CookPlateCollectPrompt.tscn" id="6_collect_prompt"]
+[ext_resource type="PackedScene" uid="uid://bk3vxsmxxdoap" path="res://scenes/components/CookPlateCollectPrompt.tscn" id="6_collect_prompt"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_6qwv7"]
 atlas = ExtResource("2_4nopp")
@@ -51,7 +51,7 @@ shape = SubResource("RectangleShape2D_ycjlk")
 [node name="FoodAnchor" type="Marker2D" parent="." unique_id=679469276]
 position = Vector2(0, -8)
 
-[node name="CookPlateCollectPrompt" parent="." instance=ExtResource("6_collect_prompt")]
+[node name="CookPlateCollectPrompt" parent="." unique_id=983790263 instance=ExtResource("6_collect_prompt")]
 position = Vector2(0, -8)
 
 [node name="InteractRangeComponent" parent="." unique_id=1185070161 instance=ExtResource("4_interact_range")]
@@ -61,6 +61,8 @@ plateGroupName = &"Plate"
 interactableGroupName = &"Interactable"
 debugInteractLog = true
 interactLogPrefix = "InteractableBase"
+cookPreviewFoodType = -1
+cookPreviewOffset = Vector2(0, -28)
 rangeRectSize = Vector2(70, 18)
 rangeCircleRadius = 30.0
 
@@ -76,7 +78,14 @@ collision_mask = 0
 position = Vector2(0, -1.5)
 shape = SubResource("RectangleShape2D_4nopp")
 
-[node name="RightClickPromptBubble" parent="." instance=ExtResource("5_bubble")]
+[node name="ProcessProgressBar" type="ProgressBar" parent="." unique_id=1465081640]
+offset_left = -15.0
+offset_top = -22.0
+offset_right = 15.0
+offset_bottom = -18.0
+show_percentage = false
+
+[node name="RightClickPromptBubble" parent="." unique_id=794917493 instance=ExtResource("5_bubble")]
 visible = false
 position = Vector2(0, -28)
 
