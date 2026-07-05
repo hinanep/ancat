@@ -15,10 +15,10 @@ extends InteractableBase
 @export var spillDropOffset: Vector2 = Vector2(0.0, 22.0)
 ## 滑出落点随机 X 振幅。
 @export var spillDropRandomX: float = 18.0
-## 鱼缸内游动范围尺寸。
-@export var tankSwimRectSize: Vector2 = Vector2(44.0, 16.0)
-## 鱼缸内游动范围偏移。
-@export var tankSwimRectOffset: Vector2 = Vector2(0.0, 2.0)
+## 鱼缸内游动范围尺寸（本地坐标，随节点 scale 变换）。
+@export var tankSwimRectSize: Vector2 = Vector2(78.0, 32.0)
+## 鱼缸内游动范围偏移（本地坐标）。
+@export var tankSwimRectOffset: Vector2 = Vector2(0.0, 4.0)
 ## 第一段动画时长：鱼先运动到上沿角点（秒）。
 @export var spillToEdgeDurationSec: float = 0.5
 ## 第二段动画时长：鱼从上沿角点飞出（秒）。
@@ -298,8 +298,15 @@ func fill_to_max() -> void:
 ## @return Rect2
 func _tank_swim_rect_global() -> Rect2:
 	var half: Vector2 = tankSwimRectSize * 0.5
-	var center: Vector2 = global_position + tankSwimRectOffset
-	return Rect2(center - half, tankSwimRectSize)
+	var topLeftLocal: Vector2 = tankSwimRectOffset + Vector2(-half.x, -half.y)
+	var bottomRightLocal: Vector2 = tankSwimRectOffset + Vector2(half.x, half.y)
+	var topLeftGlobal: Vector2 = to_global(topLeftLocal)
+	var bottomRightGlobal: Vector2 = to_global(bottomRightLocal)
+	var minX: float = min(topLeftGlobal.x, bottomRightGlobal.x)
+	var minY: float = min(topLeftGlobal.y, bottomRightGlobal.y)
+	var maxX: float = max(topLeftGlobal.x, bottomRightGlobal.x)
+	var maxY: float = max(topLeftGlobal.y, bottomRightGlobal.y)
+	return Rect2(minX, minY, maxX - minX, maxY - minY)
 
 
 ## 处理风暴事件，仅在风暴阶段允许溢出事件判定。

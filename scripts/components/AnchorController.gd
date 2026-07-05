@@ -18,9 +18,9 @@ signal slot_state_changed(totalSlots: int, consumedSlots: int)
 ## 右键交互检测半径（像素）。
 @export var interactRadius: float = 200.0
 ## 右键拾取物体检测半径（像素）。
-@export var pickupRadius: float = 52.0
+@export var pickupRadius: float = 96.0
 ## 拾取提示气泡显示半径（像素，仅影响提示显隐，不影响实际拾取判定）。
-@export var promptRadius: float = 96.0
+@export var promptRadius: float = 186.0
 ## 右键点选拾取命中半径（鼠标到物体中心，像素）。
 @export var rightClickPickupClickRadius: float = 28.0
 ## 右键点选拾取最大距离（玩家到物体中心，像素）。
@@ -82,6 +82,7 @@ var _lastSlotConsumed: int = -1
 const INTERACT_NO_TARGET: int = 0
 const INTERACT_SUCCESS: int = 1
 const INTERACT_REJECTED: int = 2
+const _ANCHOR_DEPLOY_ACTION: String = 'anchor_deploy'
 const _AGENT_DEBUG_LOG_PATH: String = 'C:/Users/nep/Desktop/mao/debug-43bc79.log'
 const _AGENT_DEBUG_SESSION_ID: String = '43bc79'
 const _AGENT_DEBUG_RUN_ID: String = 'wall-gap-pre'
@@ -165,6 +166,9 @@ func _process(delta: float) -> void:
 
 	if rightPressed and not _rightPressedPrev and not isMouseOverUi:
 		_handle_right_click()
+
+	if Input.is_action_just_pressed(_ANCHOR_DEPLOY_ACTION) and not isMouseOverUi:
+		_handle_anchor_deploy_key()
 
 	_leftPressedPrev = leftPressed
 	_rightPressedPrev = rightPressed
@@ -397,13 +401,10 @@ func _try_cancel_hooked_cargo() -> bool:
 	return false
 
 
-## 右键：空手时拾取优先；有携带物时交互优先 > 取消勾取 > 丢弃 > 拾取 > 放锚/回收放置锚。
+## 右键：空手时拾取优先；有携带物时交互优先 > 取消勾取 > 丢弃 > 拾取。
 ## @return void
 func _handle_right_click() -> void:
 	_debug_log('right click trigger: hooks=%d carried=%d deployed=%d' % [_hooks.size(), _carriedCargo.size(), _deployedCabinPaths.size()])
-	if _try_retrieve_deployed_anchor_at_mouse():
-		_debug_log('right click end by retrieve deployed anchor')
-		return
 	var handsEmpty: bool = _carriedCargo.is_empty()
 	if handsEmpty and _try_pickup_nearby_cargo():
 		_debug_log('right click end by pickup (empty hands priority)')
@@ -438,7 +439,16 @@ func _handle_right_click() -> void:
 	if _try_pickup_nearby_cargo():
 		_debug_log('right click end by pickup')
 		return
-	_debug_log('right click enter deploy toggle')
+
+
+## Q 键：回收角色附近的放置锚，否则在当前舱室放置锚。
+## @return void
+func _handle_anchor_deploy_key() -> void:
+	_debug_log('deploy key trigger: hooks=%d carried=%d deployed=%d' % [_hooks.size(), _carriedCargo.size(), _deployedCabinPaths.size()])
+	if _try_retrieve_deployed_anchor_near_player():
+		_debug_log('deploy key end by retrieve deployed anchor')
+		return
+	_debug_log('deploy key enter deploy toggle')
 	_toggle_anchor_deploy()
 
 
@@ -554,17 +564,10 @@ func _try_pickup_nearby_cargo() -> bool:
 	return false
 
 
-## 切换放锚状态：仅冻结锚所在舱室。
+## 切换放锚状态：在玩家当前所在舱室放置锚（锚显示在角色位置）。
 ## @return void
 func _toggle_anchor_deploy() -> void:
 	var totalCapacity: int = _current_anchor_capacity()
-	var mousePos: Vector2 = get_global_mouse_position()
-	var playerPos: Vector2 = (_player as Node2D).global_position if _player is Node2D else Vector2.ZERO
-	var clickDistToPlayer: float = playerPos.distance_to(mousePos) if _player is Node2D else -1.0
-	var deployMaxDistance: float = max(dropMaxDistance, 1.0)
-	if _player is Node2D and clickDistToPlayer > deployMaxDistance:
-		_debug_log('deploy blocked: click too far dist=%.2f max=%.2f' % [clickDistToPlayer, deployMaxDistance])
-		return
 	var cabinPath: NodePath = _resolve_player_cabin_path()
 	if cabinPath == NodePath(''):
 		_debug_log('deploy blocked: player not in cabin')
@@ -746,14 +749,19 @@ func _hook_pull_bounds_margin() -> float:
 	return dropShipBoundsMargin
 
 
-## 解析钩地板后的玩家落点：锁定命中点最近舱室，避免落在墙缝。
+## 解析钩地板后的玩家落点：锁定命中点最近舱室，避免落在墙缝；钩天花板洞时吸附到上一层地板。
 ## @param floorHitPos 地板命中点（全局坐标）
 ## @return Vector2
 func _resolve_floor_pull_target(floorHitPos: Vector2) -> Vector2:
 	var pullOffset: float = max(floorPullUpOffset, 0.0)
-	var rawTarget: Vector2 = floorHitPos - Vector2(0.0, pullOffset)
+	var upperFloorTarget: Variant = _try_resolve_upper_floor_pull_target(floorHitPos, pullOffset)
+	var rawTarget: Vector2
+	if upperFloorTarget is Vector2:
+		rawTarget = upperFloorTarget as Vector2
+	else:
+		rawTarget = floorHitPos - Vector2(0.0, pullOffset)
 	var margin: float = _hook_pull_bounds_margin()
-	var nearestCabin: Cabin = _find_nearest_cabin_to_point(floorHitPos)
+	var nearestCabin: Cabin = _find_nearest_cabin_to_point(rawTarget)
 	var candidateRows: Array = _agent_debug_cabin_candidates(floorHitPos)
 	var resolved: Vector2 = rawTarget
 	var strategy: String = 'none'
@@ -769,6 +777,8 @@ func _resolve_floor_pull_target(floorHitPos: Vector2) -> Vector2:
 		else:
 			resolved = nearestCabin.clamp_global_to_interior(rawTarget, margin)
 			strategy = 'nearest_interior'
+	if upperFloorTarget is Vector2:
+		strategy = 'upper_floor_snap'
 	#region agent log
 	_agent_debug_emit(
 		'H1',
@@ -791,6 +801,125 @@ func _resolve_floor_pull_target(floorHitPos: Vector2) -> Vector2:
 	)
 	#endregion
 	return resolved
+
+
+## 钩中下层天花板洞时，尝试将落点改到正上方舱室的地板站立点。
+## @param floorHitPos 命中点（全局坐标）
+## @param standOffset 相对地板面的站立上移量（像素）
+## @return Variant 成功时为 Vector2，否则为 null
+func _try_resolve_upper_floor_pull_target(floorHitPos: Vector2, standOffset: float) -> Variant:
+	if not (_player is Node2D):
+		return null
+	var playerPos: Vector2 = (_player as Node2D).global_position
+	if floorHitPos.y >= playerPos.y - 8.0:
+		return null
+	var hitCabin: Cabin = _find_cabin_containing_point(floorHitPos, false)
+	if hitCabin == null:
+		hitCabin = _find_nearest_cabin_to_point(floorHitPos)
+	if hitCabin == null:
+		return null
+	if not _is_hook_hit_on_cabin_ceiling(hitCabin, floorHitPos):
+		return null
+	if not _is_point_in_cabin_opening(hitCabin, floorHitPos, true):
+		return null
+	var upperCabin: Cabin = _find_upper_cabin_for_hole_transfer(hitCabin, floorHitPos)
+	if upperCabin == null:
+		return null
+	if not _is_point_in_cabin_opening(upperCabin, floorHitPos, false):
+		return null
+	return _get_cabin_floor_stand_position(upperCabin, floorHitPos.x, standOffset)
+
+
+## 判断命中点是否靠近舱室天花板（而非地板）。
+## @param cabin 舱室
+## @param pointGlobal 全局坐标
+## @return bool
+func _is_hook_hit_on_cabin_ceiling(cabin: Cabin, pointGlobal: Vector2) -> bool:
+	var localPos: Vector2 = cabin.to_local(pointGlobal)
+	var halfH: float = cabin.cabin_height * 0.5
+	var threshold: float = float(cabin.tile_size) * 2.0
+	return localPos.y <= -halfH + threshold
+
+
+## 判断全局 X 是否落在舱室天花板洞或地板洞内。
+## @param cabin 舱室
+## @param pointGlobal 全局坐标
+## @param isCeiling true=天花板洞，false=地板洞
+## @return bool
+func _is_point_in_cabin_opening(cabin: Cabin, pointGlobal: Vector2, isCeiling: bool) -> bool:
+	var holeSize: float = cabin.ceiling_hole_size if isCeiling else cabin.floor_hole_size
+	if holeSize <= 0.0:
+		return false
+	if isCeiling and not cabin.render_ceiling:
+		return false
+	var xRange: Vector2 = _get_cabin_hole_local_x_range(cabin, isCeiling)
+	if xRange.x > xRange.y:
+		return false
+	var localX: float = cabin.to_local(pointGlobal).x
+	return localX >= xRange.x and localX <= xRange.y
+
+
+## 获取舱室洞口的本地 X 范围（相对舱室中心）。
+## @param cabin 舱室
+## @param isCeiling true=天花板洞，false=地板洞
+## @return Vector2 xMin/xMax；无效时为 (INF, -INF)
+func _get_cabin_hole_local_x_range(cabin: Cabin, isCeiling: bool) -> Vector2:
+	var holeSize: float = cabin.ceiling_hole_size if isCeiling else cabin.floor_hole_size
+	var holePos: float = cabin.ceiling_hole_position if isCeiling else cabin.floor_hole_position
+	if holeSize <= 0.0:
+		return Vector2(INF, -INF)
+	var tileSize: int = max(cabin.tile_size, 1)
+	var cols: int = max(2, int(round(cabin.cabin_width / float(tileSize))))
+	var thickness: int = 1
+	var innerLeft: int = thickness
+	var innerRight: int = cols - thickness
+	var widthPixels: float = float(cols * tileSize)
+	var visualAnchorX: float = -widthPixels * 0.5
+	var holeStartCell: int = clampi(innerLeft + int(round(holePos / float(tileSize))), innerLeft, innerRight)
+	var holeWidthCells: int = max(1, int(round(holeSize / float(tileSize))))
+	var holeEndCell: int = clampi(holeStartCell + holeWidthCells, innerLeft, innerRight)
+	var xMin: float = visualAnchorX + float(holeStartCell * tileSize)
+	var xMax: float = visualAnchorX + float(holeEndCell * tileSize)
+	return Vector2(xMin, xMax)
+
+
+## 查找与命中点连通、且位于当前舱室正上方的舱室（按垂直距离最近）。
+## @param lowerCabin 下层舱室
+## @param hitGlobal 命中点（全局坐标）
+## @return Cabin
+func _find_upper_cabin_for_hole_transfer(lowerCabin: Cabin, hitGlobal: Vector2) -> Cabin:
+	var bestCabin: Cabin = null
+	var bestDeltaY: float = INF
+	for node in get_tree().get_nodes_in_group('Cabin'):
+		if not (node is Cabin):
+			continue
+		var cabin: Cabin = node as Cabin
+		if cabin == lowerCabin:
+			continue
+		if cabin.global_position.y >= lowerCabin.global_position.y - 8.0:
+			continue
+		if cabin.floor_hole_size <= 0.0:
+			continue
+		if not _is_point_in_cabin_opening(cabin, hitGlobal, false):
+			continue
+		var deltaY: float = lowerCabin.global_position.y - cabin.global_position.y
+		if deltaY < bestDeltaY:
+			bestDeltaY = deltaY
+			bestCabin = cabin
+	return bestCabin
+
+
+## 计算舱室地板上可站立的全局坐标（按给定全局 X 对齐）。
+## @param cabin 舱室
+## @param xGlobal 目标全局 X
+## @param standOffset 相对地板面的站立上移量（像素）
+## @return Vector2
+func _get_cabin_floor_stand_position(cabin: Cabin, xGlobal: float, standOffset: float) -> Vector2:
+	var interiorRect: Rect2 = cabin.get_interior_rect_local()
+	var localX: float = cabin.to_local(Vector2(xGlobal, cabin.global_position.y)).x
+	localX = clampf(localX, interiorRect.position.x, interiorRect.position.x + interiorRect.size.x)
+	var floorY: float = interiorRect.position.y + interiorRect.size.y - max(standOffset, 0.0)
+	return cabin.to_global(Vector2(localX, floorY))
 
 
 ## 调试：统计包含点的舱室数量。
@@ -981,34 +1110,36 @@ func _remove_deployed_anchor_visual(cabinPathText: String) -> void:
 		anchorNode.queue_free()
 
 
-## 精确点击回收已放置锚：需点击到锚实体且玩家在附近。
+## 回收角色附近已放置锚：优先当前舱室，否则取范围内最近锚。
 ## @return bool
-func _try_retrieve_deployed_anchor_at_mouse() -> bool:
+func _try_retrieve_deployed_anchor_near_player() -> bool:
 	if _player == null or not (_player is Node2D):
 		return false
 	if _deployedAnchorNodesByCabin.is_empty():
 		return false
-	var mousePos: Vector2 = get_global_mouse_position()
 	var playerPos: Vector2 = (_player as Node2D).global_position
-	var clickRadius: float = max(retrieveAnchorClickRadius, 1.0)
 	var playerRange: float = max(retrieveAnchorPlayerRange, 1.0)
+	var currentCabinPathText: String = String(_resolve_player_cabin_path())
+	if currentCabinPathText != '' and _deployedAnchorNodesByCabin.has(currentCabinPathText):
+		var cabinAnchor: Node2D = _deployedAnchorNodesByCabin[currentCabinPathText] as Node2D
+		if cabinAnchor != null and is_instance_valid(cabinAnchor):
+			if cabinAnchor.global_position.distance_to(playerPos) <= playerRange:
+				_remove_deployed_anchor_by_cabin(currentCabinPathText)
+				return true
 	var bestCabinPathText: String = ''
 	var bestDist: float = INF
 	for cabinPathText in _deployedAnchorNodesByCabin.keys():
 		var anchorNode: Node2D = _deployedAnchorNodesByCabin[cabinPathText] as Node2D
 		if anchorNode == null or not is_instance_valid(anchorNode):
 			continue
-		var clickDist: float = anchorNode.global_position.distance_to(mousePos)
-		if clickDist > clickRadius:
-			continue
 		var playerDist: float = anchorNode.global_position.distance_to(playerPos)
 		if playerDist > playerRange:
 			continue
-		if clickDist < bestDist:
-			bestDist = clickDist
+		if playerDist < bestDist:
+			bestDist = playerDist
 			bestCabinPathText = String(cabinPathText)
 	if bestCabinPathText == '':
-		_debug_log('retrieve miss: click not on anchor or player too far')
+		_debug_log('retrieve miss: no anchor near player within %.1f' % playerRange)
 		return false
 	_remove_deployed_anchor_by_cabin(bestCabinPathText)
 	return true

@@ -86,6 +86,9 @@ func _update_cook_preview_bubble() -> void:
 	if global_position.distance_to(playerNode.global_position) > radius:
 		_cookPreviewBubble.hide_preview()
 		return
+	if _is_parent_cooking():
+		_cookPreviewBubble.hide_preview()
+		return
 	var carriedItem: Node = null
 	if anchorController.has_method('get_top_carried_item'):
 		carriedItem = anchorController.call('get_top_carried_item') as Node
@@ -179,10 +182,23 @@ func _reject_interact() -> Dictionary:
 ## @param anchorController 锚控制器
 ## @return bool
 func _can_interact_now(player: Node, item: Node, anchorController: Node) -> bool:
+	if _is_parent_cooking():
+		return false
 	var _unusedPlayer: Node = player
 	var _unusedItem: Node = item
 	var _unusedAnchorController: Node = anchorController
 	return true
+
+
+## 父节点是否处于烹饪/处理中（锅、煎锅、菜板等通过 is_cooking 声明）。
+## @return bool
+func _is_parent_cooking() -> bool:
+	var parentNode: Node = get_parent()
+	if parentNode == null:
+		return false
+	if not parentNode.has_method('is_cooking'):
+		return false
+	return bool(parentNode.call('is_cooking'))
 
 
 ## 物品合法性判定（子类按需重写）。

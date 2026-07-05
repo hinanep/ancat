@@ -3,8 +3,10 @@ extends MovableCargo
 ## 可移动煎锅：放到炉子上后计时烹饪，支持盘子取出成品。
 ## @totalCookSec 煎制总时长（秒）
 ## @foodPlacementOffset 食材显示偏移
+## @finishedFoodType 完成后展示的无盘料理类型
 @export var totalCookSec: float = 20.0
 @export var foodPlacementOffset: Vector2 = Vector2(0.0, -8.0)
+@export var finishedFoodType: int = FoodConfig.FoodType.FRIED_FISH
 
 var _foodNode: Node2D
 var _isOnStove: bool = false
@@ -13,6 +15,7 @@ var _isCooked: bool = false
 var _fryLoopActive: bool = false
 
 @onready var _cookProgressBar: ProgressBar = $CookProgressBar
+@onready var _collectPrompt: CookPlateCollectPrompt = get_node_or_null('CookPlateCollectPrompt') as CookPlateCollectPrompt
 
 
 ## 初始化煎锅状态。
@@ -31,6 +34,7 @@ func _process(delta: float) -> void:
 	if _foodNode == null or not is_instance_valid(_foodNode):
 		_foodNode = null
 		_cookProgressBar.visible = false
+		_hide_finished_result()
 		_stop_fry_loop()
 		return
 	if not _isOnStove or _isCooked:
@@ -89,6 +93,20 @@ func is_cooked() -> bool:
 	return _isCooked
 
 
+## 是否正在炉上烹饪（有未熟食材且在炉上）。
+## @return bool
+func is_cooking() -> bool:
+	return has_food() and not _isCooked and _isOnStove
+
+
+## 是否可被新的锚勾取。
+## @return bool
+func can_be_hooked() -> bool:
+	if is_cooking():
+		return false
+	return super.can_be_hooked()
+
+
 ## 放入食材并重置计时。
 ## @param food 食材节点
 func add_food(food: Node2D) -> void:
@@ -101,6 +119,7 @@ func add_food(food: Node2D) -> void:
 		food.call('drop_to_world')
 	food.reparent(self)
 	food.position = foodPlacementOffset
+	food.visible = false
 	food.set_process(false)
 	food.set_physics_process(false)
 	if food is CollisionObject2D:
@@ -109,6 +128,7 @@ func add_food(food: Node2D) -> void:
 	if _isOnStove:
 		_cookProgressBar.visible = true
 		_update_progress_bar()
+	_hide_finished_result()
 
 
 ## 取出食材并重置状态。
@@ -122,6 +142,7 @@ func take_food() -> Node2D:
 	_cookRemainingSec = 0.0
 	_cookProgressBar.visible = false
 	_stop_fry_loop()
+	_hide_finished_result()
 	return food
 
 
@@ -136,6 +157,7 @@ func clear_internal_storage() -> void:
 	_cookProgressBar.visible = false
 	_cookProgressBar.value = 0.0
 	_stop_fry_loop()
+	_hide_finished_result()
 
 
 ## 覆盖煎锅总烹饪时长，并按当前进度重映射剩余时间。
@@ -176,9 +198,27 @@ func _on_cook_finished() -> void:
 	if _foodNode == null:
 		return
 	if _foodNode.has_method('set_cooked'):
-		_foodNode.call('set_cooked', FoodConfig.FoodType.FRIED_FISH)
+		_foodNode.call('set_cooked', finishedFoodType)
+	_foodNode.visible = false
+	_show_finished_result()
 	AudioManager.play_sfx(ResPath.AUDIO.PROGRESS_COMPLETE)
 	_debug_log('fried food ready')
+
+
+## 显示成品无盘贴图与盘子收集浮标。
+## @return void
+func _show_finished_result() -> void:
+	if _collectPrompt == null:
+		return
+	_collectPrompt.show_result(finishedFoodType)
+
+
+## 隐藏成品展示。
+## @return void
+func _hide_finished_result() -> void:
+	if _collectPrompt == null:
+		return
+	_collectPrompt.hide_result()
 
 
 ## 启动煎锅持续音效。

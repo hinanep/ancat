@@ -4,8 +4,8 @@
 [ext_resource type="Texture2D" uid="uid://dro8d3ai0nv2f" path="res://assets/textures/烹饪/46. Plate.png" id="2_um8is"]
 [ext_resource type="PackedScene" uid="uid://cxxhps2gqrp7a" path="res://scenes/components/RightClickPromptBubble.tscn" id="3_bubble"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_tuu8v"]
-radius = 16.0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_3qubl"]
+size = Vector2(34, 28)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_txj6r"]
 radius = 16.0
@@ -18,8 +18,8 @@ max_slide_speed = 120.0
 deliveryTag = "plate"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1150668897]
-position = Vector2(0, -1)
-shape = SubResource("CircleShape2D_tuu8v")
+position = Vector2(0, 1)
+shape = SubResource("RectangleShape2D_3qubl")
 
 [node name="FoodAnchor" type="Marker2D" parent="." unique_id=1807943181]
 position = Vector2(0, -6)
@@ -36,6 +36,6 @@ shape = SubResource("CircleShape2D_txj6r")
 position = Vector2(0, -2)
 texture = ExtResource("2_um8is")
 
-[node name="RightClickPromptBubble" parent="." instance=ExtResource("3_bubble")]
+[node name="RightClickPromptBubble" parent="." unique_id=1393930809 instance=ExtResource("3_bubble")]
 visible = false
 position = Vector2(0, -28)

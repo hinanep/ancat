@@ -1,7 +1,7 @@
 extends Label
 
-## 金币 HUD：监听金币与阶段目标变化，显示 "当前金币/阶段目标" 格式。
-## @stageGoals 阶段目标金额列表（需与 StageGoalManager 一致）
+## 金币 HUD：监听金币变化，显示 "当前金币/阶段目标" 格式。
+## @stageGoals 阶段目标金额列表（仅用于 HUD 显示）
 ## @finalGoal 最终目标金额
 @export var stageGoals: Array[int] = [1000, 2000, 5000]
 @export var finalGoal: int = 10000
@@ -37,17 +37,15 @@ func _on_value_changed(key: StringName, newValue: Variant) -> void:
 ## @param eventType 事件类型
 ## @param data 数据
 func _on_event(eventType: EventBus.EventType, data: Dictionary) -> void:
-	if eventType == EventBus.EventType.COIN_CHANGED:
-		_refresh_text(int(data.get('gold', GameState.get_gold())))
+	if eventType != EventBus.EventType.COIN_CHANGED:
 		return
-	if eventType == EventBus.EventType.STAGE_GOAL_REACHED:
-		_nextGoal = int(data.get('next_goal', _nextGoal))
-		_refresh_text(GameState.get_gold())
+	_refresh_text(int(data.get('gold', GameState.get_gold())))
 
 
 ## 刷新显示文本。
 ## @param value 金币值
 func _refresh_text(value: int) -> void:
+	_nextGoal = _resolve_initial_goal()
 	text = '%d/%d' % [max(value, 0), _nextGoal]
 
 

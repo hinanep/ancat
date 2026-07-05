@@ -9,7 +9,7 @@ extends CharacterBody2D
 ## @hookMoveBoundsMargin 拉拽时船内边界安全边距（像素）
 @export var moveSpeed: float = 240.0
 @export var jumpVelocity: float = -420.0
-@export var gravityScale: float = 1.0
+@export var gravityScale: float = 0.8
 @export var slopeMoveScale: float = 0.45
 @export var anchorCount: int = 1
 @export var hookMoveBoundsMargin: float = 12.0

@@ -47,3 +47,14 @@ func _has_seated_customer() -> bool:
 	if not interactable.has_method('is_seat_free'):
 		return false
 	return not bool(interactable.call('is_seat_free'))
+
+
+## 餐桌不使用 MovableCargo 拾取提示，仅由 InteractRangeComponent 控制交互提示。
+## @return void
+func _bind_right_click_prompt_bubble() -> void:
+	_rightClickPromptBubble = get_node_or_null('RightClickPromptBubble') as Node2D
+	if _rightClickPromptBubble == null:
+		return
+	if _rightClickPromptBubble.has_method('hide_prompt'):
+		_rightClickPromptBubble.call('hide_prompt')
+	_rightClickPromptBubble.set_process(false)

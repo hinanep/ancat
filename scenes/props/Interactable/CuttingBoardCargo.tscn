@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://bk7vm37q45ogq" path="res://scripts/components/CuttingBoardInteractable.gd" id="3_board_interact"]
 [ext_resource type="PackedScene" uid="uid://cvlujgnml141e" path="res://scenes/components/InteractRangeComponent.tscn" id="4_interact_range"]
 [ext_resource type="PackedScene" uid="uid://cxxhps2gqrp7a" path="res://scenes/components/RightClickPromptBubble.tscn" id="5_bubble"]
+[ext_resource type="PackedScene" uid="uid://b8kcpplatecollect" path="res://scenes/components/CookPlateCollectPrompt.tscn" id="6_collect_prompt"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_6qwv7"]
 atlas = ExtResource("2_4nopp")
@@ -50,9 +51,8 @@ shape = SubResource("RectangleShape2D_ycjlk")
 [node name="FoodAnchor" type="Marker2D" parent="." unique_id=679469276]
 position = Vector2(0, -8)
 
-[node name="SashimiPromptBubble" type="Sprite2D" parent="." unique_id=1957785925]
-position = Vector2(0, -28)
-scale = Vector2(0.9, 0.9)
+[node name="CookPlateCollectPrompt" parent="." instance=ExtResource("6_collect_prompt")]
+position = Vector2(0, -8)
 
 [node name="InteractRangeComponent" parent="." unique_id=1185070161 instance=ExtResource("4_interact_range")]
 script = ExtResource("3_board_interact")
