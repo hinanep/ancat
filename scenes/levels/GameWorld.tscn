@@ -366,7 +366,7 @@ ceiling_hole_size = 120.0
 [node name="DiningTableInteractable" parent="Cabins/Cabin6" unique_id=1487772996 instance=ExtResource("17_dining_table")]
 z_index = 4
 position = Vector2(0, 110)
-scale = Vector2(3, 3)
+scale = Vector2(3, 2.8)
 
 [node name="Cabin7-盘子" parent="Cabins" unique_id=257969542 instance=ExtResource("2_3sasu")]
 position = Vector2(-420, -751.99994)
@@ -386,12 +386,8 @@ right_door_open = true
 [node name="DiningTableInteractable" parent="Cabins/Cabin8" unique_id=1527173859 instance=ExtResource("17_dining_table")]
 z_index = 10
 position = Vector2(-7.1054274e-15, 110)
-scale = Vector2(3, 3)
+scale = Vector2(3, 2.8)
 isVipTable = true
-
-[node name="InteractRangeComponent" parent="Cabins/Cabin8/DiningTableInteractable" index="2" unique_id=1338044399]
-cookPreviewFoodType = -1
-cookPreviewOffset = Vector2(0, -28)
 
 [node name="Cabin9" parent="Cabins" unique_id=1632845120 instance=ExtResource("2_3sasu")]
 position = Vector2(540, -752)
@@ -400,17 +396,17 @@ left_door_open = true
 [node name="DiningTableInteractable" parent="Cabins/Cabin9" unique_id=21189508 instance=ExtResource("17_dining_table")]
 z_index = 4
 position = Vector2(0, 109.99994)
-scale = Vector2(3, 3)
+scale = Vector2(3, 2.8)
 
 [node name="DiningTableInteractable2" parent="Cabins/Cabin9" unique_id=1453950512 instance=ExtResource("17_dining_table")]
 z_index = 4
 position = Vector2(-128, 110)
-scale = Vector2(3, 3)
+scale = Vector2(3, 2.8)
 
 [node name="DiningTableInteractable3" parent="Cabins/Cabin9" unique_id=106414242 instance=ExtResource("17_dining_table")]
 z_index = 4
 position = Vector2(127.99999, 109.99994)
-scale = Vector2(3, 3)
+scale = Vector2(3, 2.8)
 
 [node name="TestPlayer" type="CharacterBody2D" parent="Cabins" unique_id=1521693170]
 z_index = 20

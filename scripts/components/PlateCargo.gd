@@ -47,6 +47,14 @@ func clear_internal_storage() -> void:
 	clear_food()
 
 
+## 被交互消费时销毁盘子，释放 Plate 分组计数。
+## @param target 交付目标
+## @return void
+func consume_by_interactable(target: Node) -> void:
+	var _unusedTarget: Node = target
+	queue_free()
+
+
 ## 按当前 foodType 应用纹理。
 ## @return void
 func apply_food_texture() -> void:
