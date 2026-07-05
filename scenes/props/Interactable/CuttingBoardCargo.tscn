@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://67raa1gndksy" path="res://assets/textures/烹饪/砧板.png" id="2_4nopp"]
 [ext_resource type="Script" uid="uid://bk7vm37q45ogq" path="res://scripts/components/CuttingBoardInteractable.gd" id="3_board_interact"]
 [ext_resource type="PackedScene" uid="uid://cvlujgnml141e" path="res://scenes/components/InteractRangeComponent.tscn" id="4_interact_range"]
+[ext_resource type="PackedScene" uid="uid://cxxhps2gqrp7a" path="res://scenes/components/RightClickPromptBubble.tscn" id="5_bubble"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_6qwv7"]
 atlas = ExtResource("2_4nopp")
@@ -74,5 +75,9 @@ collision_mask = 0
 [node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea" unique_id=1133863328]
 position = Vector2(0, -1.5)
 shape = SubResource("RectangleShape2D_4nopp")
+
+[node name="RightClickPromptBubble" parent="." instance=ExtResource("5_bubble")]
+visible = false
+position = Vector2(0, -28)
 
 [editable path="InteractRangeComponent"]

@@ -7,11 +7,9 @@
 [ext_resource type="Script" uid="uid://bmtjege46adf1" path="res://scripts/components/TestPlayerController.gd" id="3_0x6r3"]
 [ext_resource type="Texture2D" uid="uid://d048tv117giwp" path="res://assets/textures/猫/Siamese/IdleCattt.png" id="3_8ghft"]
 [ext_resource type="PackedScene" uid="uid://dd80avoqr4dl4" path="res://scenes/ui/components/anchor_slots_ui.tscn" id="3_fy6ti"]
-[ext_resource type="Texture2D" uid="uid://b3313l38amk5n" path="res://assets/textures/Forever Morning/1_spaceship.png" id="3_sef5n"]
+[ext_resource type="Texture2D" uid="uid://du874ewnbnanw" path="res://assets/textures/Forever Morning/3_city.png" id="4_7um7j"]
 [ext_resource type="PackedScene" uid="uid://do27wnokmof2x" path="res://scenes/props/WaterSurface.tscn" id="4_a73yp"]
-[ext_resource type="Texture2D" uid="uid://c580ug24bjk4t" path="res://assets/textures/Forever Morning/1_stars.png" id="4_cvyl1"]
 [ext_resource type="Script" uid="uid://dmx576ws301qi" path="res://scripts/components/BoatFloatController.gd" id="5_3ar6b"]
-[ext_resource type="Texture2D" uid="uid://bpctc6cjutgna" path="res://assets/textures/Forever Morning/1_stars_trail.png" id="5_7um7j"]
 [ext_resource type="Texture2D" uid="uid://gsh6von6awgj" path="res://assets/textures/Mini FX, Items & UI/Common Pick-ups/Coin (16 x 16).png" id="5_dhq8s"]
 [ext_resource type="Texture2D" uid="uid://x2etpdac7gse" path="res://assets/textures/Forever Morning/2_clouds.png" id="6_3qubl"]
 [ext_resource type="Script" uid="uid://bbcbgceyjg16o" path="res://scripts/components/StormController.gd" id="7_hy2pk"]
@@ -34,6 +32,7 @@
 [ext_resource type="PackedScene" uid="uid://cvwh7w0os4co7" path="res://scenes/ui/components/ShopPanelUI.tscn" id="25_shop_panel_ui"]
 [ext_resource type="Script" uid="uid://dyidexn85lnc2" path="res://scripts/components/StageGoalManager.gd" id="26_stage_goal"]
 [ext_resource type="TileSet" uid="uid://nns17a4ei8l7" path="res://resources/tilesets/walls.tres" id="27_cvyl1"]
+[ext_resource type="Script" uid="uid://1scobltp4mto" path="res://scripts/components/BackgroundParallaxController.gd" id="28_parallax"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_4ta1d"]
 atlas = ExtResource("5_dhq8s")
@@ -76,8 +75,8 @@ atlas = ExtResource("21_cvyl1")
 region = Rect2(336, 96, 32, 32)
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_8ghft"]
-radius = 7.3333282
-height = 21.333336
+radius = 12.333334
+height = 24.666668
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ihn80"]
 atlas = ExtResource("3_8ghft")
@@ -176,59 +175,32 @@ _data = {
 [node name="GameWorld" type="Node2D" unique_id=2080257078]
 script = ExtResource("1")
 
-[node name="WorldCamera" type="Camera2D" parent="." unique_id=945099590]
-zoom = Vector2(0.7, 0.7)
-
-[node name="back" type="Node2D" parent="WorldCamera" unique_id=3672821]
+[node name="back" type="Node2D" parent="." unique_id=3672821]
 z_index = -100
+scale = Vector2(1.2, 1.2)
+script = ExtResource("28_parallax")
+skyScrollSpeed = 10.0
+cloudScrollSpeed = 30.0
+cityScrollSpeed = 60.0
 
-[node name="0Sky" type="Sprite2D" parent="WorldCamera/back" unique_id=1101138054]
+[node name="0Sky" type="Sprite2D" parent="back" unique_id=1101138054]
 position = Vector2(0, -2.5)
 scale = Vector2(9.547619, 12.435185)
 texture = ExtResource("2_4ta1d")
 
-[node name="1Spaceship" type="Sprite2D" parent="WorldCamera/back" unique_id=1091805476]
-position = Vector2(369, -381)
-texture = ExtResource("3_sef5n")
-
-[node name="1Stars" type="Sprite2D" parent="WorldCamera/back" unique_id=578569400]
-position = Vector2(-944, -485)
-texture = ExtResource("4_cvyl1")
-
-[node name="1StarsTrail" type="Sprite2D" parent="WorldCamera/back" unique_id=129894073]
-position = Vector2(-574, -344)
-texture = ExtResource("5_7um7j")
-
-[node name="1Stars2" type="Sprite2D" parent="WorldCamera/back" unique_id=972461623]
-position = Vector2(520, -609)
-texture = ExtResource("4_cvyl1")
-
-[node name="1Stars3" type="Sprite2D" parent="WorldCamera/back" unique_id=1558570369]
-position = Vector2(-228, -612)
-texture = ExtResource("4_cvyl1")
-
-[node name="2Clouds" type="Sprite2D" parent="WorldCamera/back" unique_id=920126945]
-self_modulate = Color(1, 1, 1, 0.78431374)
-position = Vector2(-901, -451)
+[node name="2Clouds6" type="Sprite2D" parent="back" unique_id=1009292335]
+position = Vector2(-365.83334, -270.0001)
+scale = Vector2(14, 14)
 texture = ExtResource("6_3qubl")
 
-[node name="2Clouds2" type="Sprite2D" parent="WorldCamera/back" unique_id=1097075748]
-self_modulate = Color(1, 1, 1, 0.7411765)
-position = Vector2(548, -316)
-texture = ExtResource("6_3qubl")
+[node name="3City" type="Sprite2D" parent="back" unique_id=1015658376]
+texture_repeat = 2
+position = Vector2(341.66675, -289.9999)
+scale = Vector2(16, 16)
+texture = ExtResource("4_7um7j")
 
-[node name="2Clouds3" type="Sprite2D" parent="WorldCamera/back" unique_id=921510351]
-position = Vector2(-580, -543)
-texture = ExtResource("6_3qubl")
-
-[node name="2Clouds4" type="Sprite2D" parent="WorldCamera/back" unique_id=1476477708]
-position = Vector2(276, -513)
-texture = ExtResource("6_3qubl")
-
-[node name="2Clouds5" type="Sprite2D" parent="WorldCamera/back" unique_id=575481901]
-self_modulate = Color(1, 1, 1, 0.57254905)
-position = Vector2(829, 54)
-texture = ExtResource("6_3qubl")
+[node name="WorldCamera" type="Camera2D" parent="." unique_id=945099590]
+zoom = Vector2(0.7, 0.7)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=538021173]
 follow_viewport_enabled = true
@@ -261,20 +233,21 @@ grow_horizontal = 1
 grow_vertical = 1
 
 [node name="StormWarningUI" parent="CanvasLayer" unique_id=868499573 instance=ExtResource("2_dhmek")]
-offset_left = -1162.0
-offset_top = -671.0
-offset_right = -846.0
-offset_bottom = -575.0
+offset_left = -1163.0
+offset_top = -776.0
+offset_right = -847.0
+offset_bottom = -680.0
+scale = Vector2(1.5, 1.5)
 
 [node name="AnchorSlotsUI" parent="CanvasLayer" unique_id=1069361037 instance=ExtResource("3_fy6ti")]
-position = Vector2(-376.00003, -598)
+position = Vector2(-385, -673)
 scale = Vector2(3, 3)
 
 [node name="CoinHud" type="Label" parent="CanvasLayer" unique_id=1156597198]
-offset_left = 95.0
-offset_top = -622.0
-offset_right = 255.0
-offset_bottom = -555.0
+offset_left = 72.0
+offset_top = -696.0
+offset_right = 232.0
+offset_bottom = -629.0
 theme_override_fonts/font = ExtResource("9_smoeg")
 theme_override_font_sizes/font_size = 48
 text = "0"
@@ -300,7 +273,7 @@ stormTiltLerpSpeedDeg = 3.0
 stormRecoverTiltMaxChangeDegPerSec = 3.0
 
 [node name="Cabin1-垃圾" parent="Cabins" unique_id=1132968514 instance=ExtResource("2_3sasu")]
-position = Vector2(-420, -48)
+position = Vector2(-420, -49)
 right_door_open = true
 
 [node name="IncineratorInteractable" parent="Cabins/Cabin1-垃圾" unique_id=1466142704 instance=ExtResource("9_incinerator")]
@@ -326,19 +299,19 @@ ceiling_hole_size = 120.0
 
 [node name="FruitTreeInteractable" parent="Cabins/Cabin3-水果" unique_id=950768535 instance=ExtResource("9_6ecue")]
 z_index = 6
-position = Vector2(-150, 80)
-scale = Vector2(2, 2)
+position = Vector2(-150, 65)
+scale = Vector2(3, 3)
 
 [node name="FruitTreeInteractable2" parent="Cabins/Cabin3-水果" unique_id=2012134646 instance=ExtResource("9_6ecue")]
 z_index = 6
-position = Vector2(150, 80)
-scale = Vector2(2, 2)
+position = Vector2(150, 65)
+scale = Vector2(3, 3)
 fruitType = 5
 
 [node name="FruitTreeInteractable3" parent="Cabins/Cabin3-水果" unique_id=1801752209 instance=ExtResource("9_6ecue")]
 z_index = 6
-position = Vector2(0, 80)
-scale = Vector2(2, 2)
+position = Vector2(0, 65)
+scale = Vector2(3, 3)
 fruitType = 6
 
 [node name="Cabin4-果酱" parent="Cabins" unique_id=891480747 instance=ExtResource("2_3sasu")]
@@ -349,13 +322,13 @@ floor_hole_size = 120.0
 
 [node name="JuicerInteractable" parent="Cabins/Cabin4-果酱" unique_id=328487474 instance=ExtResource("20_juicer")]
 z_index = 4
-position = Vector2(95, 104)
-scale = Vector2(2, 2)
+position = Vector2(89, 93)
+scale = Vector2(3, 3)
 
 [node name="JuicerInteractable2" parent="Cabins/Cabin4-果酱" unique_id=519975888 instance=ExtResource("20_juicer")]
 z_index = 4
-position = Vector2(-95, 104)
-scale = Vector2(2, 2)
+position = Vector2(-101, 93)
+scale = Vector2(3, 3)
 
 [node name="Cabin5-厨房" parent="Cabins" unique_id=1346611279 instance=ExtResource("2_3sasu")]
 position = Vector2(60, -400)
@@ -364,18 +337,18 @@ right_door_open = true
 
 [node name="StoveInteractable" parent="Cabins/Cabin5-厨房" unique_id=785188061 instance=ExtResource("14_stove")]
 z_index = 7
-position = Vector2(-144, 96)
-scale = Vector2(1.5, 2)
+position = Vector2(-149, 75)
+scale = Vector2(2, 2.667)
 
 [node name="StoveInteractable2" parent="Cabins/Cabin5-厨房" unique_id=1228169956 instance=ExtResource("14_stove")]
 z_index = 7
-position = Vector2(0, 96)
-scale = Vector2(1.5, 2)
+position = Vector2(-5, 75)
+scale = Vector2(2, 2.667)
 
 [node name="StoveInteractable3" parent="Cabins/Cabin5-厨房" unique_id=1184835922 instance=ExtResource("14_stove")]
 z_index = 7
-position = Vector2(144, 96)
-scale = Vector2(1.5, 2)
+position = Vector2(139, 75)
+scale = Vector2(2, 2.667)
 
 [node name="Cabin6" parent="Cabins" unique_id=2118771532 instance=ExtResource("2_3sasu")]
 position = Vector2(-420, -400)
@@ -385,6 +358,7 @@ ceiling_hole_size = 120.0
 [node name="DiningTableInteractable" parent="Cabins/Cabin6" unique_id=1487772996 instance=ExtResource("17_dining_table")]
 z_index = 4
 position = Vector2(0, 110)
+scale = Vector2(3, 3)
 
 [node name="Cabin7-盘子" parent="Cabins" unique_id=257969542 instance=ExtResource("2_3sasu")]
 position = Vector2(-420, -751.99994)
@@ -404,7 +378,12 @@ right_door_open = true
 [node name="DiningTableInteractable" parent="Cabins/Cabin8" unique_id=1527173859 instance=ExtResource("17_dining_table")]
 z_index = 10
 position = Vector2(-7.1054274e-15, 110)
+scale = Vector2(3, 3)
 isVipTable = true
+
+[node name="InteractRangeComponent" parent="Cabins/Cabin8/DiningTableInteractable" index="2" unique_id=1338044399]
+cookPreviewFoodType = -1
+cookPreviewOffset = Vector2(0, -28)
 
 [node name="Sprite2D2" type="Sprite2D" parent="Cabins/Cabin8/DiningTableInteractable" unique_id=59037279]
 position = Vector2(-29.333332, 4.8148174)
@@ -418,14 +397,17 @@ left_door_open = true
 [node name="DiningTableInteractable" parent="Cabins/Cabin9" unique_id=21189508 instance=ExtResource("17_dining_table")]
 z_index = 4
 position = Vector2(0, 109.99994)
+scale = Vector2(3, 3)
 
 [node name="DiningTableInteractable2" parent="Cabins/Cabin9" unique_id=1453950512 instance=ExtResource("17_dining_table")]
 z_index = 4
 position = Vector2(-128, 110)
+scale = Vector2(3, 3)
 
 [node name="DiningTableInteractable3" parent="Cabins/Cabin9" unique_id=106414242 instance=ExtResource("17_dining_table")]
 z_index = 4
 position = Vector2(127.99999, 109.99994)
+scale = Vector2(3, 3)
 
 [node name="TestPlayer" type="CharacterBody2D" parent="Cabins" unique_id=1521693170]
 z_index = 20
@@ -435,7 +417,7 @@ script = ExtResource("3_0x6r3")
 anchorCount = 3
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Cabins/TestPlayer" unique_id=654084598]
-position = Vector2(-0.6666641, 4)
+position = Vector2(-0.6666692, 3.3333333)
 shape = SubResource("CapsuleShape2D_8ghft")
 
 [node name="Sprite" type="AnimatedSprite2D" parent="Cabins/TestPlayer" unique_id=1430410072]
@@ -449,48 +431,21 @@ autoplay = &"idle"
 [node name="AnchorController" type="Node2D" parent="Cabins/TestPlayer" unique_id=496589560]
 script = ExtResource("8_ankcr")
 maxAnchorLength = 375.0
-anchorLaunchSpeed = null
-retractSpeed = null
-playerPullSpeed = null
-cargoPullSpeed = null
-fallbackAnchorCount = null
-interactRadius = null
-pickupRadius = null
-rightClickPickupClickRadius = null
-rightClickPickupMaxDistance = null
-dropMaxDistance = null
-dropWallPadding = null
-dropShipBoundsMargin = null
-dropThrowSpeed = null
-dropThrowForwardOffset = null
-floorHookMaxYOffset = null
-floorPullUpOffset = null
-carryOffset = null
-carrySpacingX = null
-maxCarryCount = null
-deployedAnchorScene = null
-anchorChainTexture = null
-anchorHeadTexture = null
-retrieveAnchorClickRadius = null
-retrieveAnchorPlayerRange = null
-holdToRetrieveSec = null
-anchorFireMaxHoldSec = null
-debug_anchor_log = null
 
 [node name="PotCargo" parent="Cabins" unique_id=1171608071 instance=ExtResource("15_pot")]
-z_index = 6
-position = Vector2(-84, -365)
-scale = Vector2(2, 2)
+z_index = 7
+position = Vector2(-88, -386)
+scale = Vector2(2.4, 2.4)
 
 [node name="FryingPanCargo" parent="Cabins" unique_id=1946618425 instance=ExtResource("18_frying_pan")]
-z_index = 6
-position = Vector2(60, -357)
-scale = Vector2(2, 2)
+z_index = 7
+position = Vector2(56, -378)
+scale = Vector2(2.4, 2.4)
 
 [node name="CuttingBoardCargo" parent="Cabins" unique_id=107998297 instance=ExtResource("19_cutting_board")]
-z_index = 6
-position = Vector2(204, -363)
-scale = Vector2(2, 2)
+z_index = 7
+position = Vector2(200, -384)
+scale = Vector2(2.4, 2.4)
 
 [node name="TileMapLayerShip" type="TileMapLayer" parent="Cabins" unique_id=1083093127]
 z_index = -1

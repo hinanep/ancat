@@ -152,6 +152,17 @@ func _on_cook_finished() -> void:
 		return
 	if _foodNode.has_method('set_cooked'):
 		_foodNode.call('set_cooked')
+	#region agent log
+	_debug_cook_preview_log(
+		'H3',
+		'PotCargo.gd:_on_cook_finished',
+		'pot cook finished',
+		{
+			'servedFoodTypeIfPlated': FoodConfig.FoodType.BOILED_FISH,
+			'foodName': _foodNode.name if _foodNode != null else ''
+		}
+	)
+	#endregion
 	AudioManager.play_sfx(ResPath.AUDIO.PROGRESS_COMPLETE)
 	_stop_stove_loop()
 	_debug_log('food cooked!')
@@ -161,3 +172,20 @@ func _on_cook_finished() -> void:
 ## @return void
 func _stop_stove_loop() -> void:
 	AudioManager.stop_sfx_loop('stove_%s' % get_instance_id())
+
+
+func _debug_cook_preview_log(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
+	var log_path: String = 'C:/Users/nep/Desktop/mao/debug-d44187.log'
+	var payload: Dictionary = {
+		'sessionId': 'd44187',
+		'hypothesisId': hypothesisId,
+		'location': location,
+		'message': message,
+		'data': data,
+		'timestamp': Time.get_unix_time_from_system() * 1000.0
+	}
+	var file: FileAccess = FileAccess.open(log_path, FileAccess.READ_WRITE if FileAccess.file_exists(log_path) else FileAccess.WRITE_READ)
+	if file == null:
+		return
+	file.seek_end()
+	file.store_line(JSON.stringify(payload))

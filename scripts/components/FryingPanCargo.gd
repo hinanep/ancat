@@ -44,6 +44,17 @@ func _process(delta: float) -> void:
 		_isCooked = true
 		_cookProgressBar.visible = false
 		_stop_fry_loop()
+		#region agent log
+		_debug_cook_preview_log(
+			'H3',
+			'FryingPanCargo.gd:_process',
+			'frying pan cook finished',
+			{
+				'calledSetCooked': _foodNode != null and _foodNode.has_method('set_cooked'),
+				'foodName': _foodNode.name if _foodNode != null else ''
+			}
+		)
+		#endregion
 		AudioManager.play_sfx(ResPath.AUDIO.PROGRESS_COMPLETE)
 		_debug_log('fried food ready')
 
@@ -176,3 +187,20 @@ func _stop_fry_loop() -> void:
 ## @return String
 func _fry_loop_key() -> String:
 	return 'fry_pan_%s' % get_instance_id()
+
+
+func _debug_cook_preview_log(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
+	var log_path: String = 'C:/Users/nep/Desktop/mao/debug-d44187.log'
+	var payload: Dictionary = {
+		'sessionId': 'd44187',
+		'hypothesisId': hypothesisId,
+		'location': location,
+		'message': message,
+		'data': data,
+		'timestamp': Time.get_unix_time_from_system() * 1000.0
+	}
+	var file: FileAccess = FileAccess.open(log_path, FileAccess.READ_WRITE if FileAccess.file_exists(log_path) else FileAccess.WRITE_READ)
+	if file == null:
+		return
+	file.seek_end()
+	file.store_line(JSON.stringify(payload))

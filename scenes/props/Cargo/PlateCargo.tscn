@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cna2vtmuquhhh" path="res://scripts/components/PlateCargo.gd" id="1_plate_script"]
 [ext_resource type="Texture2D" uid="uid://dro8d3ai0nv2f" path="res://assets/textures/烹饪/46. Plate.png" id="2_um8is"]
+[ext_resource type="PackedScene" uid="uid://cxxhps2gqrp7a" path="res://scenes/components/RightClickPromptBubble.tscn" id="3_bubble"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_tuu8v"]
 radius = 16.0
@@ -34,3 +35,7 @@ shape = SubResource("CircleShape2D_txj6r")
 [node name="46_Plate" type="Sprite2D" parent="." unique_id=159650382]
 position = Vector2(0, -2)
 texture = ExtResource("2_um8is")
+
+[node name="RightClickPromptBubble" parent="." instance=ExtResource("3_bubble")]
+visible = false
+position = Vector2(0, -28)

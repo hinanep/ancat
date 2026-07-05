@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cj2i2aonksbkf" path="res://scripts/components/CustomerEntity.gd" id="1_customer_script"]
 [ext_resource type="Texture2D" uid="uid://iqigt6w8q1b8" path="res://assets/textures/猫/BatmanCatFree/IdleCatt 2.png" id="2_qudvb"]
+[ext_resource type="Texture2D" uid="uid://y3co4tkgscg0" path="res://assets/textures/Mini FX, Items & UI/Effects/Dust (16 x 16).png" id="3_4li0m"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_4li0m"]
 atlas = ExtResource("2_qudvb")
@@ -31,6 +32,30 @@ region = Rect2(160, 0, 32, 32)
 atlas = ExtResource("2_qudvb")
 region = Rect2(192, 0, 32, 32)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_atslg"]
+atlas = ExtResource("3_4li0m")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pamg3"]
+atlas = ExtResource("3_4li0m")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_noto5"]
+atlas = ExtResource("3_4li0m")
+region = Rect2(32, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dokv5"]
+atlas = ExtResource("3_4li0m")
+region = Rect2(48, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lqrdr"]
+atlas = ExtResource("3_4li0m")
+region = Rect2(64, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0ncow"]
+atlas = ExtResource("3_4li0m")
+region = Rect2(80, 0, 16, 16)
+
 [sub_resource type="SpriteFrames" id="SpriteFrames_vbnlq"]
 animations = [{
 "frames": [{
@@ -58,11 +83,35 @@ animations = [{
 "loop": 1,
 "name": &"cat1",
 "speed": 6.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_atslg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pamg3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_noto5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dokv5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lqrdr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0ncow")
+}],
+"loop": 0,
+"name": &"dust",
+"speed": 10.0
 }]
 
 [node name="CustomerEntity" type="Node2D" unique_id=422639079]
+z_index = 7
 position = Vector2(0, -1)
-scale = Vector2(2, 2)
+scale = Vector2(3, 3)
 script = ExtResource("1_customer_script")
 
 [node name="DemandIcons" type="Node2D" parent="." unique_id=836177353]
@@ -71,6 +120,7 @@ position = Vector2(0, -24)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=765454042]
 sprite_frames = SubResource("SpriteFrames_vbnlq")
-animation = &"cat1"
+animation = &"dust"
 autoplay = "cat1"
-frame_progress = 0.52945536
+frame = 5
+frame_progress = 1.0

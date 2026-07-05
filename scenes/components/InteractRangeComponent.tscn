@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://cvlujgnml141e"]
 
 [ext_resource type="Script" uid="uid://clapoirvssl72" path="res://scripts/components/InteractRangeComponent.gd" id="1_interact_range_script"]
+[ext_resource type="PackedScene" uid="uid://cxxhps2gqrp7a" path="res://scenes/components/RightClickPromptBubble.tscn" id="2_right_click_bubble"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_default"]
 size = Vector2(64, 48)
@@ -11,3 +12,7 @@ script = ExtResource("1_interact_range_script")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1838581898]
 shape = SubResource("RectangleShape2D_default")
+
+[node name="RightClickPromptBubble" parent="." instance=ExtResource("2_right_click_bubble")]
+visible = false
+position = Vector2(0, -28)

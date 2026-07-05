@@ -89,14 +89,14 @@ func _physics_process(delta: float) -> void:
 			return
 		_airborneTracking = true
 		_dropStartY = global_position.y
-			return
+		return
 	if not is_on_floor():
-			return
+		return
 	var dropDy: float = global_position.y - _dropStartY
 	_airborneTracking = false
 	_dropTracking = false
 	if dropDy < threshold:
-			return
+		return
 	_break_plate()
 
 

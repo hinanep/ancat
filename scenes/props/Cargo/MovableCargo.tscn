@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dvtfjpt2ood44" path="res://scripts/components/MovableCargo.gd" id="1_q7h27"]
 [ext_resource type="Texture2D" uid="uid://bcxba7prm6ukx" path="res://assets/textures/livingroom_LRK.png" id="2_xnu5w"]
+[ext_resource type="PackedScene" uid="uid://cxxhps2gqrp7a" path="res://scenes/components/RightClickPromptBubble.tscn" id="3_bubble"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_pj8jm"]
 radius = 9.0
@@ -33,3 +34,7 @@ collision_mask = 0
 [node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea" unique_id=2029836913]
 position = Vector2(0, -1)
 shape = SubResource("RectangleShape2D_mhsch")
+
+[node name="RightClickPromptBubble" parent="." unique_id=881229752 instance=ExtResource("3_bubble")]
+visible = false
+position = Vector2(0, -28)

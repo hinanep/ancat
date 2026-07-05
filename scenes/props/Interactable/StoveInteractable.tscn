@@ -35,7 +35,7 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_surface"]
-size = Vector2(34, 43)
+size = Vector2(34, 28.666668)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_detect"]
 size = Vector2(44, 27)
@@ -64,7 +64,7 @@ collision_layer = 4
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StoveSurface" unique_id=1226696507]
-position = Vector2(0, 0.5)
+position = Vector2(0, 7.666667)
 shape = SubResource("RectangleShape2D_surface")
 
 [node name="PotDetectionArea" type="Area2D" parent="." unique_id=1002479527]

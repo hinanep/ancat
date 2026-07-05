@@ -12,12 +12,18 @@ const SCENES := {
 	GAME_WORLD = "res://scenes/levels/GameWorld.tscn",
 }
 
+## 组件场景路径（字符串，须在 PROP_SCENES 之前定义，避免预加载链循环引用）。
+const COMPONENT_SCENES := {
+	RIGHT_CLICK_PROMPT_BUBBLE = 'res://scenes/components/RightClickPromptBubble.tscn',
+}
+
 const PROP_SCENES := {
 	ANCHOR_PLACED = preload('res://scenes/props/AnchorPlaced.tscn'),
 	PLATE_CARGO = preload('res://scenes/props/Cargo/PlateCargo.tscn'),
 	FISH_ENTITY = preload('res://scenes/props/Cargo/FishEntity.tscn'),
 	FRUIT_CARGO = preload('res://scenes/props/Cargo/FruitCargo.tscn'),
 	CUSTOMER_ENTITY = preload('res://scenes/props/CustomerEntity.tscn'),
+	COOK_PREVIEW_BUBBLE = preload('res://scenes/components/CookPreviewBubble.tscn'),
 }
 
 const TEXTURES := {
@@ -30,6 +36,10 @@ const TEXTURES := {
 	JUICER_ATLAS = preload('res://assets/textures/烹饪/榨汁机.png'),
 	ANCHOR_CHAIN = preload('res://assets/textures/锚链.png'),
 	ANCHOR_HEAD = preload('res://assets/textures/锚.png'),
+	SPEECH_EMOTES = preload('res://assets/textures/Mini FX, Items & UI/Mini UI/Speech_Emotes (16 x 16).png'),
+	DUST = preload('res://assets/textures/Mini FX, Items & UI/Effects/Dust (16 x 16).png'),
+	COIN = preload('res://assets/textures/Mini FX, Items & UI/Common Pick-ups/Coin (16 x 16).png'),
+	RIGHT_CLICK = preload('res://assets/textures/rightClick.png'),
 }
 
 const CUSTOMER_IDLE_TEXTURES: Array[String] = [
@@ -52,6 +62,10 @@ const DATA := {
 }
 
 const AUDIO := {
+	# BGM
+	BGM_CALM = "res://assets/audio/平静海面bgm.mp3",
+	BGM_STORM = "res://assets/audio/风暴海面.mp3",
+
 	# 通用音效
 	CUT_FISH = "res://assets/audio/sfx/切鱼.mp3",
 	OPEN_SHOP = "res://assets/audio/sfx/打开商店.mp3",

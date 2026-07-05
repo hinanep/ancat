@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://cr6trljq3tmuw" path="res://scripts/components/DiningTableInteractable.gd" id="2_table_interact_script"]
 [ext_resource type="PackedScene" uid="uid://cvlujgnml141e" path="res://scenes/components/InteractRangeComponent.tscn" id="3_interact_range"]
 [ext_resource type="Texture2D" uid="uid://bcxba7prm6ukx" path="res://assets/textures/livingroom_LRK.png" id="4_we83e"]
+[ext_resource type="PackedScene" uid="uid://cxxhps2gqrp7a" path="res://scenes/components/RightClickPromptBubble.tscn" id="5_bubble"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4ta1d"]
 size = Vector2(34, 32)
@@ -58,5 +59,9 @@ shape = SubResource("RectangleShape2D_table_hit")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=914430894]
 texture = SubResource("AtlasTexture_vbnlq")
+
+[node name="RightClickPromptBubble" parent="." instance=ExtResource("5_bubble")]
+visible = false
+position = Vector2(0, -28)
 
 [editable path="InteractRangeComponent"]

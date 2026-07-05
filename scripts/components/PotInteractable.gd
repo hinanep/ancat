@@ -7,6 +7,12 @@ extends InteractableBase
 @export var plateGroupName: StringName = 'Plate'
 
 
+## 初始化烹饪预览类型。
+func _ready() -> void:
+	cookPreviewFoodType = FoodConfig.FoodType.BOILED_FISH
+	super._ready()
+
+
 ## 物品合法性判定：Cookable + 锅空 或 Plate + 已熟。
 ## @param item 候选物品
 ## @return bool
@@ -46,6 +52,14 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 		food.queue_free()
 		if item.has_method('set_food_type'):
 			item.call('set_food_type', FoodConfig.FoodType.BOILED_FISH)
+		#region agent log
+		_agent_debug_emit(
+			'H5',
+			'PotInteractable.gd:_on_item_valid',
+			'served food to plate',
+			{'servedFoodType': FoodConfig.FoodType.BOILED_FISH, 'plateName': item.name}
+		)
+		#endregion
 		if item.has_method('apply_food_texture'):
 			item.call('apply_food_texture')
 		AudioManager.play_sfx(ResPath.AUDIO.PICK_UP_ITEM)

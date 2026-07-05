@@ -77,6 +77,7 @@ var _spillArcHeight: float = 0.0
 var _spillPhase: int = 0
 var _throwNoCollisionRemaining: float = 0.0
 var _throwCollisionBypassActive: bool = false
+var _rightClickPromptBubble: Node2D
 
 @onready var _sprite: AnimatedSprite2D = $AnimatedSprite2D
 
@@ -90,6 +91,7 @@ func _ready() -> void:
 	add_to_group('Cookable')
 	_setup_sprite_frames()
 	_enter_swimming()
+	_bind_right_click_prompt_bubble()
 
 
 ## 每帧更新：游动/携带跟随/离缸死亡倒计时。
@@ -130,6 +132,16 @@ func _physics_process(delta: float) -> void:
 ## @return bool
 func can_be_hooked() -> bool:
 	return _state == FishState.SWIMMING or _state == FishState.OUT_TANK or _state == FishState.DEAD
+
+
+## 绑定场景中预置的右键提示气泡。
+## @return void
+func _bind_right_click_prompt_bubble() -> void:
+	_rightClickPromptBubble = get_node_or_null('RightClickPromptBubble') as Node2D
+	if _rightClickPromptBubble == null:
+		return
+	if _rightClickPromptBubble.has_method('configure_pickup'):
+		_rightClickPromptBubble.call('configure_pickup', self)
 
 
 ## 获取当前鱼可交付的食物类型。
@@ -449,6 +461,19 @@ func set_cooked() -> void:
 			atlas.region = cookedAtlasRegion
 			_spriteFrames.add_frame('cooked', atlas)
 	_sprite.play('cooked')
+	#region agent log
+	_agent_debug_emit(
+		'H3',
+		'FishEntity.gd:set_cooked',
+		'fish cooked visual applied',
+		{
+			'regionX': cookedAtlasRegion.position.x,
+			'regionY': cookedAtlasRegion.position.y,
+			'regionW': cookedAtlasRegion.size.x,
+			'regionH': cookedAtlasRegion.size.y
+		}
+	)
+	#endregion
 	_debug_log('set cooked')
 
 
@@ -577,3 +602,22 @@ func _debug_log(message: String) -> void:
 	if not debugFishLog:
 		return
 	print('[FishEntity] %s' % message)
+
+
+const _AGENT_DEBUG_LOG_PATH: String = 'C:/Users/nep/Desktop/mao/debug-d44187.log'
+
+
+func _agent_debug_emit(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
+	var payload: Dictionary = {
+		'sessionId': 'd44187',
+		'hypothesisId': hypothesisId,
+		'location': location,
+		'message': message,
+		'data': data,
+		'timestamp': Time.get_unix_time_from_system() * 1000.0
+	}
+	var file: FileAccess = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.READ_WRITE if FileAccess.file_exists(_AGENT_DEBUG_LOG_PATH) else FileAccess.WRITE_READ)
+	if file == null:
+		return
+	file.seek_end()
+	file.store_line(JSON.stringify(payload))

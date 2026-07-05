@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cc1td5su1nngn" path="res://scripts/components/FishEntity.gd" id="1_fish_script"]
 [ext_resource type="Texture2D" uid="uid://b8kprjkik8inw" path="res://assets/textures/烹饪/死鱼.png" id="2_7au22"]
+[ext_resource type="PackedScene" uid="uid://cxxhps2gqrp7a" path="res://scenes/components/RightClickPromptBubble.tscn" id="3_bubble"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_fish"]
 size = Vector2(39, 26)
@@ -22,6 +23,7 @@ animations = [{
 }]
 
 [node name="FishEntity" type="CharacterBody2D" unique_id=899968043]
+scale = Vector2(2, 2)
 script = ExtResource("1_fish_script")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=387235451]
@@ -32,3 +34,7 @@ shape = SubResource("RectangleShape2D_fish")
 z_index = 1
 scale = Vector2(1.2, 1.2)
 sprite_frames = SubResource("SpriteFrames_6ecue")
+
+[node name="RightClickPromptBubble" parent="." instance=ExtResource("3_bubble")]
+visible = false
+position = Vector2(0, -28)

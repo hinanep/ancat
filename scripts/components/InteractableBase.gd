@@ -8,12 +8,160 @@ extends InteractRangeComponent
 @export var debugInteractLog: bool = true
 ## 日志前缀。
 @export var interactLogPrefix: String = 'InteractableBase'
+## 烹饪预览成品类型（-1 表示不启用）。
+@export var cookPreviewFoodType: int = -1
+## 烹饪预览气泡相对厨具父节点的偏移。
+@export var cookPreviewOffset: Vector2 = Vector2(0.0, -28.0)
+
+var _cookPreviewBubble: CookPreviewBubble
+var _cookPreviewWasVisible: bool = false
+var _rightClickPromptBubble: Node2D
+
+const _AGENT_DEBUG_LOG_PATH: String = 'C:/Users/nep/Desktop/mao/debug-d44187.log'
 
 
 ## 初始化：加入可交互组。
 ## @return void
 func _ready() -> void:
 	add_to_group(interactableGroupName)
+	_setup_cook_preview_bubble()
+	_bind_right_click_prompt_bubble()
+	if _cookPreviewBubble != null:
+		set_process(true)
+
+
+## 每帧更新烹饪预览气泡显隐。
+## @param delta 帧间隔（秒）
+## @return void
+func _process(delta: float) -> void:
+	var _unusedDelta: float = delta
+	if _cookPreviewBubble != null:
+		_update_cook_preview_bubble()
+
+
+## 实例化并挂载烹饪预览气泡。
+## @return void
+func _setup_cook_preview_bubble() -> void:
+	if cookPreviewFoodType < 0:
+		return
+	var parentNode: Node = get_parent()
+	if parentNode == null:
+		return
+	var bubbleScene: PackedScene = ResPath.PROP_SCENES.COOK_PREVIEW_BUBBLE
+	if bubbleScene == null:
+		return
+	var bubbleNode: Node = bubbleScene.instantiate()
+	if bubbleNode == null or not (bubbleNode is CookPreviewBubble):
+		return
+	_cookPreviewBubble = bubbleNode as CookPreviewBubble
+	_cookPreviewBubble.position = cookPreviewOffset
+	_cookPreviewBubble.hide_preview()
+	parentNode.add_child.call_deferred(_cookPreviewBubble)
+	set_process(true)
+
+
+## 绑定场景中预置的右键提示气泡。
+## @return void
+func _bind_right_click_prompt_bubble() -> void:
+	_rightClickPromptBubble = get_node_or_null('RightClickPromptBubble') as Node2D
+	if _rightClickPromptBubble == null:
+		return
+	if _rightClickPromptBubble.has_method('configure_interact'):
+		_rightClickPromptBubble.call('configure_interact', self, _cookPreviewBubble)
+
+
+## 根据玩家距离与携带物更新预览气泡。
+## @return void
+func _update_cook_preview_bubble() -> void:
+	var anchorController: Node = get_tree().get_first_node_in_group('AnchorController')
+	if anchorController == null:
+		_cookPreviewBubble.hide_preview()
+		return
+	var playerNode: Node2D = null
+	if anchorController.has_method('get_player_node'):
+		playerNode = anchorController.call('get_player_node') as Node2D
+	if playerNode == null:
+		_cookPreviewBubble.hide_preview()
+		return
+	var radius: float = 200.0
+	if anchorController.has_method('get_interact_radius'):
+		radius = float(anchorController.call('get_interact_radius'))
+	if global_position.distance_to(playerNode.global_position) > radius:
+		_cookPreviewBubble.hide_preview()
+		_log_cook_preview_state(false, null, 'out_of_range')
+		return
+	var carriedItem: Node = null
+	if anchorController.has_method('get_top_carried_item'):
+		carriedItem = anchorController.call('get_top_carried_item') as Node
+	if carriedItem == null or not carriedItem.is_in_group('Cookable'):
+		_cookPreviewBubble.hide_preview()
+		_log_cook_preview_state(false, carriedItem, 'not_cookable')
+		return
+	if not _is_item_valid(carriedItem):
+		_cookPreviewBubble.hide_preview()
+		_log_cook_preview_state(false, carriedItem, 'item_invalid')
+		return
+	_cookPreviewBubble.show_preview(cookPreviewFoodType)
+	_log_cook_preview_state(true, carriedItem, 'shown')
+
+
+## 记录烹饪预览状态变化（调试）。
+## @param visible 是否显示
+## @param carriedItem 携带物
+## @param reason 原因
+## @return void
+func _log_cook_preview_state(visible: bool, carriedItem: Node, reason: String) -> void:
+	if visible == _cookPreviewWasVisible and visible:
+		return
+	_cookPreviewWasVisible = visible
+	#region agent log
+	var previewRegion: Dictionary = {}
+	var foodData: Dictionary = FoodConfig.FOOD_DATA.get(cookPreviewFoodType, {})
+	if foodData.has('region'):
+		var region: Rect2 = foodData.get('region', Rect2())
+		previewRegion = {'x': region.position.x, 'y': region.position.y, 'w': region.size.x, 'h': region.size.y}
+	_agent_debug_emit(
+		'H1',
+		'InteractableBase.gd:_log_cook_preview_state',
+		'cook preview state changed',
+		{
+			'visible': visible,
+			'reason': reason,
+			'interactable': name,
+			'parentName': get_parent().name if get_parent() != null else '',
+			'cookPreviewFoodType': cookPreviewFoodType,
+			'previewRegion': previewRegion,
+			'carriedName': carriedItem.name if carriedItem != null else '',
+			'carriedGroups': carriedItem.get_groups() if carriedItem != null else []
+		}
+	)
+	#endregion
+
+
+## 写入调试日志。
+## @param hypothesisId 假设编号
+## @param location 位置
+## @param message 消息
+## @param data 数据
+## @return void
+func _agent_debug_emit(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
+	var payload: Dictionary = {
+		'sessionId': 'd44187',
+		'hypothesisId': hypothesisId,
+		'location': location,
+		'message': message,
+		'data': data,
+		'timestamp': Time.get_unix_time_from_system() * 1000.0
+	}
+	var file: FileAccess = null
+	if FileAccess.file_exists(_AGENT_DEBUG_LOG_PATH):
+		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.READ_WRITE)
+	else:
+		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.WRITE_READ)
+	if file == null:
+		return
+	file.seek_end()
+	file.store_line(JSON.stringify(payload))
 
 
 ## 统一扩展交互协议：先判物品，再判锚；都不合法则失败。
@@ -25,7 +173,7 @@ func try_interact_ex(player: Node, item: Node, anchorController: Node) -> Dictio
 	if not _can_interact_now(player, item, anchorController):
 		return _reject_interact()
 	if _is_item_valid(item):
-			_on_item_valid(player, item, anchorController)
+		_on_item_valid(player, item, anchorController)
 		return _accept_interact(_consume_carried_on_item_valid(item))
 	if _is_anchor_valid(anchorController):
 		_on_anchor_valid(player, item, anchorController)
@@ -160,11 +308,8 @@ func _log_interact(message: String) -> void:
 	print('[%s] %s' % [interactLogPrefix, message])
 
 
-## 调试日志写入。
-## @param hypothesisId 假设编号
-## @param location 位置
-## @param message 消息
-## @param data 数据
-## @return void
+## 判断点击点是否进入交互范围（基于组件 Area2D）。
+## @param clickGlobal 点击全局坐标
+## @return bool
 func is_click_in_interact_range(clickGlobal: Vector2) -> bool:
 	return is_point_in_range(clickGlobal)

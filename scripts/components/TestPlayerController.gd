@@ -28,6 +28,10 @@ var _footstepCooldownSec: float = 0.0
 var current_cabin_name: String = ''
 var current_cabin_path: NodePath = NodePath('')
 
+const _AGENT_DEBUG_LOG_PATH: String = 'C:/Users/nep/Desktop/mao/debug-43bc79.log'
+const _AGENT_DEBUG_SESSION_ID: String = '43bc79'
+const _AGENT_DEBUG_RUN_ID: String = 'wall-gap-pre'
+
 @onready var _sprite: CanvasItem = $Sprite
 
 ## 初始化朝向：默认朝右，并记录可翻转最大缩放值。
@@ -85,6 +89,17 @@ func begin_anchor_pull(targetGlobal: Vector2, pullSpeed: float, disableCollision
 	_anchorPullActive = true
 	_anchorPullTarget = targetGlobal
 	_anchorPullSpeed = max(pullSpeed, 1.0)
+	#region agent log
+	_agent_debug_emit(
+		'H3',
+		'TestPlayerController.gd:begin_anchor_pull',
+		'anchor pull started',
+		{
+			'playerPos': {'x': global_position.x, 'y': global_position.y},
+			'pullTarget': {'x': targetGlobal.x, 'y': targetGlobal.y}
+		}
+	)
+	#endregion
 	if disableCollision and not _anchorCollisionDisabled:
 		_savedCollisionLayer = collision_layer
 		_savedCollisionMask = collision_mask
@@ -113,7 +128,7 @@ func _process_anchor_pull(delta: float) -> void:
 	var stepLen: float = _anchorPullSpeed * delta
 	if toTarget.length() <= max(stepLen, 0.001):
 		global_position = _anchorPullTarget
-		_recover_anchor_pull_if_outside_ship()
+		_finalize_anchor_pull_position()
 		end_anchor_pull()
 		return
 	var moveVec: Vector2 = toTarget.normalized() * stepLen
@@ -202,16 +217,75 @@ func _clamp_to_ship_bounds() -> void:
 	position.y = clampf(position.y, minY + margin, maxY - margin)
 
 
-## 锚拉拽结束时，仅当玩家落在船外才拉回舱内。
+## 锚拉拽结束时，将玩家锁定到最近舱室的合法位置。
 ## @return void
-func _recover_anchor_pull_if_outside_ship() -> void:
-	if _find_cabin_for_interior_clamp(global_position, false) != null:
-		return
+func _finalize_anchor_pull_position() -> void:
 	var margin: float = max(hookMoveBoundsMargin, 0.0)
-	var targetCabin: Cabin = _find_nearest_cabin_for_clamp(global_position)
+	var posBefore: Vector2 = global_position
+	var pullTarget: Vector2 = _anchorPullTarget
+	var targetCabin: Cabin = _find_nearest_cabin_to_point(global_position)
 	if targetCabin == null:
+		#region agent log
+		_agent_debug_emit(
+			'H5',
+			'TestPlayerController.gd:_finalize_anchor_pull_position',
+			'finalize skipped no cabin',
+			{
+				'posBefore': {'x': posBefore.x, 'y': posBefore.y},
+				'pullTarget': {'x': pullTarget.x, 'y': pullTarget.y}
+			}
+		)
+		#endregion
 		return
-	global_position = targetCabin.clamp_global_to_interior(global_position, margin)
+	var inBoundsAny: bool = _find_cabin_for_interior_clamp(global_position, false) != null
+	var inInteriorAny: bool = _find_cabin_for_interior_clamp(global_position, true) != null
+	var branch: String = 'bounds'
+	if inBoundsAny:
+		global_position = targetCabin.clamp_global_to_bounds(global_position, margin)
+	else:
+		branch = 'interior'
+		global_position = targetCabin.clamp_global_to_interior(global_position, margin)
+	var pullTargetCabin: Cabin = _find_nearest_cabin_to_point(pullTarget)
+	#region agent log
+	_agent_debug_emit(
+		'H2',
+		'TestPlayerController.gd:_finalize_anchor_pull_position',
+		'anchor pull finalized',
+		{
+			'posBefore': {'x': posBefore.x, 'y': posBefore.y},
+			'posAfter': {'x': global_position.x, 'y': global_position.y},
+			'pullTarget': {'x': pullTarget.x, 'y': pullTarget.y},
+			'targetDistToPullTarget': posBefore.distance_to(pullTarget),
+			'branch': branch,
+			'inBoundsAnyBefore': inBoundsAny,
+			'inInteriorAnyBefore': inInteriorAny,
+			'finalizeCabinPath': String(targetCabin.get_path()),
+			'pullTargetCabinPath': String(pullTargetCabin.get_path()) if pullTargetCabin != null else '',
+			'cabinMismatch': pullTargetCabin != null and targetCabin != pullTargetCabin,
+			'afterInBounds': targetCabin.contains_bounds_point(global_position),
+			'afterInInterior': targetCabin.contains_interior_point(global_position),
+			'isOnFloorAfter': is_on_floor()
+		}
+	)
+	#endregion
+
+
+## 查找距指定点最近的舱室（按 clamp 到外壳 bounds 后的距离）。
+## @param pointGlobal 全局坐标
+## @return Cabin
+func _find_nearest_cabin_to_point(pointGlobal: Vector2) -> Cabin:
+	var bestCabin: Cabin = null
+	var bestDistSq: float = INF
+	for node in get_tree().get_nodes_in_group('Cabin'):
+		if not (node is Cabin):
+			continue
+		var cabin: Cabin = node as Cabin
+		var clamped: Vector2 = cabin.clamp_global_to_bounds(pointGlobal, 0.0)
+		var distSq: float = pointGlobal.distance_squared_to(clamped)
+		if distSq < bestDistSq:
+			bestDistSq = distSq
+			bestCabin = cabin
+	return bestCabin
 
 
 ## 查找用于内区 clamp 的舱室。
@@ -231,22 +305,31 @@ func _find_cabin_for_interior_clamp(pointGlobal: Vector2, requireInterior: bool)
 	return null
 
 
-## 查找距指定点最近的舱室（按 clamp 到内区后的距离）。
-## @param pointGlobal 全局坐标
-## @return Cabin
-func _find_nearest_cabin_for_clamp(pointGlobal: Vector2) -> Cabin:
-	var bestCabin: Cabin = null
-	var bestDistSq: float = INF
-	for node in get_tree().get_nodes_in_group('Cabin'):
-		if not (node is Cabin):
-			continue
-		var cabin: Cabin = node as Cabin
-		var clamped: Vector2 = cabin.clamp_global_to_interior(pointGlobal, 0.0)
-		var distSq: float = pointGlobal.distance_squared_to(clamped)
-		if distSq < bestDistSq:
-			bestDistSq = distSq
-			bestCabin = cabin
-	return bestCabin
+## 调试日志写入。
+## @param hypothesisId 假设编号
+## @param location 位置
+## @param message 消息
+## @param data 数据
+## @return void
+func _agent_debug_emit(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
+	var payload: Dictionary = {
+		'sessionId': _AGENT_DEBUG_SESSION_ID,
+		'runId': _AGENT_DEBUG_RUN_ID,
+		'hypothesisId': hypothesisId,
+		'location': location,
+		'message': message,
+		'data': data,
+		'timestamp': Time.get_unix_time_from_system() * 1000.0
+	}
+	var file: FileAccess = null
+	if FileAccess.file_exists(_AGENT_DEBUG_LOG_PATH):
+		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.READ_WRITE)
+	else:
+		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.WRITE_READ)
+	if file == null:
+		return
+	file.seek_end()
+	file.store_line(JSON.stringify(payload))
 
 
 ## 按移动状态与地面状态播放脚步声。

@@ -92,20 +92,6 @@ func _is_item_valid(item: Node) -> bool:
 func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 	var _unusedPlayer: Node = player
 	var _unusedAnchor: Node = anchorController
-	#region agent log
-	_agent_debug_emit(
-		'H11',
-		'DiningTableInteractable.gd:_on_item_valid',
-		'enter on_item_valid',
-		{
-			'itemNull': item == null,
-			'itemValid': item != null and is_instance_valid(item),
-			'seatFree': is_seat_free(),
-			'seatedCustomerNull': _seatedCustomer == null,
-			'seatedCustomerValid': _seatedCustomer != null and is_instance_valid(_seatedCustomer)
-		}
-	)
-	#endregion
 	_lastServeAccepted = false
 	if is_seat_free():
 		return
@@ -116,41 +102,9 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 		return
 	var servedCustomer: Node = _seatedCustomer
 	var accepted: bool = bool(servedCustomer.call('try_serve_food', foodType))
-	#region agent log
-	_agent_debug_emit(
-		'H11',
-		'DiningTableInteractable.gd:_on_item_valid',
-		'serve food result',
-		{
-			'foodType': foodType,
-			'accepted': accepted
-		}
-	)
-	#endregion
 	if not accepted:
 		return
-	#region agent log
-	_agent_debug_emit(
-		'H12',
-		'DiningTableInteractable.gd:_on_item_valid',
-		'after try_serve_food accepted state check',
-		{
-			'seatedCustomerNullAfterServe': _seatedCustomer == null,
-			'seatedCustomerValidAfterServe': _seatedCustomer != null and is_instance_valid(_seatedCustomer)
-		}
-	)
-	#endregion
 	_lastServeAccepted = true
-	#region agent log
-	_agent_debug_emit(
-		'H12',
-		'DiningTableInteractable.gd:_on_item_valid',
-		'before is_satisfied has_method call',
-		{
-			'seatedCustomerNullBeforeSatisfiedCheck': _seatedCustomer == null
-		}
-	)
-	#endregion
 	if servedCustomer != null and is_instance_valid(servedCustomer) and servedCustomer.has_method('is_satisfied') and bool(servedCustomer.call('is_satisfied')):
 		_spawn_empty_plate_after_meal()
 	EventBus.emit(EventBus.EventType.CUSTOMER_SERVED, {'table': String(get_path()), 'food_type': foodType})
@@ -160,41 +114,11 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 ## @param item 携带物
 ## @return bool
 func _consume_carried_on_item_valid(item: Node) -> bool:
-	#region agent log
-	_agent_debug_emit(
-		'H14',
-		'DiningTableInteractable.gd:_consume_carried_on_item_valid',
-		'consume carried decision enter',
-		{
-			'lastServeAccepted': _lastServeAccepted,
-			'itemNull': item == null,
-			'isPlate': item != null and item.is_in_group(plateGroupName)
-		}
-	)
-	#endregion
 	if not _lastServeAccepted:
 		return false
 	if item == null:
 		return false
-	if item.is_in_group(plateGroupName):
-		_consume_item(item)
-		#region agent log
-		_agent_debug_emit(
-			'H14',
-			'DiningTableInteractable.gd:_consume_carried_on_item_valid',
-			'plate branch destroy plate',
-			{}
-		)
-		#endregion
-		return true
-	#region agent log
-	_agent_debug_emit(
-		'H14',
-		'DiningTableInteractable.gd:_consume_carried_on_item_valid',
-		'non-plate consumed',
-		{}
-	)
-	#endregion
+	_consume_item(item)
 	return true
 
 
@@ -229,7 +153,9 @@ func _spawn_empty_plate_after_meal() -> void:
 		return
 	get_tree().current_scene.add_child(plateNode)
 	if plateNode is Node2D:
-		(plateNode as Node2D).global_position = get_seat_global_position() + Vector2(18.0, 0.0)
+		var plate2d: Node2D = plateNode as Node2D
+		plate2d.global_position = get_seat_global_position() + Vector2(18.0, 0.0)
+		plate2d.scale = Vector2(2.3, 2.3)
 	if plateNode.has_method('clear_food'):
 		plateNode.call('clear_food')
 

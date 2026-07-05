@@ -43,6 +43,9 @@ signal event_triggered(event_type: EventType, data: Dictionary)
 ## 日志开关：true 时每次 emit 都会在控制台打印事件名与数据
 static var enable_log: bool = OS.is_debug_build()
 
+## 已放置锚的舱室路径（全局状态，供后生成物体查询）。
+static var deployed_anchor_cabin_paths: Array[String] = []
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
@@ -68,3 +71,32 @@ static func unsubscribe(callable: Callable) -> void:
 	var bus: EventBus = Engine.get_main_loop().root.get_node_or_null("/root/EventBus") as EventBus
 	if bus:
 		bus.event_triggered.disconnect(callable)
+
+## 登记已放锚舱室路径。
+## @param cabin_path 舱室节点路径文本
+## @return void
+static func register_deployed_anchor_cabin(cabin_path: String) -> void:
+	if cabin_path == '':
+		return
+	if deployed_anchor_cabin_paths.has(cabin_path):
+		return
+	deployed_anchor_cabin_paths.append(cabin_path)
+
+## 移除已放锚舱室路径；空字符串时清空全部。
+## @param cabin_path 舱室节点路径文本
+## @return void
+static func unregister_deployed_anchor_cabin(cabin_path: String) -> void:
+	if cabin_path == '':
+		deployed_anchor_cabin_paths.clear()
+		return
+	deployed_anchor_cabin_paths.erase(cabin_path)
+
+## 获取当前已放锚舱室路径副本。
+## @return Array[String]
+static func get_deployed_anchor_cabin_paths() -> Array[String]:
+	return deployed_anchor_cabin_paths.duplicate()
+
+## 清空已放锚舱室路径（关卡加载时重置）。
+## @return void
+static func clear_deployed_anchor_cabin_paths() -> void:
+	deployed_anchor_cabin_paths.clear()

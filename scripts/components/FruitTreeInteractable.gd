@@ -41,19 +41,6 @@ func _process(delta: float) -> void:
 func _can_interact_now(player: Node, item: Node, anchorController: Node) -> bool:
 	var _unusedPlayer: Node = player
 	var _unusedItem: Node = item
-	#region agent log
-	_agent_debug_emit(
-		'H1',
-		'FruitTreeInteractable.gd:_can_interact_now',
-		'enter can_interact',
-		{
-			'cooldownRemaining': _cooldownRemaining,
-			'hasAnchorController': anchorController != null,
-			'hasTryAddMethod': anchorController != null and anchorController.has_method('try_add_carried_cargo'),
-			'hasCarriedItem': item != null
-		}
-	)
-	#endregion
 	if anchorController == null:
 		return false
 	if _cooldownRemaining > 0.0:
@@ -67,17 +54,6 @@ func _can_interact_now(player: Node, item: Node, anchorController: Node) -> bool
 ## @param item 候选物品
 ## @return bool
 func _is_item_valid(item: Node) -> bool:
-	#region agent log
-	_agent_debug_emit(
-		'H2',
-		'FruitTreeInteractable.gd:_is_item_valid',
-		'item valid check',
-		{
-			'itemIsNull': item == null,
-			'itemName': item.name if item != null else ''
-		}
-	)
-	#endregion
 	return item == null
 
 
@@ -94,43 +70,10 @@ func _on_item_valid(player: Node, item: Node, anchorController: Node) -> void:
 		return
 	if fruitNode.has_method('set'):
 		fruitNode.set('fruitType', fruitType)
-	#region agent log
-	_agent_debug_emit(
-		'H1',
-		'FruitTreeInteractable.gd:_on_item_valid',
-		'fruit before add_child',
-		{
-			'treeFruitType': int(fruitType),
-			'nodeFruitTypeBeforeAdd': int(fruitNode.get('fruitType'))
-		}
-	)
-	#endregion
 	get_tree().current_scene.add_child(fruitNode)
 	if fruitNode is Node2D and player is Node2D:
 		(fruitNode as Node2D).global_position = (player as Node2D).global_position
-	#region agent log
-	_agent_debug_emit(
-		'H1',
-		'FruitTreeInteractable.gd:_on_item_valid',
-		'fruit after set',
-		{
-			'treeFruitType': int(fruitType),
-			'nodeFruitTypeAfterSet': int(fruitNode.get('fruitType'))
-		}
-	)
-	#endregion
 	var added: bool = bool(anchorController.call('try_add_carried_cargo', fruitNode))
-	#region agent log
-	_agent_debug_emit(
-		'H3',
-		'FruitTreeInteractable.gd:_on_item_valid',
-		'try_add_carried_cargo result',
-		{
-			'added': added,
-			'cooldownBeforeSet': _cooldownRemaining
-		}
-	)
-	#endregion
 	if not added:
 		fruitNode.queue_free()
 		return

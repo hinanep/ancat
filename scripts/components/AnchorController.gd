@@ -80,16 +80,42 @@ var _lastSlotConsumed: int = -1
 const INTERACT_NO_TARGET: int = 0
 const INTERACT_SUCCESS: int = 1
 const INTERACT_REJECTED: int = 2
+const _AGENT_DEBUG_LOG_PATH: String = 'C:/Users/nep/Desktop/mao/debug-43bc79.log'
+const _AGENT_DEBUG_SESSION_ID: String = '43bc79'
+const _AGENT_DEBUG_RUN_ID: String = 'wall-gap-pre'
 
 
 ## 初始化缓存与可视链条。
 ## @return void
 func _ready() -> void:
+	add_to_group('AnchorController')
 	_player = get_parent()
 	_lastAvailableAnchorCapacity = _available_anchor_capacity()
 	_ensure_lines()
 	_emit_slot_state_if_changed()
 	_debug_log('ready: player=%s capacity=%d' % [_player.name if _player != null else 'null', _lastAvailableAnchorCapacity])
+
+
+## 获取栈顶携带物。
+## @return Node
+func get_top_carried_item() -> Node:
+	if _carriedCargo.is_empty():
+		return null
+	return _carriedCargo[_carriedCargo.size() - 1]
+
+
+## 获取玩家节点。
+## @return Node2D
+func get_player_node() -> Node2D:
+	if _player is Node2D:
+		return _player as Node2D
+	return null
+
+
+## 获取交互检测半径。
+## @return float
+func get_interact_radius() -> float:
+	return max(interactRadius, 1.0)
 
 
 ## 退出时取消事件订阅。
@@ -368,21 +394,21 @@ func _try_cancel_hooked_cargo() -> bool:
 func _handle_right_click() -> void:
 	_debug_log('right click trigger: hooks=%d carried=%d deployed=%d' % [_hooks.size(), _carriedCargo.size(), _deployedCabinPaths.size()])
 	if _try_retrieve_deployed_anchor_at_mouse():
-			_debug_log('right click end by retrieve deployed anchor')
+		_debug_log('right click end by retrieve deployed anchor')
 		return
 	var interactResult: int = _try_interact()
 	if interactResult == INTERACT_SUCCESS:
 		_debug_log('right click end by interact, result=%d' % interactResult)
 		return
 	if _try_plate_serve_fish_at_mouse():
-			_debug_log('right click end by plate serve fish')
+		_debug_log('right click end by plate serve fish')
 		return
 	if _try_cancel_hooked_cargo():
-			_debug_log('right click end by cancel hooked cargo')
+		_debug_log('right click end by cancel hooked cargo')
 		return
 	if not _carriedCargo.is_empty():
 		var cargo: Node = _carriedCargo.pop_back()
-			if cargo.has_method('drop_to_world'):
+		if cargo.has_method('drop_to_world'):
 			cargo.call('drop_to_world')
 		if cargo is Node2D and _player is Node2D:
 			var throwOrigin: Vector2 = (cargo as Node2D).global_position
@@ -395,10 +421,10 @@ func _handle_right_click() -> void:
 				cargo.call('apply_throw', throwDirNormalized * max(dropThrowSpeed, 0.0))
 		_refresh_carried_offsets()
 		AudioManager.play_sfx_random(ResPath.AUDIO.PUT_DOWN_ITEM)
-			_debug_log('right click drop carried cargo=%s' % cargo.name)
+		_debug_log('right click drop carried cargo=%s' % cargo.name)
 		return
 	if _try_pickup_nearby_cargo():
-			_debug_log('right click end by pickup')
+		_debug_log('right click end by pickup')
 		return
 	_debug_log('right click enter deploy toggle')
 	_toggle_anchor_deploy()
@@ -434,7 +460,7 @@ func _try_interact() -> int:
 		bestTarget = interactive
 	if bestTarget == null:
 		_debug_log('interact no target at click point')
-			return INTERACT_NO_TARGET
+		return INTERACT_NO_TARGET
 
 	if not bestTarget.has_method('try_interact_ex'):
 		_debug_log('interact target has no try_interact_ex: %s' % bestTarget.name)
@@ -446,7 +472,7 @@ func _try_interact() -> int:
 	if accepted:
 		if consumeCarried and carriedItem != null:
 			_carriedCargo.erase(carriedItem)
-			_debug_log('interact accepted by %s consume=%s' % [bestTarget.name, str(consumeCarried)])
+		_debug_log('interact accepted by %s consume=%s' % [bestTarget.name, str(consumeCarried)])
 		return INTERACT_SUCCESS
 	_debug_log('interact rejected by %s' % bestTarget.name)
 	return INTERACT_REJECTED
@@ -476,7 +502,7 @@ func _try_pickup_nearby_cargo() -> bool:
 		_debug_log('pickup skip: player invalid')
 		return false
 	if not _can_carry_more():
-			_debug_log('pickup blocked: carry full size=%d limit=%d' % [_carriedCargo.size(), max(maxCarryCount, 1)])
+		_debug_log('pickup blocked: carry full size=%d limit=%d' % [_carriedCargo.size(), max(maxCarryCount, 1)])
 		return false
 	var origin: Vector2 = (_player as Node2D).global_position
 	var mousePos: Vector2 = get_global_mouse_position()
@@ -525,11 +551,11 @@ func _toggle_anchor_deploy() -> void:
 	var clickDistToPlayer: float = playerPos.distance_to(mousePos) if _player is Node2D else -1.0
 	var deployMaxDistance: float = max(dropMaxDistance, 1.0)
 	if _player is Node2D and clickDistToPlayer > deployMaxDistance:
-			_debug_log('deploy blocked: click too far dist=%.2f max=%.2f' % [clickDistToPlayer, deployMaxDistance])
+		_debug_log('deploy blocked: click too far dist=%.2f max=%.2f' % [clickDistToPlayer, deployMaxDistance])
 		return
 	var cabinPath: NodePath = _resolve_player_cabin_path()
 	if cabinPath == NodePath(''):
-			_debug_log('deploy blocked: player not in cabin')
+		_debug_log('deploy blocked: player not in cabin')
 		return
 	var cabinPathText: String = String(cabinPath)
 	_debug_log('deploy toggle at cabin=%s totalCapacity=%d' % [cabinPathText, totalCapacity])
@@ -544,6 +570,7 @@ func _toggle_anchor_deploy() -> void:
 	_deployedCabinPaths.append(cabinPath)
 	_add_deployed_anchor_visual(cabinPathText)
 	AudioManager.play_sfx(ResPath.AUDIO.DROP_ANCHOR)
+	EventBus.register_deployed_anchor_cabin(cabinPathText)
 	EventBus.emit(EventBus.EventType.ANCHOR_DEPLOYED, {'cabin_path': cabinPathText})
 	_debug_log('deploy anchor @%s total=%d' % [cabinPathText, _deployedCabinPaths.size()])
 	_lastAvailableAnchorCapacity = _available_anchor_capacity()
@@ -707,34 +734,92 @@ func _hook_pull_bounds_margin() -> float:
 	return dropShipBoundsMargin
 
 
-## 解析钩地板后的玩家落点：船内尽量去钩点/对面，船外才拉回内区。
+## 解析钩地板后的玩家落点：锁定命中点最近舱室，避免落在墙缝。
 ## @param floorHitPos 地板命中点（全局坐标）
 ## @return Vector2
 func _resolve_floor_pull_target(floorHitPos: Vector2) -> Vector2:
 	var pullOffset: float = max(floorPullUpOffset, 0.0)
 	var rawTarget: Vector2 = floorHitPos - Vector2(0.0, pullOffset)
 	var margin: float = _hook_pull_bounds_margin()
-	var playerPos: Vector2 = (_player as Node2D).global_position if _player is Node2D else floorHitPos
-	var playerInsideShip: bool = _find_cabin_containing_point(playerPos, false) != null
+	var nearestCabin: Cabin = _find_nearest_cabin_to_point(floorHitPos)
+	var candidateRows: Array = _agent_debug_cabin_candidates(floorHitPos)
 	var resolved: Vector2 = rawTarget
-	var targetCabin: Cabin = null
-	if playerInsideShip:
-		targetCabin = _find_cabin_containing_point(rawTarget, false)
-		if targetCabin == null:
-			targetCabin = _find_cabin_across_from(playerPos, rawTarget)
-		if targetCabin != null and not targetCabin.contains_bounds_point(rawTarget):
-			resolved = targetCabin.clamp_global_to_bounds(rawTarget, margin)
-		else:
-			resolved = rawTarget
+	var strategy: String = 'none'
+	if nearestCabin == null:
+		resolved = _clamp_point_to_ship_bounds(rawTarget, margin)
+		strategy = 'ship_union'
 	else:
-		targetCabin = _find_cabin_containing_point(rawTarget, false)
-		if targetCabin == null:
-			targetCabin = _find_nearest_cabin_at(rawTarget)
-		if targetCabin == null:
-			resolved = _clamp_point_to_ship_bounds(rawTarget, margin)
+		var playerPos: Vector2 = (_player as Node2D).global_position if _player is Node2D else floorHitPos
+		var playerInsideShip: bool = _find_cabin_containing_point(playerPos, false) != null
+		if playerInsideShip:
+			resolved = nearestCabin.clamp_global_to_bounds(rawTarget, margin)
+			strategy = 'nearest_bounds'
 		else:
-			resolved = targetCabin.clamp_global_to_interior(rawTarget, margin)
+			resolved = nearestCabin.clamp_global_to_interior(rawTarget, margin)
+			strategy = 'nearest_interior'
+	#region agent log
+	_agent_debug_emit(
+		'H1',
+		'AnchorController.gd:_resolve_floor_pull_target',
+		'floor pull target resolved',
+		{
+			'floorHitPos': {'x': floorHitPos.x, 'y': floorHitPos.y},
+			'rawTarget': {'x': rawTarget.x, 'y': rawTarget.y},
+			'resolvedTarget': {'x': resolved.x, 'y': resolved.y},
+			'margin': margin,
+			'strategy': strategy,
+			'nearestCabinPath': String(nearestCabin.get_path()) if nearestCabin != null else '',
+			'nearestCabinName': nearestCabin.name if nearestCabin != null else '',
+			'resolvedInBounds': nearestCabin.contains_bounds_point(resolved) if nearestCabin != null else false,
+			'resolvedInInterior': nearestCabin.contains_interior_point(resolved) if nearestCabin != null else false,
+			'hitInBoundsCount': _agent_debug_count_cabins_containing(floorHitPos, false),
+			'hitInInteriorCount': _agent_debug_count_cabins_containing(floorHitPos, true),
+			'candidates': candidateRows
+		}
+	)
+	#endregion
 	return resolved
+
+
+## 调试：统计包含点的舱室数量。
+## @param pointGlobal 全局坐标
+## @param requireInterior 是否要求内区
+## @return int
+func _agent_debug_count_cabins_containing(pointGlobal: Vector2, requireInterior: bool) -> int:
+	var count: int = 0
+	for node in get_tree().get_nodes_in_group('Cabin'):
+		if not (node is Cabin):
+			continue
+		var cabin: Cabin = node as Cabin
+		if requireInterior:
+			if cabin.contains_interior_point(pointGlobal):
+				count += 1
+		elif cabin.contains_bounds_point(pointGlobal):
+			count += 1
+	return count
+
+
+## 调试：列出各舱室相对命中点的距离与包含关系。
+## @param pointGlobal 全局坐标
+## @return Array
+func _agent_debug_cabin_candidates(pointGlobal: Vector2) -> Array:
+	var rows: Array = []
+	for node in get_tree().get_nodes_in_group('Cabin'):
+		if not (node is Cabin):
+			continue
+		var cabin: Cabin = node as Cabin
+		var clamped: Vector2 = cabin.clamp_global_to_bounds(pointGlobal, 0.0)
+		rows.append({
+			'name': cabin.name,
+			'path': String(cabin.get_path()),
+			'distSq': pointGlobal.distance_squared_to(clamped),
+			'inBounds': cabin.contains_bounds_point(pointGlobal),
+			'inInterior': cabin.contains_interior_point(pointGlobal)
+		})
+	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return float(a.get('distSq', INF)) < float(b.get('distSq', INF))
+	)
+	return rows.slice(0, mini(rows.size(), 4))
 
 
 ## 查找包含指定点的舱室。
@@ -754,40 +839,17 @@ func _find_cabin_containing_point(pointGlobal: Vector2, requireInterior: bool) -
 	return null
 
 
-## 沿拉拽方向查找玩家对面的舱室（用于墙缝落点修正）。
-## @param playerPos 玩家位置
-## @param targetPos 期望落点
-## @return Cabin
-func _find_cabin_across_from(playerPos: Vector2, targetPos: Vector2) -> Cabin:
-	var dir: Vector2 = targetPos - playerPos
-	if dir.is_zero_approx():
-		return _find_cabin_containing_point(targetPos, false)
-	var dirNorm: Vector2 = dir.normalized()
-	var bestCabin: Cabin = null
-	var bestScore: float = -INF
-	for node in get_tree().get_nodes_in_group('Cabin'):
-		if not (node is Cabin):
-			continue
-		var cabin: Cabin = node as Cabin
-		var toCenter: Vector2 = cabin.global_position - playerPos
-		var score: float = toCenter.dot(dirNorm)
-		if score > bestScore:
-			bestScore = score
-			bestCabin = cabin
-	return bestCabin
-
-
-## 查找距指定点最近的舱室（按 clamp 到内区后的距离）。
+## 查找距指定点最近的舱室（按 clamp 到外壳 bounds 后的距离）。
 ## @param pointGlobal 全局坐标
 ## @return Cabin
-func _find_nearest_cabin_at(pointGlobal: Vector2) -> Cabin:
+func _find_nearest_cabin_to_point(pointGlobal: Vector2) -> Cabin:
 	var bestCabin: Cabin = null
 	var bestDistSq: float = INF
 	for node in get_tree().get_nodes_in_group('Cabin'):
 		if not (node is Cabin):
 			continue
 		var cabin: Cabin = node as Cabin
-		var clamped: Vector2 = cabin.clamp_global_to_interior(pointGlobal, 0.0)
+		var clamped: Vector2 = cabin.clamp_global_to_bounds(pointGlobal, 0.0)
 		var distSq: float = pointGlobal.distance_squared_to(clamped)
 		if distSq < bestDistSq:
 			bestDistSq = distSq
@@ -949,6 +1011,7 @@ func _remove_deployed_anchor_by_cabin(cabinPathText: String) -> void:
 			_deployedCabinPaths.remove_at(i)
 	_remove_deployed_anchor_visual(cabinPathText)
 	AudioManager.play_sfx(ResPath.AUDIO.ANCHOR_RETRIEVE)
+	EventBus.unregister_deployed_anchor_cabin(cabinPathText)
 	EventBus.emit(EventBus.EventType.ANCHOR_RETRIEVED, {'cabin_path': cabinPathText})
 	_debug_log('retrieve anchor @%s' % cabinPathText)
 	_lastAvailableAnchorCapacity = _available_anchor_capacity()
@@ -1048,6 +1111,29 @@ func _debug_log(message: String) -> void:
 ## @param message 消息
 ## @param data 数据
 ## @return void
+func _agent_debug_emit(hypothesisId: String, location: String, message: String, data: Dictionary) -> void:
+	var payload: Dictionary = {
+		'sessionId': _AGENT_DEBUG_SESSION_ID,
+		'runId': _AGENT_DEBUG_RUN_ID,
+		'hypothesisId': hypothesisId,
+		'location': location,
+		'message': message,
+		'data': data,
+		'timestamp': Time.get_unix_time_from_system() * 1000.0
+	}
+	var file: FileAccess = null
+	if FileAccess.file_exists(_AGENT_DEBUG_LOG_PATH):
+		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.READ_WRITE)
+	else:
+		file = FileAccess.open(_AGENT_DEBUG_LOG_PATH, FileAccess.WRITE_READ)
+	if file == null:
+		return
+	file.seek_end()
+	file.store_line(JSON.stringify(payload))
+
+
+## 判断鼠标当前是否悬停在可交互UI上（用于屏蔽右键玩法操作）。
+## @return bool
 func _is_mouse_over_ui() -> bool:
 	var hoveredControl: Control = get_viewport().gui_get_hovered_control()
 	if hoveredControl == null:
